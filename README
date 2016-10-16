@@ -1,0 +1,27 @@
+Aerial: An Almost Event-Rate Independent Monitor for Metric Temporal Logic
+
+        Dmitriy Traytel
+    Department of Computer Science, ETH Zurich, Switzerland
+
+
+This library is distributed under the terms of the GNU Lesser General
+Public License version 3. See files LICENSE and COPYING.
+
+The algorithms behind this tool were developed jointly with
+David Basin and Bhargav Bhatt.
+
+To compile, install a recent (>= 5.6) version of the PolyML compiler
+(http://www.polyml.org). Then use
+
+make
+
+to obtain a binary aerial and
+
+./aerial -fmla examples/ex1.mtl -log examples/ex1.log
+
+to run an example.
+
+./aerial -?
+
+provides some additional hints about the tool's user interface.
+

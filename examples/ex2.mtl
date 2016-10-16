@@ -1,0 +1,4 @@
+Until (lclosed_ropen_BI 0 3,
+  Since (U (lclosed_UI 0), Disj (P "a", P "c"), Neg (P "b")),
+  Until (lopen_rclosed_BI 0 6, Bool true, Prev (U (lopen_UI 0), P "b"))
+)
