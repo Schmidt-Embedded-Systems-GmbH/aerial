@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAXIDX=25
+MAXIDX=10
 
 f1='Until (lclosed_rclosed_BI 0 5, Bool true, P "P1")'
 f2='Until (lclosed_rclosed_BI 0 5, P "P0", P "P1")'
