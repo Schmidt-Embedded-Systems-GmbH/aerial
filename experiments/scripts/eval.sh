@@ -1,8 +1,5 @@
 #!/bin/bash
 
-MONPOLY="./monpoly"
-AERIAL="../../aerial"
-TIME="/usr/bin/time -l"
 MAXIDX=25
 
 f1='Until (lclosed_rclosed_BI 0 5, Bool true, P "P1")'
@@ -25,45 +22,4 @@ echo $mf2 > formulas/monpoly_f2.formula
 echo $mf3 > formulas/monpoly_f3.formula
 echo $mf4 > formulas/monpoly_f4.formula
 
-function print_mode {
-   if [ "$1" -eq "0" ]
-   then
-     echo -n "naive  "
-   elif [ "$1" -eq "1" ]
-   then
-     echo -n "local  "
-   else
-     echo -n "global "
-   fi
-}
-
-for rate in `cat rates | head -n4`
-do
-  for form in {1..4};
-  do
-    for mode in {0..2};
-    do
-      for i in `eval echo {0..$MAXIDX}`;
-      do
-        print_mode $mode;
-        echo -n " rate: $rate formula: $form idx: $i space: ";
-  		  ($TIME $AERIAL -mode $mode -fmla formulas/f$form.formula -log logs/tr${form}_${i}_${rate}.log -out /dev/null) 2>&1 | grep "maximum resident set size" | sed "s/[ a-z]*//g";
-# > res;
-      done;
-#      print_mode $mode;
-#      echo -n " rate: $rate formula: $form ";
-#      perl -lane '$a+=$_ for(@F);$f+=scalar(@F);END{print "space: ".$a/($f * 1024 * 1024)." MB"}' res
-#      rm res
-    done
-
-    for i in {1..$MAXIDX};
-    do
-      echo -n "monpoly rate: $rate formula: $form idx: $i space: ";
-      ($TIME $MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log logs/tr${form}_${i}_${rate}.log) 2>&1 | grep "maximum resident set size" | sed "s/[ a-z]*//g";
-# > res
-    done;
-#    echo -n "monpoly rate: $rate formula: $form ";
-#    perl -lane '$a+=$_ for(@F);$f+=scalar(@F);END{print "space: ".$a/($f * 1024 * 1024)." MB"}' res
-#    rm res
-  done
-done
+parallel ./aerial.sh ::: `cat rates | head -n4` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: {0..3}
