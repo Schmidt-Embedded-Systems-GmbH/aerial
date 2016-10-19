@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir tmp
+mkdir -p tmp
 mkdir -p logs
 cp PrioQueue.ml tmp
 cp gen_log_f*.ml tmp
@@ -12,7 +12,7 @@ do
 done
 
 
-for rate in `cat rates`;
+for rate in `cat ../rates`;
 do
   for form in {1..4};
   do
