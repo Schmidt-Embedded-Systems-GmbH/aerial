@@ -3,6 +3,7 @@
 MONPOLY="./monpoly"
 AERIAL="../../aerial"
 TIME="/usr/bin/time -l"
+MAXIDX=25
 
 f1='Until (lclosed_rclosed_BI 0 5, Bool true, P "P1")'
 f2='Until (lclosed_rclosed_BI 0 5, P "P0", P "P1")'
@@ -40,9 +41,9 @@ for rate in `cat rates | head -n4`
 do
   for form in {1..4};
   do
-    for mode in {1..2};
+    for mode in {0..2};
     do
-      for i in {1..3};
+      for i in `eval echo {0..$MAXIDX}`;
       do
         print_mode $mode;
         echo -n " rate: $rate formula: $form idx: $i space: ";
@@ -55,7 +56,7 @@ do
 #      rm res
     done
 
-    for i in {1..3};
+    for i in {1..$MAXIDX};
     do
       echo -n "monpoly rate: $rate formula: $form idx: $i space: ";
       ($TIME $MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log logs/tr${form}_${i}_${rate}.log) 2>&1 | grep "maximum resident set size" | sed "s/[ a-z]*//g";
