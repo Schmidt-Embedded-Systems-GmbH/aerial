@@ -2,6 +2,8 @@
 
 AERIAL="./aerial"
 TIME="/usr/bin/time -l"
+TIMEOUT="./timeout3"
+MAXTIME="30"
 
 function print_mode {
    if [ "$1" -eq "0" ]
