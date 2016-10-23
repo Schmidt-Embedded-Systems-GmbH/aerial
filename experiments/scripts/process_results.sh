@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -r tmp
+rm -rf tmp
 mkdir tmp
 
 for form in {1..4};
@@ -24,3 +24,5 @@ do
     sed -i '' -e '$a\' f${form}_results.txt
   done
 done
+
+rm -rf tmp
