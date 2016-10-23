@@ -7,8 +7,11 @@ Aerial: An Almost Event-Rate Independent Monitor for Metric Temporal Logic
 This library is distributed under the terms of the GNU Lesser General
 Public License version 3. See files LICENSE and COPYING.
 
-The algorithms behind this tool were developed jointly with
-David Basin and Bhargav Bhatt.
+The algorithms behind this tool were developed jointly with David Basin and
+Bhargav Bhatt. The theory is described in the paper draft:
+
+Almost Event-Rate Indepedent Monitoring of Metric Temporal Logic
+http://people.inf.ethz.ch/trayteld/papers/aerial/aerial.pdf
 
 To compile, install a recent (>= 5.6) version of the PolyML compiler
 (http://www.polyml.org). Then use
@@ -25,3 +28,8 @@ to run an example.
 
 provides some additional hints about the tool's user interface.
 
+This repository also contains the bash scripts used to generate log files and
+run the experiments reported on in the above paper (directory experiments).
+Some of the shell scripts assume the "aerial" and "monpoly" binary file to be
+places inside of the experiments directory and a working installation of GNU
+Parallel.
