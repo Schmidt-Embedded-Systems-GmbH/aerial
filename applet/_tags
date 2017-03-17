@@ -1,0 +1,2 @@
+<applet.*>: package(js_of_ocaml,js_of_ocaml.ppx)
+<applet.js>: package(js_of_ocaml.weak)

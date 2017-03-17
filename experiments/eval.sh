@@ -2,10 +2,10 @@
 
 MAXIDX=10
 
-f1='Until (lclosed_rclosed_BI 0 5, Bool true, P "P1")'
-f2='Until (lclosed_rclosed_BI 0 5, P "P0", P "P1")'
-f3='Until (lclosed_rclosed_BI 0 5, P "P0", Since (B (lclosed_rclosed_BI 2 6), P "P1", P "P2"))'
-f4='Until (lclosed_rclosed_BI 0 5, P "P0", Until (lclosed_rclosed_BI 2 6, P "P1", P "P2"))'
+f1='true U[0,5] P1'
+f2='P0 U[0,5] P1'
+f3='P0 U[0,5] (P1 S[2,6] P2)'
+f4='P0 U[0,5] (P1 U[2,6] P2)'
 
 mf1='TRUE UNTIL [0, 5] P1 ()'
 mf2='P0 () UNTIL [0, 5] P1 ()'

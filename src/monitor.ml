@@ -149,7 +149,12 @@ let create fmt mode formula =
   let _ = Printf.fprintf fmt "Monitoring %a\n%!" print_formula formula in
   let f_vec = Array.of_list (ssub formula) in
   let n = Array.length f_vec in
-  let next f = V (true, idx_of f) in
+  let rec next = function
+    | Conj (f, g) -> cconj (next f) (next g)
+    | Disj (f, g) -> cdisj (next f) (next g)
+    | Neg f -> cneg (next f)
+    | Bool b -> B b
+    | f -> V (true, idx_of f) in
 
   let init = {history = []; now = (-1, 0); arr = Array.make n (Now (B false)); skip = true} in
 
