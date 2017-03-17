@@ -47,7 +47,7 @@ type formula =
 | Prev of int * interval * formula
 | Since of int * interval * formula * formula
 | Next of int * interval * formula
-| Until of int * binterval * formula * formula
+| Until of int * interval * formula * formula
 | Bool of bool
 
 let rec atoms = function
@@ -55,6 +55,14 @@ let rec atoms = function
   | Conj (f, g) | Disj (f, g) | Since (_, _, f, g) | Until (_, _, f, g) -> SS.union (atoms f) (atoms g)
   | Neg f | Prev (_, _, f) | Next (_, _, f) -> atoms f
   | Bool _ -> SS.empty
+
+let rec bounded_future = function
+  | Bool _ -> true
+  | P _ -> true
+  | Since (_, _, f, g) | Conj (f, g) | Disj (f, g) -> bounded_future f && bounded_future g
+  | Until (_, i, f, g) ->
+      case_I (fun _ -> true) (fun _ -> false) i && bounded_future f && bounded_future g
+  | Neg f | Prev (_, _, f) | Next (_, _, f) -> bounded_future f
 
 let print_binterval out = function
   | BI (i, j) -> Printf.fprintf out "[%d,%d]" i j
@@ -71,8 +79,8 @@ let rec print_formula l out = function
   | Neg f -> Printf.fprintf out "¬%a" (print_formula 3) f
   | Prev (_, i, f) -> Printf.fprintf out (paren l 3 "●%a %a") print_interval i (print_formula 4) f
   | Next (_, i, f) -> Printf.fprintf out (paren l 3 "○%a %a") print_interval i (print_formula 4) f
-  | Since (_, i, f, g) -> Printf.fprintf out (paren l 3 "%a S%a %a") (print_formula 4) f print_interval i (print_formula 4) g
-  | Until (_, i, f, g) -> Printf.fprintf out (paren l 3 "%a U%a %a") (print_formula 4) f print_binterval i (print_formula 4) g
+  | Since (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a S%a %a") (print_formula 4) f print_interval i (print_formula 4) g
+  | Until (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a U%a %a") (print_formula 4) f print_interval i (print_formula 4) g
 let print_formula = print_formula 0
 
 let idx_of = function
@@ -110,8 +118,8 @@ let prev i f = Prev (maxidx_of f + 1, i, f)
 let next i f = Next (maxidx_of f + 1, i, f)
 let since i f g = let n = maxidx_of f + 1 in Since (maxidx_of g + n + right_I i + 1, i, f, lift n g)
 let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
-let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_BI i + 1, i, f, lift n g)
-let until_lifted i f g = Until (maxidx_of g + right_BI i + 1, i, f, g)
+let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_I i + 1, i, f, lift n g)
+let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
 let bool b = Bool b
 let release i f g = neg (until i (neg f) (neg g))
 let weak_until i f g = release i g (disj f g)
@@ -138,7 +146,7 @@ let rec sub = function
 
 let aux = function
   | Since (j,i,f,g) -> List.map (fun n -> Since (j - n, subtract_I n i, f, g)) (1 -- right_I i)
-  | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_BI n i, f, g)) (1 -- right_BI i)
+  | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_I n i, f, g)) (1 -- right_I i)
   | _ -> []
 
 let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))

@@ -145,16 +145,27 @@ type monitor =
   {init: ctxt;
    step: SS.t * timestamp -> ctxt -> ctxt}
 
-let create fmt mode formula =
+let create fmt mode_hint formula =
   let _ = Printf.fprintf fmt "Monitoring %a\n%!" print_formula formula in
   let f_vec = Array.of_list (ssub formula) in
+  let mode = if bounded_future formula then mode_hint else
+    (Printf.fprintf fmt
+    "The formula contains unbounded future operators and
+will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   let n = Array.length f_vec in
-  let rec next = function
-    | Conj (f, g) -> cconj (next f) (next g)
-    | Disj (f, g) -> cdisj (next f) (next g)
-    | Neg f -> cneg (next f)
-    | Bool b -> B b
-    | f -> V (true, idx_of f) in
+  let mk cnj dsj neg bo idx =
+    let rec go = function
+      | Conj (f, g) -> cnj (go f) (go g)
+      | Disj (f, g) -> dsj (go f) (go g)
+      | Neg f -> neg (go f)
+      | Bool b -> bo b
+      | f -> idx (idx_of f) in
+    go in
+  let mk_cell = mk cconj cdisj cneg (fun b -> B b) in
+  let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b)) in
+  let mk_top_cell a = mk_cell (fun i -> a.(i)) formula in
+  let mk_top_fcell a = mk_fcell (fun i -> a.(i)) formula in
+  let next = mk_cell (fun i -> V (true, i)) in
 
   let init = {history = []; now = (-1, 0); arr = Array.make n (Now (B false)); skip = true} in
 
@@ -172,18 +183,8 @@ let create fmt mode formula =
 
   let progress a t_prev ev t =
     let b = Array.make n (Now (B false)) in
-    let rec curr = function
-      | Conj (f, g) -> fcconj (curr f) (curr g)
-      | Disj (f, g) -> fcdisj (curr f) (curr g)
-      | Neg f -> fcneg (curr f)
-      | Bool b -> Now (B b)
-      | f -> b.(idx_of f) in
-    let rec prev = function
-      | Conj (f, g) -> cconj (prev f) (prev g)
-      | Disj (f, g) -> cdisj (prev f) (prev g)
-      | Neg f -> cneg (prev f)
-      | Bool b -> B b
-      | f -> a.(idx_of f) in
+    let curr = mk_fcell (fun i -> b.(i)) in
+    let prev = mk_cell (fun i -> a.(i)) in
     let prev f = subst_cell_future b (prev f) in
     for i = 0 to n - 1 do
       b.(i) <- match f_vec.(i) with
@@ -198,11 +199,11 @@ let create fmt mode formula =
             then Now (B false)
             else fcconj (curr f) (prev (since_lifted (subtract_I (t - t_prev) i) f g)))
       | Until (_, i, f, g) -> fcdisj
-          (if mem_BI 0 i then curr g else Now (B false))
-          (Later (fun t_next -> if t_next - t > right_BI i
+          (if mem_I 0 i then curr g else Now (B false))
+          (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
             then B false
             else cconj (eval_future_cell t_next (curr f))
-              (next (until_lifted (subtract_BI (t_next - t) i) f g))))
+              (next (until_lifted (subtract_I (t_next - t) i) f g))))
       | _ -> failwith "not a temporal formula"
     done;
     b in
@@ -215,12 +216,12 @@ let create fmt mode formula =
     let old_history = ctxt.history in
     let clean_history = List.fold_left (fun history (d, cell) ->
       maybe_output_cell fmt false d (subst_cell a cell) add history) [] old_history in
-    let history = maybe_output_cell fmt skip d a.(n - 1) add clean_history in
+    let history = maybe_output_cell fmt skip d (mk_top_cell a) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
     let fa' = progress a t ev t' in
     let history' = List.fold_left (fun history ((d, cell) as x) ->
       maybe_output_future fmt d (subst_cell_future fa' cell) (List.cons x) history) [] history in
-    let skip' = maybe_output_future fmt d' fa'.(n - 1) (fun _ -> false) true in
+    let skip' = maybe_output_future fmt d' (mk_top_fcell fa') (fun _ -> false) true in
     {history = history'; now = d'; arr = fa'; skip = skip'} in
 
   {init=init; step=step}

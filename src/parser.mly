@@ -62,9 +62,12 @@ e:
 | e SINCE e               { since full $1 $3 }
 | e TRIGGER interval e    { trigger $3 $1 $4 }
 | e TRIGGER e             { trigger full $1 $3 }
-| e UNTIL binterval e     { until $3 $1 $4 }
-| e WUNTIL binterval e    { weak_until $3 $1 $4 }
-| e RELEASE binterval e   { release $3 $1 $4 }
+| e UNTIL interval e      { until $3 $1 $4 }
+| e UNTIL e               { until full $1 $3 }
+| e WUNTIL interval e     { weak_until $3 $1 $4 }
+| e WUNTIL e              { weak_until full $1 $3 }
+| e RELEASE interval e    { release $3 $1 $4 }
+| e RELEASE e             { release full $1 $3 }
 | NEXT interval e         { next $2 $3 }
 | NEXT e                  { next full $2 }
 | PREV interval e         { prev $2 $3 }
@@ -73,6 +76,8 @@ e:
 | ONCE e                  { once full $2 }
 | HISTORICALLY interval e { historically $2 $3 }
 | HISTORICALLY e          { historically full $2 }
-| ALWAYS binterval e      { always $2 $3 }
-| EVENTUALLY binterval e  { eventually $2 $3 }
+| ALWAYS interval e       { always $2 $3 }
+| ALWAYS e                { always full $2 }
+| EVENTUALLY interval e   { eventually $2 $3 }
+| EVENTUALLY e            { eventually full $2 }
 
