@@ -23,7 +23,7 @@ make
 
 to obtain a binary aerial.native and
 
-./aerial.native -fmla examples/ex1.mtl -log examples/ex1.log
+./aerial.native -fmla examples/test1.mtl -log examples/test2.log
 
 to run an example.
 

@@ -1,20 +1,15 @@
-@1 a ()
-@1 a ()
-@1 a ()
-@2 a ()
-@2 a ()
-@2 a ()
-@2 a ()
-@2 a ()
-@2 a ()
-@2 a ()
-@3 a ()
-@3 a ()
-@3 a ()
-@4 a ()
-@4 a ()
-@4 a ()
-@5 b ()
-@5 a () b ()
-@5 a ()
-@5 b ()
+@0 approve
+@1 publish
+@2 publish
+@2 approve publish
+@2 publish
+@5 publish
+@6 publish
+@8 publish
+@10 publish
+@10 publish
+@10 publish
+@10 publish approve
+@10 publish
+@14 publish
+@20 publish
