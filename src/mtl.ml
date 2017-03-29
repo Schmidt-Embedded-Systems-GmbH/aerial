@@ -8,36 +8,7 @@
 (*******************************************************************)
 
 open Util
-
-type timestamp = int
-
-type uinterval = UI of int
-type binterval = BI of int * int
-type interval = B of binterval | U of uinterval
-let case_I f1 f2 = function
-  | (B i) -> f1 i
-  | (U i) -> f2 i
-let map_I f1 f2 = case_I (fun i -> B (f1 i)) (fun i -> U (f2 i))
-
-let subtract n i = if i < n then 0 else i - n
-
-let lclosed_UI i = UI i
-let lopen_UI i = UI (i + 1)
-let nonempty_BI l r = if l <= r then BI (l, r) else raise (Failure "empty interval")
-let lclosed_rclosed_BI i j = nonempty_BI i j
-let lopen_rclosed_BI i j = nonempty_BI (i + 1) j
-let lclosed_ropen_BI i j = nonempty_BI i (j - 1)
-let lopen_ropen_BI i j = nonempty_BI (i + 1) (j - 1)
-let left_UI (UI i) = i
-(*let left_BI (BI (i, _)) = i*)
-let right_BI (BI (_, j)) = j
-(*val left_I = case_I left_BI left_UI*)
-let right_I = case_I right_BI left_UI
-let full = U (UI 0)
-
-let subtract_UI n (UI i) = UI (subtract n i)
-let subtract_BI n (BI (i, j)) = BI (subtract n i, subtract n j)
-let subtract_I n = map_I (subtract_BI n) (subtract_UI n)
+open Cell
 
 type formula =
 | P of int * string
@@ -63,13 +34,6 @@ let rec bounded_future = function
   | Until (_, i, f, g) ->
       case_I (fun _ -> true) (fun _ -> false) i && bounded_future f && bounded_future g
   | Neg f | Prev (_, _, f) | Next (_, _, f) -> bounded_future f
-
-let print_binterval out = function
-  | BI (i, j) -> Printf.fprintf out "[%d,%d]" i j
-
-let print_interval out = function
-  | U (UI i) -> Printf.fprintf out "[%d,∞)" i
-  | B i -> Printf.fprintf out "%a" print_binterval i
 
 let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
@@ -129,10 +93,6 @@ let always i f = neg (eventually i (neg f))
 let once i f = since i (bool true) f
 let historically i f = neg (once i (neg f))
 
-let mem_UI t (UI l) = l <= t
-let mem_BI t (BI (l, r)) = l <= t && t <= r
-let mem_I t = case_I (mem_BI t) (mem_UI t)
-
 let rec sub = function 
   | Neg f -> sub f
   | Conj (f, g) -> sub g @ sub f
@@ -150,7 +110,42 @@ let aux = function
   | _ -> []
 
 let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))
+let mk cnj dsj neg bo idx =
+  let rec go = function
+    | Conj (f, g) -> cnj (go f) (go g)
+    | Disj (f, g) -> dsj (go f) (go g)
+    | Neg f -> neg (go f)
+    | Bool b -> bo b
+    | f -> idx (idx_of f) in
+  go
+let mk_cell = mk cconj cdisj cneg (fun b -> B b)
+let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
 
-type 'a trace = (SS.t * timestamp) list
-
-let t = SS.of_list ["abc"; "cde"]
+let progress f_vec a t_prev ev t =
+  let n = Array.length f_vec in
+  let b = Array.make n (Now (B false)) in
+  let curr = mk_fcell (fun i -> b.(i)) in
+  let prev = mk_cell (fun i -> a.(i)) in
+  let prev f = subst_cell_future b (prev f) in
+  let next = mk_cell (fun i -> V (true, i)) in
+  for i = 0 to n - 1 do
+    b.(i) <- match f_vec.(i) with
+    | P (_, x) -> Now (B (SS.mem x ev))
+    | Prev (_, i, f) ->
+        if mem_I (t - t_prev) i then prev f else Now (B false)
+    | Next (_, i, f) ->
+        Later (fun t_next -> if mem_I (t_next - t) i then next f else B false)
+    | Since (_, i, f, g) -> fcdisj
+        (if mem_I 0 i then curr g else Now (B false))
+        (if case_I (fun i -> t - t_prev > right_BI i) (fun _ -> false) i
+          then Now (B false)
+          else fcconj (curr f) (prev (since_lifted (subtract_I (t - t_prev) i) f g)))
+    | Until (_, i, f, g) -> fcdisj
+        (if mem_I 0 i then curr g else Now (B false))
+        (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
+          then B false
+          else cconj (eval_future_cell t_next (curr f))
+            (next (until_lifted (subtract_I (t_next - t) i) f g))))
+    | _ -> failwith "not a temporal formula"
+  done;
+  b

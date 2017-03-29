@@ -8,8 +8,8 @@
  *******************************************************************/
 
 %{
+open Util
 open Mtl
-let id x = x
 %}
 
 %token <string> ATOM
@@ -32,10 +32,10 @@ let id x = x
 
 %%
 binterval:
-| LOPEN NUM COMMA NUM ROPEN     { Mtl.lopen_ropen_BI $2 $4 }
-| LOPEN NUM COMMA NUM RCLOSED   { Mtl.lopen_rclosed_BI $2 $4 }
-| LCLOSED NUM COMMA NUM ROPEN   { Mtl.lclosed_ropen_BI $2 $4 }
-| LCLOSED NUM COMMA NUM RCLOSED { Mtl.lclosed_rclosed_BI $2 $4 }
+| LOPEN NUM COMMA NUM ROPEN     { lopen_ropen_BI $2 $4 }
+| LOPEN NUM COMMA NUM RCLOSED   { lopen_rclosed_BI $2 $4 }
+| LCLOSED NUM COMMA NUM ROPEN   { lclosed_ropen_BI $2 $4 }
+| LCLOSED NUM COMMA NUM RCLOSED { lclosed_rclosed_BI $2 $4 }
 
 interval:
 | binterval                          { B $1 }

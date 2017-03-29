@@ -11,3 +11,28 @@ val ( -- ): int -> int -> int list
 val paren: int -> int -> ('b, 'c, 'd, 'e, 'f, 'g) format6 -> ('b, 'c, 'd, 'e, 'f, 'g) format6
 
 module SS: Set.S with type elt = string
+type timestamp = int
+type trace = (SS.t * timestamp) list
+
+type binterval
+type uinterval
+type interval = B of binterval | U of uinterval
+
+val lclosed_UI: int -> uinterval
+val lclosed_rclosed_BI: int -> int -> binterval
+val lclosed_ropen_BI: int -> int -> binterval
+val lopen_UI: int -> uinterval
+val lopen_rclosed_BI: int -> int -> binterval
+val lopen_ropen_BI: int -> int -> binterval
+val mem_BI: int -> binterval -> bool
+val mem_I: int -> interval -> bool
+val right_BI: binterval -> int
+val right_I: interval -> int
+val full: interval
+val subtract_BI: int -> binterval -> binterval
+val subtract_I: int -> interval -> interval
+val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
+val print_interval: out_channel -> interval -> unit
+
+val output_verdict: out_channel -> (timestamp * int) * bool -> unit
+val output_eq: out_channel -> (timestamp * int) * (timestamp * int) -> unit

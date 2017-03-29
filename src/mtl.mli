@@ -9,28 +9,6 @@
 
 open Util
 
-type binterval
-type uinterval
-type interval = B of binterval | U of uinterval
-
-val lclosed_UI: int -> uinterval
-val lclosed_rclosed_BI: int -> int -> binterval
-val lclosed_ropen_BI: int -> int -> binterval
-val lopen_UI: int -> uinterval
-val lopen_rclosed_BI: int -> int -> binterval
-val lopen_ropen_BI: int -> int -> binterval
-val mem_BI: int -> binterval -> bool
-val mem_I: int -> interval -> bool
-val right_BI: binterval -> int
-val right_I: interval -> int
-val full: interval
-val subtract_BI: int -> binterval -> binterval
-val subtract_I: int -> interval -> interval
-val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
-
-type timestamp = int
-type 'a trace = (SS.t * timestamp) list
-
 type formula = private
 | P of int * string
 | Conj of formula * formula
@@ -42,7 +20,6 @@ type formula = private
 | Until of int * interval * formula * formula
 | Bool of bool
 
-val print_interval: out_channel -> interval -> unit
 val print_formula: out_channel -> formula -> unit
 
 val idx_of: formula -> int
@@ -73,3 +50,9 @@ val since_lifted: interval -> formula -> formula -> formula
 val until_lifted: interval -> formula -> formula -> formula
 
 val ssub: formula -> formula list
+
+open Cell
+
+val mk_cell: (int -> cell) -> formula -> cell
+val mk_fcell: (int -> future_cell) -> formula -> future_cell
+val progress: formula array -> cell array -> int -> SS.t -> int -> future_cell array

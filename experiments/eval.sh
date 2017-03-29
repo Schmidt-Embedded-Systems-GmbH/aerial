@@ -22,4 +22,4 @@ echo $mf2 > formulas/monpoly_f2.formula
 echo $mf3 > formulas/monpoly_f3.formula
 echo $mf4 > formulas/monpoly_f4.formula
 
-parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: {1..3}
+parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: {1..2}

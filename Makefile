@@ -1,5 +1,5 @@
 NAME=src/aerial
-OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir -package yojson \
+OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir \
            -plugin-tags "package(js_of_ocaml.ocamlbuild)" -yaccflag --explain
 OCAMLFIND=ocamlfind
 OBJS=$(wildcard _build/*.cm* _build/*.a _build/*.o)
@@ -42,7 +42,7 @@ nc-lib:
 	$(OCAMLBUILD) $(NAME).cmxa
 
 web:
-	$(OCAMLBUILD) -I src applet/applet.byte
+	$(OCAMLBUILD) -package yojson -I src applet/applet.byte
 	js_of_ocaml -I . --file examples:/ applet.byte -o applet/aerial.js
 
 run:
