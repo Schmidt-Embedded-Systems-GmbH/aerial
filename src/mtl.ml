@@ -9,6 +9,7 @@
 
 open Util
 open Cell
+open Monitor
 
 type formula =
 | P of int * string
@@ -20,6 +21,48 @@ type formula =
 | Next of int * interval * formula
 | Until of int * interval * formula * formula
 | Bool of bool
+
+let rec maxidx_of = function
+  | P (i, x) -> i
+  | Conj (f, g) | Disj (f, g) -> max (maxidx_of f) (maxidx_of g)
+  | Neg f -> maxidx_of f
+  | Prev (j, _, f) | Next (j, _, f) -> max j (maxidx_of f)
+  | Since (j, _, f, g) | Until (j, _, f, g) -> max j (max (maxidx_of f) (maxidx_of g))
+  | Bool _ -> -1
+
+let rec lift n = function
+  | P (i, x) -> P (i + n, x)
+  | Conj (f, g) -> Conj (lift n f, lift n g)
+  | Disj (f, g) -> Disj (lift n f, lift n g)
+  | Neg f -> Neg (lift n f)
+  | Prev (j, i, f) -> Prev (j + n, i, lift n f)
+  | Next (j, i, f) -> Next (j + n, i, lift n f)
+  | Since (j, i, f, g) -> Since (j + n, i, lift n f, lift n g)
+  | Until (j, i, f, g) -> Until (j + n, i, lift n f, lift n g)
+  | Bool b -> Bool b
+
+let p x = P (0, x)
+let conj f g = Conj (f, lift (maxidx_of f + 1) g)
+let disj f g = Disj (f, lift (maxidx_of f + 1) g)
+let neg f = Neg f
+let imp f g = disj (neg f) g
+let iff f g = conj (imp f g) (imp g f)
+let prev i f = Prev (maxidx_of f + 1, i, f)
+let next i f = Next (maxidx_of f + 1, i, f)
+let since i f g = let n = maxidx_of f + 1 in Since (maxidx_of g + n + right_I i + 1, i, f, lift n g)
+let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_I i + 1, i, f, lift n g)
+let bool b = Bool b
+let release i f g = neg (until i (neg f) (neg g))
+let weak_until i f g = release i g (disj f g)
+let trigger i f g = neg (since i (neg f) (neg g))
+let eventually i f = until i (bool true) f
+let always i f = neg (eventually i (neg f))
+let once i f = since i (bool true) f
+let historically i f = neg (once i (neg f))
+
+module MTL : Formula with type f = formula = struct
+
+type f = formula
 
 let rec atoms = function
   | P (_, x) -> SS.singleton x
@@ -51,47 +94,10 @@ let idx_of = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
-let rec maxidx_of = function
-  | P (i, x) -> i
-  | Conj (f, g) | Disj (f, g) -> max (maxidx_of f) (maxidx_of g)
-  | Neg f -> maxidx_of f
-  | Prev (j, _, f) | Next (j, _, f) -> max j (maxidx_of f)
-  | Since (j, _, f, g) | Until (j, _, f, g) -> max j (max (maxidx_of f) (maxidx_of g))
-  | Bool _ -> -1
-
-let rec lift n = function
-  | P (i, x) -> P (i + n, x)
-  | Conj (f, g) -> Conj (lift n f, lift n g)
-  | Disj (f, g) -> Disj (lift n f, lift n g)
-  | Neg f -> Neg (lift n f)
-  | Prev (j, i, f) -> Prev (j + n, i, lift n f)
-  | Next (j, i, f) -> Next (j + n, i, lift n f)
-  | Since (j, i, f, g) -> Since (j + n, i, lift n f, lift n g)
-  | Until (j, i, f, g) -> Until (j + n, i, lift n f, lift n g)
-  | Bool b -> Bool b
-
-let p x = P (0, x)
-let conj f g = Conj (f, lift (maxidx_of f + 1) g)
-let disj f g = Disj (f, lift (maxidx_of f + 1) g)
-let neg f = Neg f
-let imp f g = disj (neg f) g
-let iff f g = conj (imp f g) (imp g f)
 let conj_lifted f g = Conj (f, g)
 let disj_lifted f g = Disj (f, g)
-let prev i f = Prev (maxidx_of f + 1, i, f)
-let next i f = Next (maxidx_of f + 1, i, f)
-let since i f g = let n = maxidx_of f + 1 in Since (maxidx_of g + n + right_I i + 1, i, f, lift n g)
 let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
-let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_I i + 1, i, f, lift n g)
 let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
-let bool b = Bool b
-let release i f g = neg (until i (neg f) (neg g))
-let weak_until i f g = release i g (disj f g)
-let trigger i f g = neg (since i (neg f) (neg g))
-let eventually i f = until i (bool true) f
-let always i f = neg (eventually i (neg f))
-let once i f = since i (bool true) f
-let historically i f = neg (once i (neg f))
 
 let rec sub = function 
   | Neg f -> sub f
@@ -149,3 +155,7 @@ let progress f_vec a t_prev ev t =
     | _ -> failwith "not a temporal formula"
   done;
   b
+
+end
+
+module Monitor_MTL = Monitor.Make(MTL)

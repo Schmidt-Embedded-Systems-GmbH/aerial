@@ -3,3 +3,8 @@ glob
 experiments/logs
 experiments/formulas
 _build
+syntax: glob
+aerial.native
+experiments/aerial
+experiments/aerial-poly
+experiments/monpoly

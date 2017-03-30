@@ -8,7 +8,7 @@
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
 
-open Parser
+open Mtl_parser
 open Mtl
 
 (* lexing/parsing errors *)

@@ -36,3 +36,5 @@ val print_interval: out_channel -> interval -> unit
 
 val output_verdict: out_channel -> (timestamp * int) * bool -> unit
 val output_eq: out_channel -> (timestamp * int) * (timestamp * int) -> unit
+
+type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL

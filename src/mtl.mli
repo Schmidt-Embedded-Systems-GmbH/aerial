@@ -20,11 +20,6 @@ type formula = private
 | Until of int * interval * formula * formula
 | Bool of bool
 
-val print_formula: out_channel -> formula -> unit
-
-val idx_of: formula -> int
-val bounded_future: formula -> bool
-
 val p: string -> formula
 val conj: formula -> formula -> formula
 val disj: formula -> formula -> formula
@@ -44,15 +39,4 @@ val once: interval -> formula -> formula
 val historically: interval -> formula -> formula
 val bool: bool -> formula
 
-val conj_lifted: formula -> formula -> formula
-val disj_lifted: formula -> formula -> formula
-val since_lifted: interval -> formula -> formula -> formula
-val until_lifted: interval -> formula -> formula -> formula
-
-val ssub: formula -> formula list
-
-open Cell
-
-val mk_cell: (int -> cell) -> formula -> cell
-val mk_fcell: (int -> future_cell) -> formula -> future_cell
-val progress: formula array -> cell array -> int -> SS.t -> int -> future_cell array
+module Monitor_MTL : Monitor.Monitor with type formula = formula

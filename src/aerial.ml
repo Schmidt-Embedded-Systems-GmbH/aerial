@@ -8,12 +8,26 @@
 (*******************************************************************)
 
 open Util
-open Mtl
-open Monitor
 
 exception EXIT
 
-let fmla_ref = ref (Parser.formula Lexer.token (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)"))
+module type Language = sig
+  type formula
+  val parse: Lexing.lexbuf -> formula
+  val example_formula: formula
+  module Monitor: Monitor.Monitor with type formula = formula
+end
+
+module Mtl : Language = struct
+  type formula = Mtl.formula
+  let parse = Mtl_parser.formula Mtl_lexer.token
+  let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
+  module Monitor = Mtl.Monitor_MTL
+end
+let mtl = (module Mtl : Language)
+
+let language_ref = ref mtl
+let fmla_ref = ref None
 let mode_ref = ref COMPRESS_LOCAL
 let log_ref = ref stdin
 let out_ref = ref stdout
@@ -38,12 +52,6 @@ let parse_line s =
 
 let rec get_next log =
   match parse_line (input_line log) with None -> get_next log | Some x -> x
-
-let rec loop f x = loop f (f x)
-
-let fly m log =
-  let step ctxt = m.step (get_next log) ctxt
-  in loop step m.init
   
 
 let usage () = Format.eprintf
@@ -62,11 +70,8 @@ Arguments:
 
 let mode_error () = Format.eprintf "mode should be either of 0, 1, 2\n"; raise EXIT
 
-let read_fmla in_ch =
-  Parser.formula Lexer.token (Lexing.from_channel in_ch)
-
 let process_args =
-  let rec (go : string list -> unit) = function
+  let rec go = function
     | ("-mode" :: mode :: args) ->
       let mode =
         try (match int_of_string mode with
@@ -82,8 +87,8 @@ let process_args =
         go args
     | ("-fmla" :: fmlafile :: args) ->
         let in_ch = open_in fmlafile in
-        fmla_ref := read_fmla in_ch;
-        close_in in_ch;
+        (match !fmla_ref with None -> () | Some i -> close_in i);
+        fmla_ref := Some in_ch;
         go args
     | ("-out" :: outfile :: args) ->
         out_ref := open_out outfile;
@@ -92,11 +97,22 @@ let process_args =
     | _ -> usage () in
   go
 
+let rec loop f x = loop f (f x)
+
+let fly step init log =
+  let step ctxt = step (get_next log) ctxt
+  in loop step init
+
 let _ =
   try
     process_args (List.tl (Array.to_list Sys.argv));
-    let m = Monitor.create !out_ref !mode_ref !fmla_ref in
-    fly m !log_ref
+    let (module L) = !language_ref in
+    let f = match !fmla_ref with
+      | None -> L.example_formula
+      | Some ch -> let f = L.parse (Lexing.from_channel ch) in (close_in ch; f) in
+    let m = L.Monitor.create !out_ref !mode_ref f in
+    fly m.L.Monitor.step m.L.Monitor.init !log_ref
   with
     | End_of_file -> Printf.fprintf !out_ref "Bye.\n%!"; close_out !out_ref; exit 0
     | EXIT -> close_out !out_ref; exit 1
+ 

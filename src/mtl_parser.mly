@@ -41,8 +41,8 @@ interval:
 | binterval                          { B $1 }
 | LOPEN NUM COMMA INFINITY ROPEN     { U (lopen_UI $2) }
 | LCLOSED NUM COMMA INFINITY ROPEN   { U (lclosed_UI $2) }
-| LOPEN NUM COMMA INFINITY RCLOSED     { U (lopen_UI $2) }
-| LCLOSED NUM COMMA INFINITY RCLOSED   { U (lclosed_UI $2) }
+| LOPEN NUM COMMA INFINITY RCLOSED   { U (lopen_UI $2) }
+| LCLOSED NUM COMMA INFINITY RCLOSED { U (lclosed_UI $2) }
 
 formula:
 | e EOF { $1 }

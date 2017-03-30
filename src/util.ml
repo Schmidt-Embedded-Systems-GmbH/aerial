@@ -58,3 +58,5 @@ let print_interval out = function
 
 let output_verdict fmt ((t, i), b) = Printf.fprintf fmt "%d:%d %B\n" t i b
 let output_eq fmt ((t, i), (t', j)) = Printf.fprintf fmt "%d:%d = %d:%d\n" t i t' j
+
+type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL
