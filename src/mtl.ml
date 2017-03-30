@@ -22,12 +22,13 @@ type formula =
 | Until of int * interval * formula * formula
 | Bool of bool
 
+(*precondition: temporal formulas always bigger than their subformulas*)
 let rec maxidx_of = function
   | P (i, x) -> i
   | Conj (f, g) | Disj (f, g) -> max (maxidx_of f) (maxidx_of g)
   | Neg f -> maxidx_of f
-  | Prev (j, _, f) | Next (j, _, f) -> max j (maxidx_of f)
-  | Since (j, _, f, g) | Until (j, _, f, g) -> max j (max (maxidx_of f) (maxidx_of g))
+  | Prev (j, _, _) | Next (j, _, _) -> j
+  | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | Bool _ -> -1
 
 let rec lift n = function
