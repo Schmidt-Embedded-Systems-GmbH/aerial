@@ -16,17 +16,25 @@ open Mdl
 %token <int> NUM
 %token LOPEN LCLOSED ROPEN RCLOSED LANGLE RANGLE COMMA INFINITY
 %token FALSE TRUE EMPTY EPSILON NEG CONJ DISJ PLUS IMP IFF EOF
-%token QUESTION STAR
+%token CONCAT
+%token QUESTION STAR BASE
+%token MODALITY
 %token SINCE UNTIL WUNTIL RELEASE TRIGGER
 %token NEXT PREV ALWAYS EVENTUALLY HISTORICALLY ONCE
 
+%nonassoc BASE TRUE FALSE EMPTY EPSILON ATOM
 %right IFF
 %right IMP
+%nonassoc MODALITY
+%nonassoc LOPEN ROPEN LANGLE LCLOSED
 %nonassoc PREV NEXT ALWAYS EVENTUALLY ONCE HISTORICALLY
 %nonassoc SINCE UNTIL WUNTIL RELEASE TRIGGER
 %left DISJ
 %left CONJ
+%left PLUS
+%left CONCAT
 %nonassoc NEG
+%nonassoc STAR
 
 %type <Mdl.formula> formula
 %start formula
@@ -59,10 +67,10 @@ e:
 | NEG e                         { neg $2 }
 | ATOM                          { p $1 }
 | ATOM LOPEN ROPEN              { p $1 }
-| LANGLE re RANGLE interval e   { possiblyF $2 $4 $5 }
-| LANGLE re RANGLE e            { possiblyF $2 full $4 }
-| LCLOSED re RCLOSED interval e { necessarilyF $2 $4 $5 }
-| LCLOSED re RCLOSED e          { necessarilyF $2 full $4 }
+| LANGLE re RANGLE interval e   { possiblyF $2 $4 $5 } %prec MODALITY
+| LANGLE re RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
+| LCLOSED re RCLOSED interval e { necessarilyF $2 $4 $5 } %prec MODALITY
+| LCLOSED re RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
 | e interval LANGLE re RANGLE   { possiblyP $1 $2 $4 }
 | e LANGLE re RANGLE            { possiblyP $1 full $3 }
 | e interval LCLOSED re RCLOSED { necessarilyP $1 $2 $4 }
@@ -94,8 +102,8 @@ re:
 | LOPEN re ROPEN          { $2 }
 | EMPTY                   { empty }
 | EPSILON                 { epsilon }
-| e                       { base $1 }
+| e                       { base $1 } %prec BASE
 | e QUESTION              { test $1 }
 | re PLUS re              { alt $1 $3 }
-| re re                   { seq $1 $2 }
+| re re                   { seq $1 $2 } %prec CONCAT
 | re STAR                 { star $1 }
