@@ -1,7 +1,8 @@
 S src
 S applet
 B _build/*
-PKG yojson
+PKG hashcons
 PKG js_of_ocaml
 PKG js_of_ocaml.ppx
+PKG yojson
 EXT js

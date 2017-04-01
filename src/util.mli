@@ -32,6 +32,7 @@ val full: interval
 val subtract_BI: int -> binterval -> binterval
 val subtract_I: int -> interval -> interval
 val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
+val hash_I: interval -> int
 val print_interval: out_channel -> interval -> unit
 
 val output_verdict: out_channel -> (timestamp * int) * bool -> unit

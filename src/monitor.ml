@@ -9,15 +9,20 @@
 
 open Util
 open Cell
+open Hashcons
+open Hmap
 
 module type Formula = sig
   type f
+  type t
   val print_formula: out_channel -> f -> unit
   val ssub: f -> f list
+  val mk_idx_of: f array -> t
+  val idx_of: t -> f -> int
   val bounded_future: f -> bool
-  val mk_cell: (int -> cell) -> f -> cell
-  val mk_fcell: (int -> future_cell) -> f -> future_cell
-  val progress: f array -> cell array -> int -> SS.t -> int -> future_cell array
+  val mk_cell: (f -> int) -> (int -> cell) -> f -> cell
+  val mk_fcell: (f -> int) -> (int -> future_cell) -> f -> future_cell
+  val progress: f array -> (f -> int) -> cell array -> int -> SS.t -> int -> future_cell array
 end
 
 module type Monitor = sig
@@ -42,6 +47,8 @@ type monitor =
 let create fmt mode_hint formula =
   let _ = Printf.fprintf fmt "Monitoring %a\n%!" F.print_formula formula in
   let f_vec = Array.of_list (F.ssub formula) in
+  let h = F.mk_idx_of f_vec in
+  let idx_of = F.idx_of h in
   let mode = if F.bounded_future formula then mode_hint else
     (Printf.fprintf fmt
     "The formula contains unbounded future operators and
@@ -62,8 +69,8 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   
   let add = if mode = NAIVE then List.cons else check_dup [] in
 
-  let mk_top_cell a = F.mk_cell (fun i -> a.(i)) formula in
-  let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
+  let mk_top_cell a = F.mk_cell idx_of (fun i -> a.(i)) formula in
+  let mk_top_fcell a = F.mk_fcell idx_of (fun i -> a.(i)) formula in
 
   let step (ev, t') ctxt =
     let (t, i) as d = ctxt.now in
@@ -75,7 +82,7 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
       maybe_output_cell fmt false d (subst_cell a cell) add history) [] old_history in
     let history = maybe_output_cell fmt skip d (mk_top_cell a) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
-    let fa' = F.progress f_vec a t ev t' in
+    let fa' = F.progress f_vec idx_of a t ev t' in
     let history' = List.fold_left (fun history ((d, cell) as x) ->
       maybe_output_future fmt d (subst_cell_future fa' cell) (List.cons x) history) [] history in
     let skip' = maybe_output_future fmt d' (mk_top_fcell fa') (fun _ -> false) true in

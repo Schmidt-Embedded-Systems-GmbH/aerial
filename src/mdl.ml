@@ -16,8 +16,8 @@ type formula =
 | Conj of formula * formula
 | Disj of formula * formula
 | Neg of formula
-| PossiblyF of int * interval * regex * formula
-| PossiblyP of int * interval * formula * regex
+| PossiblyF of int * regex * interval * formula
+| PossiblyP of int * formula * interval * regex
 | Bool of bool
 and regex =
 | Base of formula
@@ -32,8 +32,8 @@ let rec print_formula l out = function
   | Conj (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_formula 2) f (print_formula 2) g
   | Disj (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_formula 1) f (print_formula 2) g
   | Neg f -> Printf.fprintf out "¬%a" (print_formula 3) f
-  | PossiblyF (_, i, r, f) -> Printf.fprintf out (paren l 0 "<%a> %a %a") (print_regex 0) r print_interval i (print_formula 4) f
-  | PossiblyP (_, i, f, r) -> Printf.fprintf out (paren l 0 "%a %a <%a>") (print_formula 4) f print_interval i (print_regex 0) r
+  | PossiblyF (_, r, i, f) -> Printf.fprintf out (paren l 0 "<%a> %a %a") (print_regex 0) r print_interval i (print_formula 4) f
+  | PossiblyP (_, f, i, r) -> Printf.fprintf out (paren l 0 "%a %a <%a>") (print_formula 4) f print_interval i (print_regex 0) r
 and print_regex l out = function
   | Base f -> Printf.fprintf out "%a" (print_formula 0) f
   | Test f -> Printf.fprintf out "%a?" (print_formula 3) f
@@ -54,8 +54,8 @@ let rec lift n = function
   | Conj (f, g) -> Conj (lift n f, lift n g)
   | Disj (f, g) -> Disj (lift n f, lift n g)
   | Neg f -> Neg (lift n f)
-  | PossiblyF (j, i, r, f) -> PossiblyF (j + n, i, lift_re n r, lift n f)
-  | PossiblyP (j, i, f, r) -> PossiblyP (j + n, i, lift n f, lift_re n r)
+  | PossiblyF (j, r, i, f) -> PossiblyF (j + n, lift_re n r, i, lift n f)
+  | PossiblyP (j, f, i, r) -> PossiblyP (j + n, lift n f, i, lift_re n r)
   | Bool b -> Bool b
 and lift_re n = function
   | Base f -> Base (lift n f)
@@ -133,8 +133,18 @@ let _ = ders_overapprox (star (star (star (seq (base (p "x")) (base (p "y"))))))
 
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
-let possiblyF r i f = RES.fold (fun r -> fun x -> disj (PossiblyF (0, i, r, f)) x) (split r) (bool false) (*FIXME lift*)
-let possiblyP f i r = RES.fold (fun r -> fun x -> disj (PossiblyP (0, i, f, r)) x) (split r) (bool false) (*FIXME lift*)
+let possiblyF j r i f = match r with
+  | Test (Bool true) -> if mem_I 0 i then f else Bool false
+  | Test (Bool false) -> Bool false
+  | Base (Bool false) -> Bool false
+  | _ -> PossiblyF (j, r, i, f)
+let possiblyF r i f = RES.fold (fun r -> fun x -> disj (possiblyF 0 r i f) x) (split r) (bool false) (*FIXME lift*)
+let possiblyP j f i r = match r with
+  | Test (Bool true) -> if mem_I 0 i then f else Bool false
+  | Test (Bool false) -> Bool false
+  | Base (Bool false) -> Bool false
+  | _ -> PossiblyP (j, f, i, r)
+let possiblyP f i r = RES.fold (fun r -> fun x -> disj (possiblyP 0 f i r) x) (split r) (bool false) (*FIXME lift*)
 let necessarilyF r i f = neg (possiblyF r i (neg f))
 let necessarilyP f i r = neg (possiblyP (neg f) i r)
 let next i f = possiblyF (base (bool true)) i f
@@ -149,6 +159,7 @@ let always i f = neg (eventually i (neg f))
 let once i f = since i (bool true) f
 let historically i f = neg (once i (neg f))
 
+module HF = Hashtbl.Make(struct type t = formula let hash x = 0 let equal x y = (x = y) end)
 
 module MDL : Formula with type f = formula = struct
 
@@ -157,9 +168,9 @@ type f = formula
 let rec bounded_future = function
   | Bool _ -> true
   | P _ -> true
-  | PossiblyP (_, _, f, r) -> bounded_future f && bounded_future_re r
+  | PossiblyP (_, f, _, r) -> bounded_future f && bounded_future_re r
   | Conj (f, g) | Disj (f, g) -> bounded_future f && bounded_future g
-  | PossiblyF (_, i, r, f) ->
+  | PossiblyF (_, r, i, f) ->
       case_I (fun _ -> true) (fun _ -> false) i && bounded_future_re r && bounded_future f
   | Neg f -> bounded_future f
 and bounded_future_re = function
@@ -186,6 +197,7 @@ let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
 
 let conj_lifted f g = Conj (f, g)
 let disj_lifted f g = Disj (f, g)
+let possiblyF_lifted r i f = PossiblyF (maxidx_of f + right_I i + 1, r, i, f)
 (*let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
 let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
 *)
@@ -194,8 +206,8 @@ let rec sub = function
   | Neg f -> sub f
   | Conj (f, g) -> sub g @ sub f
   | Disj (f, g) -> sub g @ sub f
-  | PossiblyF (j, i, r, f) -> PossiblyF (j, i, r, f) :: sub_re r @ sub f
-  | PossiblyP (j, i, f, r) -> PossiblyP (j, i, f, r) :: sub f @ sub_re r
+  | PossiblyF (j, r, i, f) -> PossiblyF (j, r, i, f) :: sub_re r @ sub f
+  | PossiblyP (j, f, i, r) -> PossiblyP (j, f, i, r) :: sub f @ sub_re r
   | P _ as f -> [f]
   | _ -> []
 and sub_re = function
@@ -252,12 +264,13 @@ let progress f_vec a t_prev ev t =
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> Now (B (SS.mem x ev))
-    | PossiblyF (_, i, r, f) -> fcdisj
+    | PossiblyF (_, r, i, f) -> fcdisj
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
         (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
           then B false
-          else derF (fun f -> eval_future_cell t_next (curr f)) (fun s -> next (PossiblyF (0, i, s, f) (*FIXME*))) r))
-    | PossiblyP (_, i, f, r) -> failwith "not implemented yet"
+          else derF (fun f -> eval_future_cell t_next (curr f))
+            (fun s -> next (possiblyF_lifted s (subtract_I (t_next - t) i) f)) r))
+    | PossiblyP (_, f, i, r) -> failwith "not implemented yet"
     | _ -> failwith "not a temporal formula"
   done;
   b

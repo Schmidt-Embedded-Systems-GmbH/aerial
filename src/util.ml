@@ -20,6 +20,11 @@ type trace = (SS.t * timestamp) list
 type uinterval = UI of int
 type binterval = BI of int * int
 type interval = B of binterval | U of uinterval
+
+let hash_I = function
+  | B (BI (i, j)) -> Hashtbl.hash (2, i, j)
+  | U (UI i) -> Hashtbl.hash (3, i, i)
+
 let case_I f1 f2 = function
   | (B i) -> f1 i
   | (U i) -> f2 i
