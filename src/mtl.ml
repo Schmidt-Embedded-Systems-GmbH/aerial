@@ -43,16 +43,29 @@ let rec lift n = function
   | Bool b -> Bool b
 
 let p x = P (0, x)
-let conj f g = Conj (f, lift (maxidx_of f + 1) g)
-let disj f g = Disj (f, lift (maxidx_of f + 1) g)
-let neg f = Neg f
+let bool b = Bool b
+let conj f g =
+  match f, g with
+  | Bool true, g | g, Bool true -> g
+  | Bool false, _ | _, Bool false -> bool false
+  | _ -> Conj (f, lift (maxidx_of f + 1) g)
+let disj f g = 
+  match f, g with
+  | Bool false, g | g, Bool false -> g
+  | Bool true, _ | _, Bool true -> bool true
+  | _ -> Disj (f, lift (maxidx_of f + 1) g)
+let rec neg f =
+  match f with
+  | Disj (f, g) -> conj (neg f) (neg g)
+  | Conj (f, g) -> disj (neg f) (neg g)
+  | Neg f -> f
+  | _ -> Neg f
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
 let prev i f = Prev (maxidx_of f + 1, i, f)
 let next i f = Next (maxidx_of f + 1, i, f)
 let since i f g = let n = maxidx_of f + 1 in Since (maxidx_of g + n + right_I i + 1, i, f, lift n g)
 let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_I i + 1, i, f, lift n g)
-let bool b = Bool b
 let release i f g = neg (until i (neg f) (neg g))
 let weak_until i f g = release i g (disj f g)
 let trigger i f g = neg (since i (neg f) (neg g))
@@ -64,12 +77,6 @@ let historically i f = neg (once i (neg f))
 module MTL : Formula with type f = formula = struct
 
 type f = formula
-
-let rec atoms = function
-  | P (_, x) -> SS.singleton x
-  | Conj (f, g) | Disj (f, g) | Since (_, _, f, g) | Until (_, _, f, g) -> SS.union (atoms f) (atoms g)
-  | Neg f | Prev (_, _, f) | Next (_, _, f) -> atoms f
-  | Bool _ -> SS.empty
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -95,8 +102,6 @@ let idx_of = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
-let conj_lifted f g = Conj (f, g)
-let disj_lifted f g = Disj (f, g)
 let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
 let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
 

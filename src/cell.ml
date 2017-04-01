@@ -44,6 +44,9 @@ let rec cneg = function
   | B b -> B (not b)
   | V (b, x) -> V (not b, x)
 
+let cimp l r = cdisj (cneg l) r 
+let cif b t e = cconj (cimp b t) (cimp (cneg b) e)
+
 let is_true = function
   | B true -> true
   | _ -> false
@@ -71,6 +74,9 @@ let fcdisj x y = match x, y with
 let fcneg = function
   | Now c -> Now (cneg c)
   | Later f -> Later (fun t -> cneg (f t))
+
+let fcimp l r = fcdisj (fcneg l) r 
+let fcif b t e = fcconj (fcimp b t) (fcimp (fcneg b) e)
 
 let maybe_flip b = if b then fun x -> x else cneg
 let maybe_flip_future b = if b then fun x -> x else fcneg

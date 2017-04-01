@@ -18,10 +18,14 @@ val maybe_output_future: out_channel -> timestamp * int -> future_cell -> ('a ->
 val cconj: cell -> cell -> cell
 val cdisj: cell -> cell -> cell
 val cneg: cell -> cell
+val cimp: cell -> cell -> cell
+val cif: cell -> cell -> cell -> cell
 
 val fcconj: future_cell -> future_cell -> future_cell
 val fcdisj: future_cell -> future_cell -> future_cell
 val fcneg: future_cell -> future_cell
+val fcimp: future_cell -> future_cell -> future_cell
+val fcif: future_cell -> future_cell -> future_cell -> future_cell
 
 val eval_future_cell: timestamp -> future_cell -> cell
 
