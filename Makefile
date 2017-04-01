@@ -1,5 +1,5 @@
 NAME=src/aerial
-OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir -pkg hashcons \
+OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir \
            -plugin-tags "package(js_of_ocaml.ocamlbuild)" -yaccflag --explain
 OCAMLFIND=ocamlfind
 OBJS=$(wildcard _build/*.cm* _build/*.a _build/*.o)

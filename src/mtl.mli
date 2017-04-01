@@ -8,18 +8,16 @@
 (*******************************************************************)
 
 open Util
-open Hashcons
 
-type formula = formula_node hash_consed
-and formula_node = private
-| P of string
+type formula = private
+| P of int * string
 | Conj of formula * formula
 | Disj of formula * formula
 | Neg of formula
-| Prev of interval * formula
-| Since of interval * formula * formula
-| Next of interval * formula
-| Until of interval * formula * formula
+| Prev of int * interval * formula
+| Since of int * interval * formula * formula
+| Next of int * interval * formula
+| Until of int * interval * formula * formula
 | Bool of bool
 
 val p: string -> formula

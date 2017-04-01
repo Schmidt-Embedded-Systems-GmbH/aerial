@@ -8,7 +8,7 @@
 (*******************************************************************)
 
 open Util
-(*open Mdl_lexer*)
+open Mdl_lexer
 
 exception EXIT
 
