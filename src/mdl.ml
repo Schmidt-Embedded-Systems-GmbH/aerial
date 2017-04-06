@@ -126,7 +126,7 @@ let ders_overapprox r =
     let d' = RES.fold (fun r x -> RES.union x (RES.diff (der_overapprox r) s)) d RES.empty in
     (RES.union s d', d') in
   let rec go (s, d) =
-    (RES.iter (Printf.printf "%a\n%!" (print_regex 0)) d; if RES.is_empty d then s else go (step s d)) in
+    ((*RES.iter (Printf.printf "%a\n%!" (print_regex 0)) d;*) if RES.is_empty d then s else go (step s d)) in
   go init
 
 (*
@@ -252,7 +252,7 @@ let derP curr finish =
 
 let progress f_vec idx_of a t_prev ev t =
   let n = Array.length f_vec in
-  let _ = Array.iter (fun x -> print_int (idx_of x)) f_vec in
+  (*let _ = Array.iter (fun x -> print_int (idx_of x)) f_vec in*)
   let b = Array.make n (Now (B false)) in
   let curr = mk_fcell idx_of (fun i -> b.(i)) in
   let prev = mk_cell idx_of (fun i -> a.(i)) in
