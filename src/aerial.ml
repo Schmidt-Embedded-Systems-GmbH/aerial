@@ -8,7 +8,6 @@
 (*******************************************************************)
 
 open Util
-(*open Mdl_lexer*)
 
 exception EXIT
 
@@ -26,6 +25,14 @@ module Mtl : Language = struct
   module Monitor = Mtl.Monitor_MTL
 end
 let mtl = (module Mtl : Language)
+
+module Mdl : Language = struct
+  type formula = Mdl.formula
+  let parse = Mdl_parser.formula Mdl_lexer.token
+  let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
+  module Monitor = Mdl.Monitor_MDL
+end
+let mdl = (module Mdl : Language)
 
 let language_ref = ref mtl
 let fmla_ref = ref None
@@ -58,6 +65,8 @@ let rec get_next log =
 let usage () = Format.eprintf
 "Example usage: aerial -mode 1 -fmla test.fmla -log test.log -out test.out
 Arguments:
+\t -mdl - use Metric Dynamic Logic
+\t -mtl - use Metric Temporal Logic (default)
 \t -mode
 \t\t 0 - naive
 \t\t 1 - compress locally (default)
@@ -85,6 +94,12 @@ let process_args =
       go args
     | ("-log" :: logfile :: args) ->
         log_ref := open_in logfile;
+        go args
+    | ("-mdl" :: args) ->
+        language_ref := mdl;
+        go args
+    | ("-mtl" :: args) ->
+        language_ref := mtl;
         go args
     | ("-fmla" :: fmlafile :: args) ->
         let in_ch = open_in fmlafile in

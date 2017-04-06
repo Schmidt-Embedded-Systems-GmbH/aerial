@@ -77,6 +77,7 @@ let historically i f = neg (once i (neg f))
 module MTL : Formula with type f = formula = struct
 
 type f = formula
+type t = ()
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -98,7 +99,9 @@ let rec print_formula l out = function
   | Until (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a U%a %a") (print_formula 4) f print_interval i (print_formula 4) g
 let print_formula = print_formula 0
 
-let idx_of = function
+let mk_idx_of _ = ()
+
+let idx_of _ = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
@@ -122,7 +125,7 @@ let aux = function
   | _ -> []
 
 let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))
-let mk cnj dsj neg bo idx =
+let mk cnj dsj neg bo idx_of idx =
   let rec go = function
     | Conj (f, g) -> cnj (go f) (go g)
     | Disj (f, g) -> dsj (go f) (go g)
@@ -133,13 +136,13 @@ let mk cnj dsj neg bo idx =
 let mk_cell = mk cconj cdisj cneg (fun b -> B b)
 let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
 
-let progress f_vec a t_prev ev t =
+let progress f_vec idx_of a t_prev ev t =
   let n = Array.length f_vec in
   let b = Array.make n (Now (B false)) in
-  let curr = mk_fcell (fun i -> b.(i)) in
-  let prev = mk_cell (fun i -> a.(i)) in
+  let curr = mk_fcell idx_of (fun i -> b.(i)) in
+  let prev = mk_cell idx_of (fun i -> a.(i)) in
   let prev f = subst_cell_future b (prev f) in
-  let next = mk_cell (fun i -> V (true, i)) in
+  let next = mk_cell idx_of (fun i -> V (true, i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> Now (B (SS.mem x ev))

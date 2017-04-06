@@ -14,7 +14,6 @@ module SS: Set.S with type elt = string
 type timestamp = int
 type trace = (SS.t * timestamp) list
 
-val s_id: string -> int
 val i_id: int -> int
 val max_id: int ref
 val pairs: int list -> int

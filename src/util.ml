@@ -18,18 +18,16 @@ type timestamp = int
 type trace = (SS.t * timestamp) list
 
 module ID (T : Hashtbl.HashedType) = struct
-module SH = Hashtbl.Make(T)
-let ids = SH.create 10003
+module H = Hashtbl.Make(T)
+let ids = H.create 10003
 let max_id = ref 0
-let id x = match SH.find_all ids x with
+let id x = match H.find_all ids x with
   | id :: _ -> id
-  | [] -> let id = !max_id in SH.add ids x id; max_id := id + 1; id
+  | [] -> let id = !max_id in H.add ids x id; max_id := id + 1; id
 end
 
-module S_ID = ID(struct type t = string let hash = Hashtbl.hash let equal x y = (x = y) end)
 module I_ID = ID(struct type t = int let hash x = x let equal x y = (x = y) end)
 
-let s_id = S_ID.id
 let i_id = I_ID.id
 let max_id = I_ID.max_id
 

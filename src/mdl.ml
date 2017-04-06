@@ -20,7 +20,7 @@ type formula =
 | PossiblyP of int * interval * formula * regex
 | Bool of bool
 and regex =
-| Base of formula
+| Wild
 | Test of formula
 | Alt of regex * regex
 | Seq of regex * regex
@@ -35,11 +35,12 @@ let rec print_formula l out = function
   | PossiblyF (_, i, r, f) -> Printf.fprintf out (paren l 0 "<%a> %a %a") (print_regex 0) r print_interval i (print_formula 4) f
   | PossiblyP (_, i, f, r) -> Printf.fprintf out (paren l 0 "%a %a <%a>") (print_formula 4) f print_interval i (print_regex 0) r
 and print_regex l out = function
-  | Base f -> Printf.fprintf out "%a" (print_formula 0) f
+  | Seq (Test f, Wild) -> Printf.fprintf out "%a" (print_formula 0) f
+  | Wild -> Printf.fprintf out "."
   | Test f -> Printf.fprintf out "%a?" (print_formula 3) f
   | Alt (r, s) -> Printf.fprintf out (paren l 1 "%a + %a") (print_regex 1) r (print_regex 1) s
   | Seq (r, s) -> Printf.fprintf out (paren l 2 "%a%a") (print_regex 2) r (print_regex 2) s
-  | Star r -> Printf.fprintf out "%a*" (print_regex 3) r
+  | Star (r) -> Printf.fprintf out "%a*" (print_regex 3) r
 let print_formula = print_formula 0
 
 let rec maxidx_of = function
@@ -58,7 +59,7 @@ let rec lift n = function
   | PossiblyP (j, i, f, r) -> PossiblyP (j + n, i, lift n f, lift_re n r)
   | Bool b -> Bool b
 and lift_re n = function
-  | Base f -> Base (lift n f)
+  | Wild -> Wild
   | Test f -> Test (lift n f)
   | Alt (r, s) -> Alt (lift_re n r, lift_re n s)
   | Seq (r, s) -> Seq (lift_re n r, lift_re n s)
@@ -81,7 +82,7 @@ let rec neg = function
   | Conj (f, g) -> disj (neg f) (neg g)
   | Neg f -> f
   | f -> Neg f
-let base f = Base f
+let wild = Wild
 let test f = Test f
 let empty = test (bool false)
 let epsilon = test (bool true)
@@ -89,11 +90,12 @@ let alt f g = Alt (f, g)
 let seq f g = 
   match f, g with
   | Test (Bool true), g | g, Test (Bool true) -> g
-  | Test (Bool false), _ | _, Test (Bool false) | Base (Bool false), _ | _, Base (Bool false) -> Test (Bool false)
+  | Test (Bool false), _ | _, Test (Bool false) -> Test (Bool false)
   | _ -> Seq (f, g)
 let rec star = function
   | Star f -> star f
   | f -> Star f
+let base f = seq (test f) wild
 
 module RES = Set.Make(struct type t = regex let compare = compare end)
 
@@ -102,7 +104,7 @@ let rec split = function
   | r -> RES.singleton r
 
 let rec nullable_overapprox = function
-  | Base f -> false
+  | Wild -> false
   | Test f -> true
   | Alt (r, s) -> nullable_overapprox r || nullable_overapprox s
   | Seq (r, s) -> nullable_overapprox r && nullable_overapprox s
@@ -111,7 +113,7 @@ let rec nullable_overapprox = function
 let seqs l s = RES.map (fun r -> seq r s) l
 
 let rec der_overapprox = function
-  | Base f -> RES.singleton epsilon
+  | Wild -> RES.singleton epsilon
   | Test f -> RES.empty
   | Alt (r, s) -> RES.union (der_overapprox r) (der_overapprox s)
   | Seq (r, s) -> RES.union (seqs (der_overapprox r) s) (if nullable_overapprox r then der_overapprox s else RES.empty)
@@ -153,6 +155,7 @@ let historically i f = neg (once i (neg f))
 module MDL : Formula with type f = formula = struct
 
 type f = formula
+type t = ()
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -163,17 +166,20 @@ let rec bounded_future = function
       case_I (fun _ -> true) (fun _ -> false) i && bounded_future_re r && bounded_future f
   | Neg f -> bounded_future f
 and bounded_future_re = function
-  | Base f | Test f -> bounded_future f
+  | Wild -> true
+  | Test f -> bounded_future f
   | Alt (r, s) | Seq (r, s) -> bounded_future_re r && bounded_future_re s
   | Star r -> bounded_future_re r
 
 let print_formula = print_formula
 
-let idx_of = function
+let mk_idx_of _ = ()
+
+let idx_of _ = function
   | P (j, _) | PossiblyF (j, _, _, _) | PossiblyP (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
-let mk cnj dsj neg bo idx =
+let mk cnj dsj neg bo idx_of idx =
   let rec go = function
     | Conj (f, g) -> cnj (go f) (go g)
     | Disj (f, g) -> dsj (go f) (go g)
@@ -199,7 +205,8 @@ let rec sub = function
   | P _ as f -> [f]
   | _ -> []
 and sub_re = function
-  | Base f | Test f -> sub f
+  | Wild -> []
+  | Test f -> sub f
   | Alt (r, s) | Seq (r, s) -> sub_re r @ sub_re s
   | Star r -> sub_re r
 
@@ -214,7 +221,7 @@ let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))
 
 let nullable curr cnj dsj tt ff =
   let rec go = function
-  | Base f -> ff
+  | Wild -> ff
   | Test f -> curr f
   | Alt (r, s) -> dsj (go r) (go s)
   | Seq (r, s) -> cnj (go r) (go s)
@@ -225,7 +232,7 @@ let nullable curr = nullable curr cconj cdisj (B true) (B false)
 
 let derF curr finish =
   let rec go fin = function
-  | Base f -> cif (curr f) (fin epsilon) (B false)
+  | Wild -> fin epsilon
   | Test f -> B false
   | Alt (r, s) -> cdisj (go fin r) (go fin s)
   | Seq (r, s) -> let r' = go (fun t -> fin (seq t s)) r in cif (nullable curr r) (cdisj r' (go fin s)) r'
@@ -234,21 +241,21 @@ let derF curr finish =
 
 let derP curr finish =
   let rec go fin = function
-  | Base f -> fcif (curr f) (fin epsilon) (Now (B false))
+  | Wild -> fin epsilon
   | Test f -> Now (B false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
   | Seq (r, s) -> let s' = go (fun t -> fin (seq r t)) s in fcif (fnullable curr r) (fcdisj (go fin r) s') s'
   | Star r -> go (fun t -> fin (seq t (star r))) r
   in go finish
 
-let progress f_vec a t_prev ev t =
+let progress f_vec idx_of a t_prev ev t =
   let n = Array.length f_vec in
   let _ = Array.iter (fun x -> print_int (idx_of x)) f_vec in
   let b = Array.make n (Now (B false)) in
-  let curr = mk_fcell (fun i -> b.(i)) in
-  let prev = mk_cell (fun i -> a.(i)) in
+  let curr = mk_fcell idx_of (fun i -> b.(i)) in
+  let prev = mk_cell idx_of (fun i -> a.(i)) in
   let prev f = subst_cell_future b (prev f) in
-  let next = mk_cell (fun i -> V (true, i)) in
+  let next = mk_cell idx_of (fun i -> V (true, i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> Now (B (SS.mem x ev))

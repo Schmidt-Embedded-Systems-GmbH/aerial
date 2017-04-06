@@ -18,7 +18,7 @@ type formula = private
 | PossiblyP of int * interval * formula * regex
 | Bool of bool
 and regex =
-| Base of formula
+| Wild
 | Test of formula
 | Alt of regex * regex
 | Seq of regex * regex
@@ -36,6 +36,7 @@ val necessarilyF: regex -> interval -> formula -> formula
 val necessarilyP: formula -> interval -> regex -> formula
 val base: formula -> regex
 val test: formula -> regex
+val wild: regex
 val empty: regex
 val epsilon: regex
 val alt: regex -> regex -> regex
