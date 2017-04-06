@@ -14,6 +14,11 @@ module SS: Set.S with type elt = string
 type timestamp = int
 type trace = (SS.t * timestamp) list
 
+val s_id: string -> int
+val i_id: int -> int
+val max_id: int ref
+val pairs: int list -> int
+
 type binterval
 type uinterval
 type interval = B of binterval | U of uinterval
@@ -31,6 +36,7 @@ val right_I: interval -> int
 val full: interval
 val subtract_BI: int -> binterval -> binterval
 val subtract_I: int -> interval -> interval
+val hash_I: interval -> int
 val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
 val print_interval: out_channel -> interval -> unit
 

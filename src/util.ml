@@ -17,9 +17,35 @@ module SS = Set.Make(String)
 type timestamp = int
 type trace = (SS.t * timestamp) list
 
+module ID (T : Hashtbl.HashedType) = struct
+module SH = Hashtbl.Make(T)
+let ids = SH.create 10003
+let max_id = ref 0
+let id x = match SH.find_all ids x with
+  | id :: _ -> id
+  | [] -> let id = !max_id in SH.add ids x id; max_id := id + 1; id
+end
+
+module S_ID = ID(struct type t = string let hash = Hashtbl.hash let equal x y = (x = y) end)
+module I_ID = ID(struct type t = int let hash x = x let equal x y = (x = y) end)
+
+let s_id = S_ID.id
+let i_id = I_ID.id
+let max_id = I_ID.max_id
+
+let pair a b = if a >= b then a * a + a + b else a + b * b
+let rec pairs = function
+  | x :: y :: ys -> pairs (pair x y :: ys)
+  | [x] -> x
+  | [] -> failwith "cannot pair empty list"
+
 type uinterval = UI of int
 type binterval = BI of int * int
 type interval = B of binterval | U of uinterval
+
+let hash_I = function
+  | B (BI (i, j)) -> 2 * pair i j
+  | U (UI i) -> 2 * i + 1
 let case_I f1 f2 = function
   | (B i) -> f1 i
   | (U i) -> f2 i

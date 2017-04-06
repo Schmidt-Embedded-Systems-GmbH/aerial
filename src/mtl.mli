@@ -11,9 +11,9 @@ open Util
 
 type formula = private
 | P of int * string
-| Conj of formula * formula
-| Disj of formula * formula
-| Neg of formula
+| Conj of int * formula * formula
+| Disj of int * formula * formula
+| Neg of int * formula
 | Prev of int * interval * formula
 | Since of int * interval * formula * formula
 | Next of int * interval * formula
