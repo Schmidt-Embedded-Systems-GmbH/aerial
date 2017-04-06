@@ -129,9 +129,11 @@ let ders_overapprox r =
     (RES.iter (Printf.printf "%a\n%!" (print_regex 0)) d; if RES.is_empty d then s else go (step s d)) in
   go init
 
+(*
 let _ = ders_overapprox (star (seq ( (base (p "x"))) ( (base (p "y")))))
 let _ = Printf.printf "----------------------\n%!"
 let _ = ders_overapprox (star (star (star (seq (base (p "x")) (base (p "y"))))))
+*)
 
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
