@@ -47,6 +47,8 @@ let create fmt mode_hint formula =
   let f_vec = Array.of_list (F.ssub formula) in
   let h = F.mk_idx_of f_vec in
   let idx_of = F.idx_of h in
+  (*  let idx_of f = (Printf.fprintf fmt "queried %a\n%!" F.print_formula f; idx_of f) in   *)
+  (*  let _ = Array.iter (fun x -> Printf.fprintf fmt "%a\n%!" F.print_formula x) f_vec in  *)
   let mode = if F.bounded_future formula then mode_hint else
     (Printf.fprintf fmt
     "The formula contains unbounded future operators and

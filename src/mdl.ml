@@ -157,7 +157,7 @@ let historically i f = neg (once i (neg f))
 module MDL : Formula with type f = formula = struct
 
 type f = formula
-type t = ()
+type t = formula array
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -175,11 +175,11 @@ and bounded_future_re = function
 
 let print_formula = print_formula
 
-let mk_idx_of _ = ()
+let mk_idx_of arr = arr
 
-let idx_of _ = function
+let idx_of arr f = snd (Array.fold_left (fun (b, i) g -> if b then (b, i) else if f = g then (true, i) else (false, i+1)) (false, 0) arr) (*function
   | P (j, _) | PossiblyF (j, _, _, _) | PossiblyP (j, _, _, _) -> j
-  | _ -> failwith "not an indexed subformula"
+  | _ -> failwith "not an indexed subformula"*)
 
 let mk cnj dsj neg bo idx_of idx =
   let rec go = function
@@ -212,14 +212,24 @@ and sub_re = function
   | Alt (r, s) | Seq (r, s) -> sub_re r @ sub_re s
   | Star r -> sub_re r
 
-let aux = function
-(*
-  | Since (j,i,f,g) -> List.map (fun n -> Since (j - n, subtract_I n i, f, g)) (1 -- right_I i)
-  | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_I n i, f, g)) (1 -- right_I i)
-*)
-  | _ -> []
+let rec rev_re = function
+  | Wild -> Wild
+  | Test f -> Test f
+  | Alt (r, s) -> Alt (rev_re r, rev_re s)
+  | Seq (r, s) -> Seq (rev_re s, rev_re r)
+  | Star r -> Star (rev_re r)
 
-let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))
+let ders_overapprox x = RES.elements (ders_overapprox x)
+let rev_ders_overapprox x = List.map rev_re (ders_overapprox (rev_re x))
+
+let aux = function
+  | PossiblyF (_,i,r,f) -> List.flatten (List.map (fun n ->
+      List.map (fun s -> possiblyF s (subtract_I n i) f) (ders_overapprox r)) (0 -- right_I i))
+  | PossiblyP (_,i,f,r) -> List.flatten (List.map (fun n ->
+      List.map (fun s -> possiblyP f (subtract_I n i) s) (rev_ders_overapprox r)) (0 -- right_I i))
+  | f -> [f]
+
+let ssub f = List.rev (List.concat (List.map (fun x -> aux x) (sub f)))
 
 let nullable curr cnj dsj tt ff =
   let rec go = function
@@ -252,7 +262,6 @@ let derP curr finish =
 
 let progress f_vec idx_of a t_prev ev t =
   let n = Array.length f_vec in
-  (*let _ = Array.iter (fun x -> print_int (idx_of x)) f_vec in*)
   let b = Array.make n (Now (B false)) in
   let curr = mk_fcell idx_of (fun i -> b.(i)) in
   let prev = mk_cell idx_of (fun i -> a.(i)) in
@@ -265,8 +274,13 @@ let progress f_vec idx_of a t_prev ev t =
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
         (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
           then B false
-          else derF (fun f -> eval_future_cell t_next (curr f)) (fun s -> next (PossiblyF (0, i, s, f) (*FIXME*))) r))
-    | PossiblyP (_, i, f, r) -> failwith "not implemented yet"
+          else derF (fun f -> eval_future_cell t_next (curr f)) (fun s -> next (possiblyF s (subtract_I (t_next - t) i) f)) r))
+    | PossiblyP (_, i, f, r) -> fcdisj
+        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
+        (if case_I (fun i -> t - t_prev > right_BI i) (fun _ -> false) i
+          then Now (B false)
+          else derP curr (fun s -> prev (possiblyP f (subtract_I (t - t_prev) i) s)) r)
+    
     | _ -> failwith "not a temporal formula"
   done;
   b
