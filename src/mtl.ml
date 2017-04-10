@@ -22,6 +22,18 @@ type formula =
 | Until of int * interval * formula * formula
 | Bool of bool
 
+let rec formula_to_string l = function
+  | P (_, x) -> Printf.sprintf "%s" x
+  | Bool b -> Printf.sprintf (if b then "⊤" else "⊥")
+  | Conj (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> formula_to_string 2) f (fun x -> formula_to_string 2) g
+  | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 2) g
+  | Neg f -> Printf.sprintf "¬%a" (fun x -> formula_to_string 3) f
+  | Prev (_, i, f) -> Printf.sprintf (paren l 3 "●%a %a") (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | Next (_, i, f) -> Printf.sprintf (paren l 3 "○%a %a") (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | Since (_, i, f, g) -> Printf.sprintf (paren l 0 "%a S%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
+  | Until (_, i, f, g) -> Printf.sprintf (paren l 0 "%a U%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
+let formula_to_string = formula_to_string 0
+
 (*precondition: temporal formulas always bigger than their subformulas*)
 let rec maxidx_of = function
   | P (i, x) -> i

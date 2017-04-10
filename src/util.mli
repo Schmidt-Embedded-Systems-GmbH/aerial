@@ -38,6 +38,7 @@ val subtract_I: int -> interval -> interval
 val hash_I: interval -> int
 val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
 val print_interval: out_channel -> interval -> unit
+val interval_to_string: interval -> string
 
 val output_verdict: out_channel -> (timestamp * int) * bool -> unit
 val output_eq: out_channel -> (timestamp * int) * (timestamp * int) -> unit

@@ -1,7 +1,9 @@
 S src
+S test
 S applet
 B _build/*
 PKG yojson
 PKG js_of_ocaml
 PKG js_of_ocaml.ppx
+PKG qtest
 EXT js

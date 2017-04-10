@@ -39,4 +39,6 @@ val once: interval -> formula -> formula
 val historically: interval -> formula -> formula
 val bool: bool -> formula
 
+val formula_to_string: formula -> string
+
 module Monitor_MTL : Monitor.Monitor with type formula = formula
