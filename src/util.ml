@@ -51,13 +51,13 @@ let map_I f1 f2 = case_I (fun i -> B (f1 i)) (fun i -> U (f2 i))
 
 let subtract n i = if i < n then 0 else i - n
 
-let lclosed_UI i = UI i
-let lopen_UI i = UI (i + 1)
+let lclosed_UI i = U (UI i)
+let lopen_UI i = U (UI (i + 1))
 let nonempty_BI l r = if l <= r then BI (l, r) else raise (Failure "empty interval")
-let lclosed_rclosed_BI i j = nonempty_BI i j
-let lopen_rclosed_BI i j = nonempty_BI (i + 1) j
-let lclosed_ropen_BI i j = nonempty_BI i (j - 1)
-let lopen_ropen_BI i j = nonempty_BI (i + 1) (j - 1)
+let lclosed_rclosed_BI i j = B (nonempty_BI i j)
+let lopen_rclosed_BI i j = B (nonempty_BI (i + 1) j)
+let lclosed_ropen_BI i j = B (nonempty_BI i (j - 1))
+let lopen_ropen_BI i j = B (nonempty_BI (i + 1) (j - 1))
 let left_UI (UI i) = i
 (*let left_BI (BI (i, _)) = i*)
 let right_BI (BI (_, j)) = j

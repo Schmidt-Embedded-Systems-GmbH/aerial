@@ -31,18 +31,15 @@ open Mtl
 %start formula
 
 %%
-binterval:
-| LOPEN NUM COMMA NUM ROPEN     { lopen_ropen_BI $2 $4 }
-| LOPEN NUM COMMA NUM RCLOSED   { lopen_rclosed_BI $2 $4 }
-| LCLOSED NUM COMMA NUM ROPEN   { lclosed_ropen_BI $2 $4 }
-| LCLOSED NUM COMMA NUM RCLOSED { lclosed_rclosed_BI $2 $4 }
-
 interval:
-| binterval                          { B $1 }
-| LOPEN NUM COMMA INFINITY ROPEN     { U (lopen_UI $2) }
-| LCLOSED NUM COMMA INFINITY ROPEN   { U (lclosed_UI $2) }
-| LOPEN NUM COMMA INFINITY RCLOSED   { U (lopen_UI $2) }
-| LCLOSED NUM COMMA INFINITY RCLOSED { U (lclosed_UI $2) }
+| LOPEN NUM COMMA NUM ROPEN          { lopen_ropen_BI $2 $4 }
+| LOPEN NUM COMMA NUM RCLOSED        { lopen_rclosed_BI $2 $4 }
+| LCLOSED NUM COMMA NUM ROPEN        { lclosed_ropen_BI $2 $4 }
+| LCLOSED NUM COMMA NUM RCLOSED      { lclosed_rclosed_BI $2 $4 }
+| LOPEN NUM COMMA INFINITY ROPEN     { lopen_UI $2 }
+| LCLOSED NUM COMMA INFINITY ROPEN   { lclosed_UI $2 }
+| LOPEN NUM COMMA INFINITY RCLOSED   { lopen_UI $2 }
+| LCLOSED NUM COMMA INFINITY RCLOSED { lclosed_UI $2 }
 
 formula:
 | e EOF { $1 }
@@ -80,4 +77,3 @@ e:
 | ALWAYS e                { always full $2 }
 | EVENTUALLY interval e   { eventually $2 $3 }
 | EVENTUALLY e            { eventually full $2 }
-

@@ -33,11 +33,11 @@ let check s = formula_to_string (parseMtl s) = s ;;
 *)
 
 (*TODO check with Dmitriy about MTL DSL*)
-(*let fma = until (lclosed_rclosed_BI 0 5) (p "P0") (until (lclosed_rclosed_BI 2 6) (p "P1") (p "P2"))
-(*$= parseMtl & ~printer:printfm
+let fma = until (lclosed_rclosed_BI 0 5) (p "P0") (until (lclosed_rclosed_BI 2 6) (p "P1") (p "P2"))
+(*(*$= parseMtl & ~printer:printfm
   (parseMtl "P0 U[0,5] (P1 U[2,6] P2)")  ("P0 U[0,5] (P1 U[2,6] P2)")
-*)
-*)
+*)*)
+
 (*$Q parseMtl
   
 *)

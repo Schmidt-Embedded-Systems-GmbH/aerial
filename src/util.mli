@@ -22,18 +22,16 @@ type binterval
 type uinterval
 type interval = B of binterval | U of uinterval
 
-val lclosed_UI: int -> uinterval
-val lclosed_rclosed_BI: int -> int -> binterval
-val lclosed_ropen_BI: int -> int -> binterval
-val lopen_UI: int -> uinterval
-val lopen_rclosed_BI: int -> int -> binterval
-val lopen_ropen_BI: int -> int -> binterval
-val mem_BI: int -> binterval -> bool
+val lclosed_UI: int -> interval
+val lclosed_rclosed_BI: int -> int -> interval
+val lclosed_ropen_BI: int -> int -> interval
+val lopen_UI: int -> interval
+val lopen_rclosed_BI: int -> int -> interval
+val lopen_ropen_BI: int -> int -> interval
 val mem_I: int -> interval -> bool
 val right_BI: binterval -> int
 val right_I: interval -> int
 val full: interval
-val subtract_BI: int -> binterval -> binterval
 val subtract_I: int -> interval -> interval
 val hash_I: interval -> int
 val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
