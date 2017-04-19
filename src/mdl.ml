@@ -257,7 +257,7 @@ let derP curr finish =
   | Test f -> Now (B false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
   | Seq (r, s) -> let s' = go (fun t -> fin (seq r t)) s in fcif (fnullable curr r) (fcdisj (go fin r) s') s'
-  | Star r -> go (fun t -> fin (seq t (star r))) r
+  | Star r -> go (fun t -> fin (seq (star r) t)) r
   in go finish
 
 let progress f_vec idx_of a t_prev ev t =
