@@ -260,7 +260,7 @@ let derP curr finish =
   | Star r -> go (fun t -> fin (seq (star r) t)) r
   in go finish
 
-let progress f_vec idx_of a t_prev ev t =
+let progress f_vec idx_of (delta, ev) a =
   let n = Array.length f_vec in
   let b = Array.make n (Now (B false)) in
   let curr = mk_fcell idx_of (fun i -> b.(i)) in
@@ -272,14 +272,14 @@ let progress f_vec idx_of a t_prev ev t =
     | P (_, x) -> Now (B (SS.mem x ev))
     | PossiblyF (_, i, r, f) -> fcdisj
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
-        (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
+        (Later (fun delta' -> if case_I (fun i -> delta' > right_BI i) (fun _ -> false) i
           then B false
-          else derF (fun f -> eval_future_cell t_next (curr f)) (fun s -> next (possiblyF s (subtract_I (t_next - t) i) f)) r))
+          else derF (fun f -> eval_future_cell delta' (curr f)) (fun s -> next (possiblyF s (subtract_I delta' i) f)) r))
     | PossiblyP (_, i, f, r) -> fcdisj
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
-        (if case_I (fun i -> t - t_prev > right_BI i) (fun _ -> false) i
+        (if case_I (fun i -> delta > right_BI i) (fun _ -> false) i
           then Now (B false)
-          else derP curr (fun s -> prev (possiblyP f (subtract_I (t - t_prev) i) s)) r)
+          else derP curr (fun s -> prev (possiblyP f (subtract_I delta i) s)) r)
     
     | _ -> failwith "not a temporal formula"
   done;

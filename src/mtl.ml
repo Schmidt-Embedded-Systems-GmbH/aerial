@@ -148,7 +148,7 @@ let mk cnj dsj neg bo idx_of idx =
 let mk_cell = mk cconj cdisj cneg (fun b -> B b)
 let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
 
-let progress f_vec idx_of a t_prev ev t =
+let progress f_vec idx_of (delta, ev) a =
   let n = Array.length f_vec in
   let b = Array.make n (Now (B false)) in
   let curr = mk_fcell idx_of (fun i -> b.(i)) in
@@ -159,20 +159,20 @@ let progress f_vec idx_of a t_prev ev t =
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> Now (B (SS.mem x ev))
     | Prev (_, i, f) ->
-        if mem_I (t - t_prev) i then prev f else Now (B false)
+        if mem_I delta i then prev f else Now (B false)
     | Next (_, i, f) ->
-        Later (fun t_next -> if mem_I (t_next - t) i then next f else B false)
+        Later (fun delta' -> if mem_I delta' i then next f else B false)
     | Since (_, i, f, g) -> fcdisj
         (if mem_I 0 i then curr g else Now (B false))
-        (if case_I (fun i -> t - t_prev > right_BI i) (fun _ -> false) i
+        (if case_I (fun i -> delta > right_BI i) (fun _ -> false) i
           then Now (B false)
-          else fcconj (curr f) (prev (since_lifted (subtract_I (t - t_prev) i) f g)))
+          else fcconj (curr f) (prev (since_lifted (subtract_I delta i) f g)))
     | Until (_, i, f, g) -> fcdisj
         (if mem_I 0 i then curr g else Now (B false))
-        (Later (fun t_next -> if case_I (fun i -> t_next - t > right_BI i) (fun _ -> false) i
+        (Later (fun delta' -> if case_I (fun i -> delta' > right_BI i) (fun _ -> false) i
           then B false
-          else cconj (eval_future_cell t_next (curr f))
-            (next (until_lifted (subtract_I (t_next - t) i) f g))))
+          else cconj (eval_future_cell delta' (curr f))
+            (next (until_lifted (subtract_I delta' i) f g))))
     | _ -> failwith "not a temporal formula"
   done;
   b

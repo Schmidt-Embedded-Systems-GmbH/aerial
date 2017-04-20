@@ -20,7 +20,7 @@ module type Formula = sig
   val idx_of: t -> f -> int
   val mk_cell: (f -> int) -> (int -> cell) -> f -> cell
   val mk_fcell: (f -> int) -> (int -> future_cell) -> f -> future_cell
-  val progress: f array -> (f -> int) -> cell array -> int -> SS.t -> int -> future_cell array
+  val progress: f array -> (f -> int) -> int * SS.t -> cell array -> future_cell array
 end
 
 module type Monitor = sig
