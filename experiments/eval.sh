@@ -2,15 +2,15 @@
 
 MAXIDX=10
 
-f1='true U[0,5] q'
-f2='p U[0,5] q'
-f3='p U[0,5] (q S[2,6] r)'
-f4='p U[0,5] (q U[2,6] r)'
+f1='! (true U[0,5] q)'
+f2='! (p U[0,5] q)'
+f3='! (p U[0,5] (q S[2,6] r))'
+f4='! (p U[0,5] (q U[2,6] r))'
 
-mf1='TRUE UNTIL [0, 5] q ()'
-mf2='p () UNTIL [0, 5] q ()'
-mf3='p () UNTIL [0, 5] (q () SINCE [2, 6] r ())'
-mf4='p () UNTIL [0, 5] (q () UNTIL [2, 6] r ())'
+mf1='NOT (TRUE UNTIL [0, 5] q ())'
+mf2='NOT (p () UNTIL [0, 5] q ())'
+mf3='NOT (p () UNTIL [0, 5] (q () SINCE [2, 6] r ()))'
+mf4='NOT (p () UNTIL [0, 5] (q () UNTIL [2, 6] r ()))'
 
 mof1='((!q||q)*;q)%(0,5)'
 mof2='(p*;q)%(0,5)'
