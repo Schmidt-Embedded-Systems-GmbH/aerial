@@ -7,5 +7,6 @@ rate=$1
 form=$2
 i=$3
 trace=$4
-space=$(($TIME $MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log logs/tr${trace}_${i}_${rate}.log) 2>&1 | grep "maximum resident set size" | sed "s/[ a-z]*//g")
-echo "monpoly rate: $rate formula: $form idx: $i space: $space"
+cmd="$TIME $MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log logs/tr${trace}_${i}_${rate}.log 2>&1"
+params "monpoly rate: $rate formula: $form idx: $i"
+./run.sh $cmd $params

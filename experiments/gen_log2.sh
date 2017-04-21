@@ -26,13 +26,13 @@ function gen {
   local b=$(( $RANDOM % ($A + $B) ))
   if [[ "$a" -lt "$A" && "$b" -lt "$B" ]]
   then
-    echo "@$ts P0 () P1 ()"
+    echo "@$ts p () q ()"
   elif [[ "$a" -lt "$A" ]]
   then
-    echo "@$ts P0 ()"
+    echo "@$ts p ()"
   elif [[ "$b" -lt "$B" ]]
   then
-    echo "@$ts P1 ()"
+    echo "@$ts q ()"
   else
     echo "@$ts"
   fi

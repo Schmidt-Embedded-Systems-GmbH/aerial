@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RATE=$1
-VAR=10
+VAR=100
 MAXTS=100
 A=1000
 if [ "$RATE" -le "1000" ]
@@ -26,15 +26,15 @@ function gen {
   local c=$(($RANDOM % 3))
   if [[ "$a" -lt "$A" ]]
   then
-    echo "@$ts P0 () P1 () P2 ()"
+    echo "@$ts p () q () r ()"
   elif [[ "$c" -eq "0" ]]
   then
-    echo "@$ts P0 () P1 ()"
+    echo "@$ts p () q ()"
   elif [[ "$c" -eq "1" ]]
   then
-    echo "@$ts P1 () P2 ()"
+    echo "@$ts q () r ()"
   else
-    echo "@$ts P0 () P2 ()"
+    echo "@$ts p () r ()"
   fi
 }
 

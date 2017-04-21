@@ -26,12 +26,12 @@ function gen {
   local b=$(( $RANDOM % ($A + $B) ))
   if [[ "$a" -lt "900"  ]]
   then
-    echo "@$ts P0 () "
+    echo "@$ts p () "
   elif [[ "$b" -lt "1000" ]]
   then
-    echo "@$ts P0 () P1 ()"
+    echo "@$ts p () q ()"
   else
-    echo "@$ts P0 () P1 () P2 ()"
+    echo "@$ts p () q () r ()"
   fi
 }
 

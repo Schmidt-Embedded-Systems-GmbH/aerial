@@ -23,13 +23,11 @@ endif
 standalone:
 	$(OCAMLBUILD) $(NAME).native
 
-install: bc-lib nc-lib standalone
-	@$(OCAMLFIND) install $(NAME) META $(OBJS)
-	install $(NAME).native $(PREFIX)/bin/$(NAME)
+install: 
+	cp ./aerial.native $(PREFIX)/bin/aerial
 
 uninstall:
-	$(OCAMLFIND) remove $(NAME)
-	rm -f ${PREFIX}/bin/$(NAME)
+	rm -f ${PREFIX}/bin/aerial
 
 test-generate:
 	mkdir -p $(TESTBUILD)

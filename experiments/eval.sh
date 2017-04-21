@@ -2,15 +2,20 @@
 
 MAXIDX=10
 
-f1='true U[0,5] P1'
-f2='P0 U[0,5] P1'
-f3='P0 U[0,5] (P1 S[2,6] P2)'
-f4='P0 U[0,5] (P1 U[2,6] P2)'
+f1='true U[0,5] q'
+f2='p U[0,5] q'
+f3='p U[0,5] (q S[2,6] r)'
+f4='p U[0,5] (q U[2,6] r)'
 
-mf1='TRUE UNTIL [0, 5] P1 ()'
-mf2='P0 () UNTIL [0, 5] P1 ()'
-mf3='P0 () UNTIL [0, 5] (P1 () SINCE [2, 6] P2 ())'
-mf4='P0 () UNTIL [0, 5] (P1 () UNTIL [2, 6] P2 ())'
+mf1='TRUE UNTIL [0, 5] q ()'
+mf2='p () UNTIL [0, 5] q ()'
+mf3='p () UNTIL [0, 5] (q () SINCE [2, 6] r ())'
+mf4='p () UNTIL [0, 5] (q () UNTIL [2, 6] r ())'
+
+mof1='((!q||q)*;q)%(0,5)'
+mof2='(p*;q)%(0,5)'
+mof3='(p*;(q;r*)%(2,6))%(0,5)'
+mof4='(p*;(q*;r)%(2,6))%(0,5)'
 
 mkdir -p formulas
 echo $f1 > formulas/f1.formula
@@ -21,5 +26,17 @@ echo $mf1 > formulas/monpoly_f1.formula
 echo $mf2 > formulas/monpoly_f2.formula
 echo $mf3 > formulas/monpoly_f3.formula
 echo $mf4 > formulas/monpoly_f4.formula
+echo $mof1 > formulas/montre_f1.formula
+echo $mof2 > formulas/montre_f2.formula
+echo $mof3 > formulas/montre_f3.formula
+echo $mof4 > formulas/montre_f4.formula
 
-parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: {1..2}
+
+echo "Tool, Rate, Formula, IDX, Space, Time" > results.csv
+parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: {1..2} >> results.csv
+
+echo "Tool, Rate, Formula, Space, Time" > results-avg.csv
+cat results.csv | grep -v Time | gawk '{m[$1][$2][$3]+=$5;t[$1][$2][$3]+=$6;n[$1][$2][$3]++}END{for(i in t){for(j in t[i]){for(k in t[i][j]){print i, j, k, m[i][j][k]/(1 < n[i][j][k] ? n[i][j][k] : 1)/1024/1024 ", " t[i][j][k]/(1 < n[i][j][k] ? n[i][j][k] : 1) }}}}' >> results-avg.csv
+
+mkdir figures
+latexmk -shell-escape -pdf plots.tex
