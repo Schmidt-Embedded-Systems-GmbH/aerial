@@ -12,15 +12,14 @@ open Cell
 
 module type Formula = sig
   type f
-  type t
+  type memory
   val print_formula: out_channel -> f -> unit
-  val ssub: f -> f list
+  val init: f -> f array * memory
   val bounded_future: f -> bool
-  val mk_idx_of: f array -> t
-  val idx_of: t -> f -> int
-  val mk_cell: (f -> int) -> (int -> cell) -> f -> cell
-  val mk_fcell: (f -> int) -> (int -> future_cell) -> f -> future_cell
-  val progress: f array -> (f -> int)  -> int * SS.t -> cell array -> future_cell array
+  val idx_of: f -> int
+  val mk_cell: (int -> cell) -> f -> cell
+  val mk_fcell: (int -> future_cell) -> f -> future_cell
+  val progress: f array * memory -> int * SS.t -> cell array -> future_cell array
 end
 
 module type Monitor = sig
@@ -44,11 +43,7 @@ type monitor =
 
 let create fmt mode_hint formula =
   let _ = Printf.fprintf fmt "Monitoring %a\n%!" F.print_formula formula in
-  let f_vec = Array.of_list (F.ssub formula) in
-  let h = F.mk_idx_of f_vec in
-  let idx_of = F.idx_of h in
-  (*  let idx_of f = (Printf.fprintf fmt "queried %a\n%!" F.print_formula f; idx_of f) in   *)
-  (*  let _ = Array.iter (fun x -> Printf.fprintf fmt "%a\n%!" F.print_formula x) f_vec in  *)
+  let (f_vec, m) = F.init formula in
   let mode = if F.bounded_future formula then mode_hint else
     (Printf.fprintf fmt
     "The formula contains unbounded future operators and
@@ -69,8 +64,8 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   
   let add = if mode = NAIVE then List.cons else check_dup [] in
 
-  let mk_top_cell a = F.mk_cell idx_of (fun i -> a.(i)) formula in
-  let mk_top_fcell a = F.mk_fcell idx_of (fun i -> a.(i)) formula in
+  let mk_top_cell a = F.mk_cell (fun i -> a.(i)) formula in
+  let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
 
   let step (ev, t') ctxt =
     let (t, i) as d = ctxt.now in
@@ -78,12 +73,14 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
     let skip = ctxt.skip in
     let delta = t' - t in
     let a = Array.map (eval_future_cell delta) fa in
+    (*let _ = Array.iteri (fun i -> Printf.printf "%d %a: %a\n%!" i F.print_formula f_vec.(i) print_cell) a in*)
+    (*let _ = Printf.printf "-------------------------\n\n" in*)
     let old_history = ctxt.history in
     let clean_history = List.fold_left (fun history (d, cell) ->
       maybe_output_cell fmt false d (subst_cell a cell) add history) [] old_history in
     let history = maybe_output_cell fmt skip d (mk_top_cell a) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
-    let fa' = F.progress f_vec idx_of (delta, ev) a in
+    let fa' = F.progress (f_vec, m) (delta, ev) a in
     let history' = List.fold_left (fun history ((d, cell) as x) ->
       maybe_output_future fmt d (subst_cell_future fa' cell) (List.cons x) history) [] history in
     let skip' = maybe_output_future fmt d' (mk_top_fcell fa') (fun _ -> false) true in

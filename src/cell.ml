@@ -15,6 +15,13 @@ let maybe_output case_cell fmt skip d cell f =
 type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
+let rec print_cell l out = function
+  | V (b, x) -> Printf.fprintf out "%sx%d" (if b then "" else "¬") x
+  | B b -> Printf.fprintf out (if b then "⊤" else "⊥")
+  | C (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_cell 2) f (print_cell 2) g
+  | D (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_cell 1) f (print_cell 1) g
+let print_cell = print_cell 0
+
 let case_cell_bool f g = function
   | B b -> f b
   | _ -> g

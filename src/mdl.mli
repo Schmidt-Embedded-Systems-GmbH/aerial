@@ -14,8 +14,8 @@ type formula = private
 | Conj of formula * formula
 | Disj of formula * formula
 | Neg of formula
-| PossiblyF of int * interval * regex * formula
-| PossiblyP of int * interval * formula * regex
+| PossiblyF of int * int * interval * regex * formula
+| PossiblyP of int * int * interval * formula * regex
 | Bool of bool
 and regex =
 | Wild

@@ -12,15 +12,14 @@ open Cell
 
 module type Formula = sig
   type f
-  type t
+  type memory
   val print_formula: out_channel -> f -> unit
-  val ssub: f -> f list
+  val init: f -> f array * memory
   val bounded_future: f -> bool
-  val mk_idx_of: f array -> t
-  val idx_of: t -> f -> int
-  val mk_cell: (f -> int) -> (int -> cell) -> f -> cell
-  val mk_fcell: (f -> int) -> (int -> future_cell) -> f -> future_cell
-  val progress: f array -> (f -> int) -> int * SS.t -> cell array -> future_cell array
+  val idx_of: f -> int
+  val mk_cell: (int -> cell) -> f -> cell
+  val mk_fcell: (int -> future_cell) -> f -> future_cell
+  val progress: f array * memory  -> int * SS.t -> cell array -> future_cell array
 end
 
 module type Monitor = sig

@@ -89,7 +89,7 @@ let historically i f = neg (once i (neg f))
 module MTL : Formula with type f = formula = struct
 
 type f = formula
-type t = ()
+type memory = ()
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -103,7 +103,7 @@ let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
   | Bool b -> Printf.fprintf out (if b then "⊤" else "⊥")
   | Conj (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_formula 2) f (print_formula 2) g
-  | Disj (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_formula 1) f (print_formula 2) g
+  | Disj (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_formula 1) f (print_formula 1) g
   | Neg f -> Printf.fprintf out "¬%a" (print_formula 3) f
   | Prev (_, i, f) -> Printf.fprintf out (paren l 3 "●%a %a") print_interval i (print_formula 4) f
   | Next (_, i, f) -> Printf.fprintf out (paren l 3 "○%a %a") print_interval i (print_formula 4) f
@@ -111,9 +111,7 @@ let rec print_formula l out = function
   | Until (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a U%a %a") (print_formula 4) f print_interval i (print_formula 4) g
 let print_formula = print_formula 0
 
-let mk_idx_of _ = ()
-
-let idx_of _ = function
+let idx_of = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
@@ -132,12 +130,12 @@ let rec sub = function
   | _ -> []
 
 let aux = function
-  | Since (j,i,f,g) -> List.map (fun n -> Since (j - n, subtract_I n i, f, g)) (1 -- right_I i)
-  | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_I n i, f, g)) (1 -- right_I i)
-  | _ -> []
+  | Since (j,i,f,g) -> List.map (fun n -> Since (j - n, subtract_I n i, f, g)) (0 -- right_I i)
+  | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_I n i, f, g)) (0 -- right_I i)
+  | f -> [f]
 
-let ssub f = List.rev (List.concat (List.map (fun x -> x :: aux x) (sub f)))
-let mk cnj dsj neg bo idx_of idx =
+let init f = (Array.of_list (List.rev (List.concat (List.map aux (sub f)))), ())
+let mk cnj dsj neg bo idx =
   let rec go = function
     | Conj (f, g) -> cnj (go f) (go g)
     | Disj (f, g) -> dsj (go f) (go g)
@@ -148,13 +146,13 @@ let mk cnj dsj neg bo idx_of idx =
 let mk_cell = mk cconj cdisj cneg (fun b -> B b)
 let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
 
-let progress f_vec idx_of (delta, ev) a =
+let progress (f_vec, _) (delta, ev) a =
   let n = Array.length f_vec in
   let b = Array.make n (Now (B false)) in
-  let curr = mk_fcell idx_of (fun i -> b.(i)) in
-  let prev = mk_cell idx_of (fun i -> a.(i)) in
+  let curr = mk_fcell (fun i -> b.(i)) in
+  let prev = mk_cell (fun i -> a.(i)) in
   let prev f = subst_cell_future b (prev f) in
-  let next = mk_cell idx_of (fun i -> V (true, i)) in
+  let next = mk_cell (fun i -> V (true, i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> Now (B (SS.mem x ev))
