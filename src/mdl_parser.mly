@@ -64,14 +64,14 @@ e:
 | NEG e                         { neg $2 }
 | ATOM                          { p $1 }
 | ATOM LOPEN ROPEN              { p $1 }
-| LANGLE re RANGLE interval e   { possiblyF $2 $4 $5 } %prec MODALITY
-| LANGLE re RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
-| LCLOSED re RCLOSED interval e { necessarilyF $2 $4 $5 } %prec MODALITY
-| LCLOSED re RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
-| e interval LANGLE re RANGLE   { possiblyP $1 $2 $4 }
-| e LANGLE re RANGLE            { possiblyP $1 full $3 }
-| e interval LCLOSED re RCLOSED { necessarilyP $1 $2 $4 }
-| e LCLOSED re RCLOSED          { necessarilyP $1 full $3 }
+| LANGLE reF RANGLE interval e   { possiblyF $2 $4 $5 } %prec MODALITY
+| LANGLE reF RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
+| LCLOSED reF RCLOSED interval e { necessarilyF $2 $4 $5 } %prec MODALITY
+| LCLOSED reF RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
+| e interval LANGLE reP RANGLE   { possiblyP $1 $2 $4 }
+| e LANGLE reP RANGLE            { possiblyP $1 full $3 }
+| e interval LCLOSED reP RCLOSED { necessarilyP $1 $2 $4 }
+| e LCLOSED reP RCLOSED          { necessarilyP $1 full $3 }
 | e SINCE interval e            { since $3 $1 $4 }
 | e SINCE e                     { since full $1 $3 }
 | e TRIGGER interval e          { trigger $3 $1 $4 }
@@ -95,12 +95,22 @@ e:
 | EVENTUALLY interval e         { eventually $2 $3 }
 | EVENTUALLY e                  { eventually full $2 }
 
-re:
-| LOPEN re ROPEN          { $2 }
+reF:
+| LOPEN reF ROPEN         { $2 }
 | EMPTY                   { empty }
 | EPSILON                 { epsilon }
-| e                       { base $1 } %prec BASE
+| e                       { baseF $1 } %prec BASE
 | e QUESTION              { test $1 }
-| re PLUS re              { alt $1 $3 }
-| re re                   { seq $1 $2 } %prec CONCAT
-| re STAR                 { star $1 }
+| reF PLUS reF            { alt $1 $3 }
+| reF reF                 { seq $1 $2 } %prec CONCAT
+| reF STAR                { star $1 }
+
+reP:
+| LOPEN reP ROPEN         { $2 }
+| EMPTY                   { empty }
+| EPSILON                 { epsilon }
+| e                       { baseP $1 } %prec BASE
+| e QUESTION              { test $1 }
+| reP PLUS reP            { alt $1 $3 }
+| reP reP                 { seq $1 $2 } %prec CONCAT
+| reP STAR                { star $1 }

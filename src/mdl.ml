@@ -36,6 +36,7 @@ let rec print_formula l out = function
   | PossiblyP (_, _, i, f, r) -> Printf.fprintf out (paren l 0 "%a %a <%a>") (print_formula 4) f print_interval i (print_regex 0) r
 and print_regex l out = function
   | Seq (Test f, Wild) -> Printf.fprintf out "%a" (print_formula 0) f
+  | Seq (Wild, Test f) -> Printf.fprintf out "%a" (print_formula 0) f
   | Wild -> Printf.fprintf out "."
   | Test f -> Printf.fprintf out "%a?" (print_formula 3) f
   | Alt (r, s) -> Printf.fprintf out (paren l 1 "%a + %a") (print_regex 1) r (print_regex 1) s
@@ -106,7 +107,8 @@ let seq_lifted f g =
 let rec star = function
   | Star f -> star f
   | f -> Star f
-let base f = seq (test f) wild
+let baseF f = seq (test f) wild
+let baseP f = seq wild (test f)
 
 let rec compare f g = match f,g with
   | (Bool b, Bool c) -> Pervasives.compare b c
@@ -187,8 +189,6 @@ let rec rev_re = function
   | Wild -> Wild
   | Test f -> Test f
   | Alt (r, s) -> Alt (rev_re r, rev_re s)
-  (*FIXME: think if the following is desirable*)
-  (*| Seq (Test _, Wild) as r -> r*)
   | Seq (r, s) -> Seq (rev_re s, rev_re r)
   | Star r -> Star (rev_re r)
 
@@ -204,10 +204,10 @@ let possiblyP f i r = RES.fold (fun s -> let n = maxidx_of f + 1 in
   (bool false)
 let necessarilyF r i f = neg (possiblyF r i (neg f))
 let necessarilyP f i r = neg (possiblyP (neg f) i r)
-let next i f = possiblyF (base (bool true)) i f
-let prev i f = possiblyP f i (base (bool true))
-let until i f g = possiblyF (star (base f)) i g
-let since i f g = possiblyP g i (star (base f))
+let next i f = possiblyF (baseF (bool true)) i f
+let prev i f = possiblyP f i (baseP (bool true))
+let until i f g = possiblyF (star (baseF f)) i g
+let since i f g = possiblyP g i (star (baseP f))
 let release i f g = neg (until i (neg f) (neg g))
 let weak_until i f g = release i g (disj f g)
 let trigger i f g = neg (since i (neg f) (neg g))

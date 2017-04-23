@@ -34,7 +34,8 @@ val possiblyF: regex -> interval -> formula -> formula
 val possiblyP: formula -> interval -> regex -> formula
 val necessarilyF: regex -> interval -> formula -> formula
 val necessarilyP: formula -> interval -> regex -> formula
-val base: formula -> regex
+val baseP: formula -> regex
+val baseF: formula -> regex
 val test: formula -> regex
 val wild: regex
 val empty: regex
