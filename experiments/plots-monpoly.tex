@@ -42,21 +42,14 @@
 
 \newcommand{\plotHeight}{18cm}
 \newcommand{\plotWidth}{18cm}
-\newcommand{\csvfile}{""}
-%results-custom-sorted-avg.csv
-%results-monpoly-sorted-avg.csv
+\newcommand{\csvfile}{results-monpoly-sorted-avg.csv}
+%results-sorted-avg.csv
 
 \begin{document}
 
-\foreach\c in{./results-monpoly-sorted-avg.csv, ./results-custom-sorted-avg.csv}{
-\renewcommand{\csvfile}{\c}
-
-\IfFileExists{\c}{
-
-\section{\c}
 
 \foreach\f in{1,2,3,4}{
-\begin{figure}[b]
+\begin{figure}
 
 \begin{tikzpicture}[scale=0.65]
     \begin{axis}[
@@ -112,13 +105,6 @@
 
 \caption{Formula \f}
 \end{figure}
-}
-
-}
-{
-    %false-branch
-}
-
 }
 
 
