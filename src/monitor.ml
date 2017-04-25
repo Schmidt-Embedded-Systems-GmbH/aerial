@@ -64,7 +64,6 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   
   let add = if mode = NAIVE then List.cons else check_dup [] in
 
-  let mk_top_cell a = F.mk_cell (fun i -> a.(i)) formula in
   let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
 
   let step (ev, t') ctxt =
@@ -72,13 +71,13 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
     let fa = ctxt.arr in
     let skip = ctxt.skip in
     let delta = t' - t in
-    let a = Array.map (eval_future_cell delta) fa in
+    let eval = eval_future_cell delta in
     (*let _ = Array.iteri (fun i -> Printf.printf "%d %a: %a\n%!" i F.print_formula f_vec.(i) print_cell) a in*)
     (*let _ = Printf.printf "-------------------------\n\n" in*)
     let old_history = ctxt.history in
     let clean_history = List.fold_left (fun history (d, cell) ->
-      maybe_output_cell fmt false d (subst_cell a cell) add history) [] old_history in
-    let history = maybe_output_cell fmt skip d (mk_top_cell a) add clean_history in
+      maybe_output_cell fmt false d (eval (subst_cell_future fa cell)) add history) [] old_history in
+    let history = maybe_output_cell fmt skip d (eval (mk_top_fcell fa)) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
     let fa' = F.progress (f_vec, m) (delta, ev) fa in
     let history' = List.fold_left (fun history ((d, cell) as x) ->
