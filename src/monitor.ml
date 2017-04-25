@@ -19,7 +19,7 @@ module type Formula = sig
   val idx_of: f -> int
   val mk_cell: (int -> cell) -> f -> cell
   val mk_fcell: (int -> future_cell) -> f -> future_cell
-  val progress: f array * memory -> int * SS.t -> cell array -> future_cell array
+  val progress: f array * memory -> int * SS.t -> future_cell array -> future_cell array
 end
 
 module type Monitor = sig
@@ -80,7 +80,7 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
       maybe_output_cell fmt false d (subst_cell a cell) add history) [] old_history in
     let history = maybe_output_cell fmt skip d (mk_top_cell a) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
-    let fa' = F.progress (f_vec, m) (delta, ev) a in
+    let fa' = F.progress (f_vec, m) (delta, ev) fa in
     let history' = List.fold_left (fun history ((d, cell) as x) ->
       maybe_output_future fmt d (subst_cell_future fa' cell) (List.cons x) history) [] history in
     let skip' = maybe_output_future fmt d' (mk_top_fcell fa') (fun _ -> false) true in
