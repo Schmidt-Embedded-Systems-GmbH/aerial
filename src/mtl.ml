@@ -150,8 +150,8 @@ let progress (f_vec, _) (delta, ev) a =
   let n = Array.length f_vec in
   let b = Array.make n (Now (B false)) in
   let curr = mk_fcell (fun i -> b.(i)) in
-  let prev = mk_cell (fun i -> a.(i)) in
-  let prev f = subst_cell_future b (prev f) in
+  let prev = mk_fcell (fun i -> a.(i)) in
+  let prev f = subst_cell_future b (eval_future_cell delta (prev f)) in
   let next = mk_cell (fun i -> V (true, i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
