@@ -9,14 +9,17 @@
 
 open Util
 
-type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
+type cell
+(*type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell*)
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-val print_cell: out_channel -> cell -> unit
+(*val print_cell: out_channel -> cell -> unit*)
 
 val maybe_output_cell: out_channel -> bool -> timestamp * int -> cell -> ((timestamp * int) * cell -> 'a -> 'a) -> 'a -> 'a
 val maybe_output_future: out_channel -> timestamp * int -> future_cell -> ('a -> 'a) -> 'a -> 'a
 
+val cbool: bool -> cell
+val cvar: bool -> int -> cell
 val cconj: cell -> cell -> cell
 val cdisj: cell -> cell -> cell
 val cneg: cell -> cell

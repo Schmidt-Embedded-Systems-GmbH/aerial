@@ -250,8 +250,8 @@ let mk cnj dsj neg bo idx =
     | Bool b -> bo b
     | f -> idx (idx_of f) in
   go
-let mk_cell = mk cconj cdisj cneg (fun b -> B b)
-let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (B b))
+let mk_cell = mk cconj cdisj cneg cbool
+let mk_fcell = mk fcconj fcdisj fcneg (fun b -> Now (cbool b))
 
 let rec sub = function 
   | Neg f -> sub f
@@ -293,13 +293,13 @@ let nullable curr cnj dsj tt ff =
   | Seq (r, s) -> cnj (go r) (go s)
   | Star r -> tt
   in go
-let fnullable curr = nullable curr fcconj fcdisj (Now (B true)) (Now (B false))
-let nullable curr = nullable curr cconj cdisj (B true) (B false)
+let fnullable curr = nullable curr fcconj fcdisj (Now (cbool true)) (Now (cbool false))
+let nullable curr = nullable curr cconj cdisj (cbool true) (cbool false)
 
 let derF curr finish =
   let rec go fin = function
   | Wild -> fin epsilon
-  | Test f -> Now (B false)
+  | Test f -> Now (cbool false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
   | Seq (r, s) ->
     let r' = go (fun t -> fin (seq_lifted t s)) r in
@@ -310,7 +310,7 @@ let derF curr finish =
 let derP curr finish =
   let rec go fin = function
   | Wild -> fin epsilon
-  | Test f -> Now (B false)
+  | Test f -> Now (cbool false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
   | Seq (r, s) ->
     let s' = go (fun t -> fin (seq_lifted r t)) s in
@@ -339,7 +339,7 @@ let init f =
       else find (offset + 1) g
     | _ -> -1 in
   let find = find 0 in
-  let v i = V (true, i) in
+  let v = cvar true in
   let mem = function
     | PossiblyF (j, ii, i, r, f) ->
         derF (fun h -> Now (v (- idx_of h - 1))) (fun s ->
@@ -349,33 +349,33 @@ let init f =
         derP (fun h -> Now (v (- idx_of h - 1))) (fun s ->
           let k = find (PossiblyP (j, ii, i, f, s)) in
           Later (fun delta -> v (k - delta))) r
-    | _ -> Later (fun _ -> (B true)) in
+    | _ -> Later (fun _ -> (cbool true)) in
   (*let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in*)
   (f_vec, Array.map mem f_vec)
 
 let progress (f_vec, m) (delta, ev) a =
   let n = Array.length f_vec in
-  let b = Array.make n (Now (B false)) in
+  let b = Array.make n (Now (cbool false)) in
   let curr = mk_fcell (fun i -> b.(i)) in
   let prev = mk_fcell (fun i -> a.(i)) in
   let prev f = subst_cell_future b (eval_future_cell delta (prev f)) in
-  let next = mk_cell (fun i -> V (true, i)) in
+  let next = mk_cell (cvar true) in
   let getF delta' =
     map_cell (fun i -> if i < 0 then eval_future_cell delta' (curr f_vec.(- 1 - i)) else next f_vec.(i)) in
   let getP =
     map_cell_future (fun i -> if i < 0 then curr f_vec.(- 1 - i) else prev f_vec.(i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
-    | P (_, x) -> Now (B (SS.mem x ev))
+    | P (_, x) -> Now (cbool (SS.mem x ev))
     | PossiblyF (j, _, i, r, f) -> fcdisj
-        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
+        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (cbool false))
         (Later (fun delta' -> if case_I (fun i -> delta' > right_BI i) (fun _ -> false) i
-          then B false
+          then cbool false
           else getF delta' (eval_future_cell delta' m.(j))))
     | PossiblyP (j, _, i, f, r) -> fcdisj
-        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (B false))
+        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else Now (cbool false))
         (if case_I (fun i -> delta > right_BI i) (fun _ -> false) i
-          then Now (B false)
+          then Now (cbool false)
           else getP (eval_future_cell delta m.(j)))
     | _ -> failwith "not a temporal formula"
   done;

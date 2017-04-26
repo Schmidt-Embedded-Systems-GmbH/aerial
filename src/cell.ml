@@ -9,21 +9,63 @@
 
 open Util
 
+type bdd = TT | FF | Node of int * int * bdd * bdd
+
+let rec map_of m k = m k
+let empty _ = None
+let add x b f y = if x = y then Some b else f y
+
+let hash = function
+  | TT -> 0
+  | FF -> 1
+  | Node (h, _, _, _) -> h
+
+let pair a b = if a >= b then a * a + a + b else a + b * b
+let rec pairs = function
+  | x :: y :: ys -> pairs (pair x y :: ys)
+  | [x] -> x
+  | [] -> failwith "cannot pair empty list"
+(*let pairs is = let res = pairs is in (Printf.printf "Computed hash: %d\n%!" res; res)*)
+
+let node x t1 t2 = if hash t1 = hash t2 then t1 else Node (pairs [x; hash t1; hash t2], x, t1, t2)
+
+let rec reduce xs = function
+  | TT -> TT
+  | FF -> FF
+  | Node (_, x, t1, t2) -> match map_of xs x with
+    | None -> node x (reduce (add x true xs) t1) (reduce (add x false xs) t2)
+    | Some b -> reduce xs (if b then t1 else t2)
+
+let rec norm xs x t1 t2 = match x with
+  | TT -> reduce xs t1
+  | FF -> reduce xs t2
+  | Node (_, x, u1, u2) -> match map_of xs x with
+    | None -> node x (norm (add x true xs) u1 t1 t2) (norm (add x false xs) u2 t1 t2)
+    | Some true -> norm xs u1 t1 t2
+    | Some false -> norm xs u2 t1 t2
+
 let maybe_output case_cell fmt skip d cell f =
   case_cell (fun b -> (if skip then fun _ -> () else output_verdict fmt) (d, b); fun x -> x) (f (d, cell)) cell
 
-type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
+type cell = bdd
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-let rec print_cell l out = function
-  | V (b, x) -> Printf.fprintf out "%sx%d" (if b then "" else "¬") x
-  | B b -> Printf.fprintf out (if b then "⊤" else "⊥")
-  | C (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_cell 2) f (print_cell 2) g
-  | D (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_cell 1) f (print_cell 1) g
-let print_cell = print_cell 0
+let cbool b = if b then TT else FF
+let cvar b i = if b then node i TT FF else node i FF TT
+let cconj b1 b2 = norm empty b1 b2 FF
+let cdisj b1 b2 = norm empty b1 TT b2
+let rec cneg = function
+  | TT -> FF
+  | FF -> TT
+  | Node (_, x, l, r) -> node x (cneg l) (cneg r)
+
+let rec map_cell f = function
+  | Node (_, x, l, r) -> norm empty (f x) (map_cell f l) (map_cell f r)
+  | b -> b
 
 let case_cell_bool f g = function
-  | B b -> f b
+  | TT -> f true
+  | FF -> f false
   | _ -> g
 
 let maybe_output_cell fmt = maybe_output case_cell_bool fmt
@@ -37,29 +79,15 @@ let eval_future_cell t = function
   | Now c -> c
   | Later f -> f t
 
-let cconj x y = match x, y with
-  | (B c, d) | (d, B c) -> if c then d else B c
-  | _ -> C (x, y)
-
-let cdisj x y = match x, y with
-  | (B c, d) | (d, B c) -> if c then B c else d
-  | _ -> D (x, y)
-
-let rec cneg = function
-  | C (c, d) -> D (cneg c, cneg d)
-  | D (c, d) -> C (cneg c, cneg d)
-  | B b -> B (not b)
-  | V (b, x) -> V (not b, x)
-
 let cimp l r = cdisj (cneg l) r 
 let cif b t e = cconj (cimp b t) (cimp (cneg b) e)
 
 let is_true = function
-  | B true -> true
+  | TT -> true
   | _ -> false
 
 let is_false = function
-  | B false -> true
+  | FF -> true
   | _ -> false
 
 let fcconj x y = match x, y with
@@ -88,56 +116,14 @@ let fcif b t e = fcconj (fcimp b t) (fcimp (fcneg b) e)
 let maybe_flip b = if b then fun x -> x else cneg
 let maybe_flip_future b = if b then fun x -> x else fcneg
 
-let rec map_cell f = function
-  | C (c, d) -> cconj (map_cell f c) (map_cell f d)
-  | D (c, d) -> cdisj (map_cell f c) (map_cell f d)
-  | B b -> B b
-  | V (b, x) -> maybe_flip b (f x)
-
 let rec map_cell_future f = function
-  | C (c, d) -> fcconj (map_cell_future f c) (map_cell_future f d)
-  | D (c, d) -> fcdisj (map_cell_future f c) (map_cell_future f d)
-  | B b -> Now (B b)
-  | V (b, x) -> maybe_flip_future b (f x)
+  | Node (_, x, l, r) -> (match f x, map_cell_future f l, map_cell_future f r with
+     | Now c, Now t, Now e -> Now (norm empty c t e)
+     | c, l, r -> Later (fun d ->
+       norm empty (eval_future_cell d c) (eval_future_cell d l) (eval_future_cell d r)))
+  | b -> Now b
 
 let subst_cell v = map_cell (Array.get v)
 let subst_cell_future v = map_cell_future (Array.get v)
 
-type bdd = TT | FF | Node of int * bdd * bdd
-
-module IntMap = Map.Make(struct type t = int let compare = compare end)
-
-let rec map_of m k = try Some (IntMap.find k m) with Not_found -> None
-
-let node x t1 t2 = if t1 = t2 then t1 else Node (x, t1, t2)
-
-let rec reduce xs = function
-  | TT -> TT
-  | FF -> FF
-  | Node (x, t1, t2) -> match map_of xs x with
-    | None -> node x (reduce (IntMap.add x true xs) t1) (reduce (IntMap.add x false xs) t2)
-    | Some b -> reduce xs (if b then t1 else t2)
-
-let rec norm xs x t1 t2 = match x with
-  | TT -> reduce xs t1
-  | FF -> reduce xs t2
-  | Node (x, u1, u2) -> match map_of xs x with
-    | None -> node x (norm (IntMap.add x true xs) u1 t1 t2) (norm (IntMap.add x false xs) u2 t1 t2)
-    | Some true -> norm xs u1 t1 t2
-    | Some false -> norm xs u2 t1 t2
-
-let rec bdd_of = function
-  | B b -> if b then TT else FF
-  | V (true, i) -> Node (i, TT, FF)
-  | V (false, i) -> Node (i, FF, TT)
-  | C (b1, b2) -> norm IntMap.empty (bdd_of b1) (bdd_of b2) FF
-  | D (b1, b2) -> norm IntMap.empty (bdd_of b1) TT (bdd_of b2)
-
-let rec size = function
-  | C (b1, b2) | D (b1, b2) -> 1 + size b1 + size b2
-  | _ -> 0
-
-let rec equiv b1 b2 =
-  let t1 = bdd_of b1 in
-  let t2 = bdd_of b2 in
-  TT = norm IntMap.empty t1 t2 (norm IntMap.empty t2 FF TT)
+let rec equiv t1 t2 = TT = norm empty t1 t2 (norm empty t2 FF TT)
