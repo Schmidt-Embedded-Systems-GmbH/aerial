@@ -37,3 +37,11 @@ val subst_cell: cell array -> cell -> cell
 val subst_cell_future: future_cell array -> cell -> future_cell
 
 val equiv: cell -> cell -> bool
+
+type bdd
+val bdd_of: cell -> bdd
+val maybe_output_bdd: out_channel -> bool -> timestamp * int -> bdd -> ((timestamp * int) * bdd -> 'a -> 'a) -> 'a -> 'a
+val map_bdd: (int -> cell) -> bdd -> bdd
+val subst_bdd: cell array -> bdd -> bdd
+val subst_bdd_future: future_cell array -> bdd -> bdd
+val equiv_bdd: bdd -> bdd -> bool
