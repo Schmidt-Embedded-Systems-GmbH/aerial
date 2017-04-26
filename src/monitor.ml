@@ -50,7 +50,7 @@ let create fmt mode_hint formula =
 will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   let n = Array.length f_vec in
 
-  let init = {history = []; now = (-1, 0); arr = Array.make n (Now (cbool false)); skip = true} in
+  let init = {history = []; now = (-1, 0); arr = Array.make n (Now (B false)); skip = true} in
 
   let rec check_dup res entry h = match entry, h with
     | (_, []) -> entry :: List.rev res
