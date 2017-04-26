@@ -33,7 +33,7 @@ module Make(F : Formula) : Monitor with type formula = F.f = struct
 
 type formula = F.f
 type ctxt =
-  {history: ((timestamp * int) * bdd) list; (*reversed*)
+  {history: ((timestamp * int) * cell) list; (*reversed*)
    now: timestamp * int;
    arr: future_cell array;
    skip: bool}
@@ -57,13 +57,12 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
     | (((t, i), c), (((t', j), d) as entry') :: history) ->
         if mode = COMPRESS_GLOBAL || t = t'
         then
-          if equiv_bdd c d
+          if equiv c d
           then (output_eq fmt ((t, i), (t', j)); List.rev res @ entry' :: history)
           else check_dup (entry' :: res) entry history
         else entry :: List.rev res @ entry' :: history in
   
-  let add_bdd = if mode = NAIVE then List.cons else check_dup [] in
-  let add (d, cell) = add_bdd (d, bdd_of cell) in
+  let add = if mode = NAIVE then List.cons else check_dup [] in
 
   let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
 
@@ -76,13 +75,13 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
     (*let _ = Array.iteri (fun i -> Printf.printf "%d %a: %a\n%!" i F.print_formula f_vec.(i) print_cell) a in*)
     (*let _ = Printf.printf "-------------------------\n\n" in*)
     let old_history = ctxt.history in
-    let clean_history = List.fold_left (fun history (d, bdd) ->
-      maybe_output_bdd fmt false d (map_bdd (fun i -> eval fa.(i)) bdd) add_bdd history) [] old_history in
+    let clean_history = List.fold_left (fun history (d, cell) ->
+      maybe_output_cell fmt false d (eval (subst_cell_future fa cell)) add history) [] old_history in
     let history = maybe_output_cell fmt skip d (eval (mk_top_fcell fa)) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
     let fa' = F.progress (f_vec, m) (delta, ev) fa in
-    let history' = List.fold_left (fun history ((d, bdd) as x) ->
-      maybe_output_bdd fmt false d (subst_bdd_future fa' bdd) (fun _ -> List.cons x) history) [] history in
+    let history' = List.fold_left (fun history ((d, cell) as x) ->
+      maybe_output_future fmt d (subst_cell_future fa' cell) (List.cons x) history) [] history in
     let skip' = maybe_output_future fmt d' (mk_top_fcell fa') (fun _ -> false) true in
     {history = history'; now = d'; arr = fa'; skip = skip'} in
 

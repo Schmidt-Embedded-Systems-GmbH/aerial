@@ -133,25 +133,11 @@ let rec bdd_of = function
   | C (b1, b2) -> norm IntMap.empty (bdd_of b1) (bdd_of b2) FF
   | D (b1, b2) -> norm IntMap.empty (bdd_of b1) TT (bdd_of b2)
 
-let case_bdd_bool f g = function
-  | TT -> f true
-  | FF -> f false
-  | _ -> g
-
-let maybe_output_bdd fmt = maybe_output case_bdd_bool fmt
-
-let rec map_bdd f = function
-  | Node (x, l, r) -> norm IntMap.empty (bdd_of (f x)) (map_bdd f l) (map_bdd f r)
-  | b -> b
-let subst_bdd v = map_bdd (Array.get v)
-let subst_bdd_future v = map_bdd (fun i -> match v.(i) with Now c -> c | _ -> V (true, - i - 1))
-
 let rec size = function
   | C (b1, b2) | D (b1, b2) -> 1 + size b1 + size b2
   | _ -> 0
 
-let equiv_bdd t1 t2 = TT = norm IntMap.empty t1 t2 (norm IntMap.empty t2 FF TT)
-let equiv b1 b2 =
+let rec equiv b1 b2 =
   let t1 = bdd_of b1 in
   let t2 = bdd_of b2 in
   TT = norm IntMap.empty t1 t2 (norm IntMap.empty t2 FF TT)
