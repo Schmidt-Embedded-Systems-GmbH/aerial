@@ -13,6 +13,22 @@ let maybe_output case_cell fmt skip d cell f =
   case_cell (fun b -> (if skip then fun _ -> () else output_verdict fmt) (d, b); fun x -> x) (f (d, cell)) cell
 
 type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
+
+let rec compare c d = match c, d with
+  | V (true, i), V (true, j) -> Pervasives.compare i j
+  | V (true, i), _ -> -1
+  | _, V (true, i) -> 1
+  | V (false, i), V (false, j) -> Pervasives.compare i j
+  | V (false, _), _ -> -1
+  | _, V (false, _) -> 1
+  | B b, B c -> Pervasives.compare b c
+  | B _, _ -> -1
+  | _, B _ -> 1
+  | C (c, d), C (c', d') -> let cc = Pervasives.compare c c' in if cc = 0 then compare d d' else cc
+  | C _, _ -> -1
+  | _, C _ -> 1
+  | D (c, d), D (c', d') -> let cc = Pervasives.compare c c' in if cc = 0 then compare d d' else cc
+
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
 let rec print_cell l out = function
@@ -37,17 +53,37 @@ let eval_future_cell t = function
   | Now c -> c
   | Later f -> f t
 
-let cconj x y = match x, y with
+let rec cconj x y = match x, y with
   | (B c, d) | (d, B c) -> if c then d else B c
-  | _ -> C (x, y)
+  | (C (c, d), e) -> cconj c (cconj d e)
+  | (c, C (d, e)) ->
+    let cd = compare c d in
+    if cd = 0 then C (d, e)
+    else if cd < 0 then C (c, C (d, e))
+    else C (d, cconj c e)
+  | _ -> 
+    let xy = compare x y in
+    if xy = 0 then x
+    else if xy < 0 then C (x, y)
+    else C (y, x)
 
-let cdisj x y = match x, y with
+let rec cdisj x y = match x, y with
   | (B c, d) | (d, B c) -> if c then B c else d
-  | _ -> D (x, y)
+  | (D (c, d), e) -> cdisj c (cdisj d e)
+  | (c, D (d, e)) ->
+    let cd = compare c d in
+    if cd = 0 then D (d, e)
+    else if cd < 0 then D (c, D (d, e))
+    else D (d, cdisj c e)
+  | _ -> 
+    let xy = compare x y in
+    if xy = 0 then x
+    else if xy < 0 then D (x, y)
+    else D (y, x)
 
 let rec cneg = function
-  | C (c, d) -> D (cneg c, cneg d)
-  | D (c, d) -> C (cneg c, cneg d)
+  | C (c, d) -> cdisj (cneg c) (cneg d)
+  | D (c, d) -> cconj (cneg c) (cneg d)
   | B b -> B (not b)
   | V (b, x) -> V (not b, x)
 
@@ -105,7 +141,7 @@ let subst_cell_future v = map_cell_future (Array.get v)
 
 type bdd = TT | FF | Node of int * bdd * bdd
 
-module IntMap = Map.Make(struct type t = int let compare = compare end)
+module IntMap = Map.Make(struct type t = int let compare = Pervasives.compare end)
 
 let rec map_of m k = try Some (IntMap.find k m) with Not_found -> None
 
