@@ -43,7 +43,7 @@ rate=$1
 form=$2
 i=$3
 
-logdir=logs/monpoly
+logdir="logs/monpoly"
 
 mkdir -p $logdir
 
@@ -55,4 +55,4 @@ mrate=$(get_rate $rate)
 echo "generated log ${i} for formula ${form} with rate ${rate} using the monpoly generator";
 
 
-./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log > $logdir/montre_tr${form}_${i}_${rate}.log
+#./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log > $logdir/montre_tr${form}_${i}_${rate}.log

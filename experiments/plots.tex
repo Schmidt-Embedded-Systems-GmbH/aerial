@@ -43,12 +43,15 @@
 \newcommand{\plotHeight}{18cm}
 \newcommand{\plotWidth}{18cm}
 \newcommand{\csvfile}{""}
-%results-custom-sorted-avg.csv
-%results-monpoly-sorted-avg.csv
+%results-${logs}-final.csv
+%results-custom-final.csv
+%results-monpoly-final.csv
+%results-random-final.csv
+%results-constant-final.csv
 
 \begin{document}
 
-\foreach\c in{./results-monpoly-sorted-avg.csv, ./results-custom-sorted-avg.csv}{
+\foreach\c in{./results-monpoly-final.csv, ./results-custom-final.csv, ./results-constant-final.csv, ./results-random-final.csv}{
 \renewcommand{\csvfile}{\c}
 
 \IfFileExists{\c}{
@@ -72,11 +75,16 @@
 
 
 
-\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
-   \addplot table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Rate, y=Time, col sep=comma] {\csvfile};
+%\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
+\foreach\g in{aerial_MTL_local,monpoly}{
+
+   \addplot 
+   plot [error bars/.cd, y dir = both, y explicit]
+   table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Rate, y=Time, y error=Tdev ,col sep=comma] {\csvfile};
 }
 
-\legend{Aerial MTL (naive), Aerial MTL (local), Aerial MTL (global), Aerial MDL (naive), Aerial MDL (local), Aerial MDL (global), Monpoly, Montre}
+%\legend{Aerial MTL (naive), Aerial MTL (local), Aerial MTL (global), Aerial MDL (naive), Aerial MDL (local), Aerial MDL (global), Monpoly, Montre}
+\legend{Aerial MTL (local), Monpoly}
     \end{axis}
 \end{tikzpicture}
 
@@ -102,11 +110,15 @@
 
 
 
-\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
-   \addplot table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Rate, y=Space, col sep=comma] {\csvfile};
+%\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
+\foreach\g in{aerial_MTL_local,monpoly}{    
+   \addplot 
+   plot [error bars/.cd, y dir = both, y explicit]
+   table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Rate, y=Space, y error=Sdev , col sep=comma] {\csvfile};
 }
 
-\legend{Aerial MTL (naive), Aerial MTL (local), Aerial MTL (global), Aerial MDL (naive), Aerial MDL (local), Aerial MDL (global), Monpoly, Montre}
+%\legend{Aerial MTL (naive), Aerial MTL (local), Aerial MTL (global), Aerial MDL (naive), Aerial MDL (local), Aerial MDL (global), Monpoly, Montre}
+\legend{Aerial MTL (local), Monpoly}
     \end{axis}
 \end{tikzpicture}
 
