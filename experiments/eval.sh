@@ -1,4 +1,6 @@
 #!/bin/bash
+source functions.sh
+
 
 MAXIDX=$(./maxidx.sh)
 
@@ -38,7 +40,7 @@ mkdir -p tmp
 logs=$1
 
 
-echo "Tool, Rate, Formula, IDX, Space, Time" > results.csv
+echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
 parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
 
 # echo "Tool, Rate, Formula, Space, Time" > results-${logs}-avg.csv
@@ -48,7 +50,7 @@ parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` :::
 
 #average and std
 echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" > results-${logs}-avg.csv
-cat results-${logs}.csv | grep -v Time | sed "s/timeout,/100000000,/g" | sed "s/timeout/100000/g" | gawk '
+cat results-${logs}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk '
 {
 n[$1][$2][$3]++;
 dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
@@ -70,5 +72,9 @@ for(i in t){
 
 cat results-${logs}-avg.csv | sort -n -k 2 > results-${logs}-final.csv
 
-# mkdir figures
-# latexmk -shell-escape -pdf plots.tex
+mods=$(format_mode)
+mkdir -p figures
+now=$(date +"%m_%d_%Y")
+sed "s/MODS/$mods/g" ./plots.tex > plots-$now.tex
+
+latexmk -shell-escape -pdf plots-$now.tex

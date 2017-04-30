@@ -49,6 +49,9 @@
 %results-random-final.csv
 %results-constant-final.csv
 
+%\immediate\write18{./getmodes.sh > modenames.tex}
+
+
 \begin{document}
 
 \foreach\c in{./results-monpoly-final.csv, ./results-custom-final.csv, ./results-constant-final.csv, ./results-random-final.csv}{
@@ -75,8 +78,7 @@
 
 
 
-%\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
-\foreach\g in{aerial_MTL_local,monpoly}{
+\foreach\g in{MODS}{
 
    \addplot 
    plot [error bars/.cd, y dir = both, y explicit]

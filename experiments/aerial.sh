@@ -60,7 +60,7 @@ prevstopfile="tmp/STOP${mode}_${prevrate}_${form}.tmp"
 # step 1
 if [ -f $prevstopfile ]
 then
-echo "$modestr, $rate, $form, $i, timeout, timeout"
+echo "$modestr, $rate, $form, $i, disq, disq"
 touch $stopfile
 exit
 fi
@@ -71,7 +71,7 @@ then
   tos=$(wc -l $prevtmpfile | tr -s " " | cut -d " " -f2)
   if [ "$tos" -eq "$MAXIDX" ]
   then 
-  echo "$modestr, $rate, $form, $i, timeout, timeout"
+  echo "$modestr, $rate, $form, $i, disq, disq"
   touch $prevstopfile
   touch $stopfile
   exit
