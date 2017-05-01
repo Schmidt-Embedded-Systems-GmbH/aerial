@@ -301,9 +301,7 @@ let derF curr finish =
   | Wild -> fin epsilon
   | Test f -> Now (B false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
-  | Seq (r, s) ->
-    let r' = go (fun t -> fin (seq_lifted t s)) r in
-    fcif (fnullable curr r) (fcdisj r' (go fin s)) r'
+  | Seq (r, s) -> fcdisj (go (fun t -> fin (seq_lifted t s)) r) (fcconj (fnullable curr r) (go fin s))
   | Star r -> go (fun t -> fin (seq_lifted t (star r))) r
   in go finish
 
@@ -312,9 +310,7 @@ let derP curr finish =
   | Wild -> fin epsilon
   | Test f -> Now (B false)
   | Alt (r, s) -> fcdisj (go fin r) (go fin s)
-  | Seq (r, s) ->
-    let s' = go (fun t -> fin (seq_lifted r t)) s in
-    fcif (fnullable curr s) (fcdisj (go fin r) s') s'
+  | Seq (r, s) -> fcdisj (go (fun t -> fin (seq_lifted r t)) s) (fcconj (fnullable curr s) (go fin r))
   | Star r -> go (fun t -> fin (seq_lifted (star r) t)) r
   in go finish
 
