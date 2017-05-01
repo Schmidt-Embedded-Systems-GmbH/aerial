@@ -46,24 +46,37 @@ function print_mode {
    fi
 }
 
+
+function read_mode {
+
+  while read  p || [[ -n "$p" ]]; do
+  print_mode $p
+  done < ./mods
+
+}
+
+function format_mode {
+  local line=$(read_mode)
+  echo $line | sed -E "s/ /, /g"
+}
+
 function run {
     #command to run
-    local cmd=$1
+    local cmd="$1"
     #params to print
-    local params=$2
+    local params="$2"
 
     #run the command, parse results...
     local ts=$(gdate +%s%N)
-    local result=$(eval "$TIMEOUT $TIME $cmd")
+    local result=$(eval "$TIME $TIMEOUT $cmd")
     local time=$((($(gdate +%s%N) - $ts)/1000000)) 
     local space=$(echo $result | cut -d " " -f7)
     #local time=$(echo $result | cut -d " " -f1)
 
     # step 3 (see below)
-    if [ -z "$result" ]
+    if [ "$time" -gt "100000" ]
     then
-      local space="timeout"
-      local time="timeout"
+      local time="${time} (timeout)"
       echo "timeout" >> $tmpfile
     fi
 
