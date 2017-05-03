@@ -26,6 +26,25 @@ and regex =
 | Seq of regex * regex
 | Star of regex
 
+let rec formula_to_string l = function
+  | P (_, x) -> Printf.sprintf "%s" x
+  | Bool b -> Printf.sprintf (if b then "⊤" else "⊥")
+  | Conj (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> formula_to_string 2) f (fun x -> formula_to_string 2) g
+  | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 2) g
+  | Neg f -> Printf.sprintf "¬%a" (fun x -> formula_to_string 3) f
+  | PossiblyF (_, _, i, r, f) -> Printf.sprintf (paren l 0 "<%a> %a %a") (fun x -> regex_to_string 0) r (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | PossiblyP (_, _, i, f, r) -> Printf.sprintf (paren l 0 "%a %a <%a>") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> regex_to_string 0) r
+and regex_to_string l = function
+  | Seq (Test f, Wild) -> Printf.sprintf "%a" (fun x -> formula_to_string 0) f
+  | Seq (Wild, Test f) -> Printf.sprintf "%a" (fun x -> formula_to_string 0) f
+  | Wild -> Printf.sprintf "."
+  | Test f -> Printf.sprintf "%a?" (fun x -> formula_to_string 3) f
+  | Alt (r, s) -> Printf.sprintf (paren l 1 "%a + %a") (fun x -> regex_to_string 1) r (fun x -> regex_to_string 1) s
+  | Seq (r, s) -> Printf.sprintf (paren l 2 "%a%a") (fun x -> regex_to_string 2) r (fun x -> regex_to_string 2) s
+  | Star (r) -> Printf.sprintf  "%a*" (fun x -> regex_to_string 3) r
+let formula_to_string = formula_to_string 0
+
+
 let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
   | Bool b -> Printf.fprintf out (if b then "⊤" else "⊥")

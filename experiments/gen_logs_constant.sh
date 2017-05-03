@@ -47,4 +47,4 @@ const=$(get_events $i)
 for ts in `seq 1 $MAXTS`; do for j in `seq 1 $rate`; do echo "@$ts $const"; done; done > $logdir/tr${form}_${i}_${rate}.log
 
 #converting to montre format
-#./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log > $logdir/montre_tr${form}_${i}_${rate}.log
+./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log $rate > $logdir/montre_tr${form}_${i}_${rate}.log

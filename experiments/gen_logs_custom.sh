@@ -12,4 +12,4 @@ mkdir -p $logdir
 echo "generated log ${i} for formula ${form} with rate ${rate}";
 
 #converting to montre
-#./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log > $logdir/montre_tr${form}_${i}_${rate}.log
+./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log $rate > $logdir/montre_tr${form}_${i}_${rate}.log

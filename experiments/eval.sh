@@ -14,7 +14,7 @@ mf2='p () UNTIL [0, 5] q ()'
 mf3='p () UNTIL [0, 5] (q () SINCE [2, 6] r ())'
 mf4='p () UNTIL [0, 5] (q () UNTIL [2, 6] r ())'
 
-mof1='!((((!q)||q)*;q)%(0,5))'
+mof1='(((!q||q)*;q)%(0,5))'
 mof2='(p*;q)%(0,5)'
 mof3='(p*;(r;q*)%(2,6))%(0,5)'
 mof4='(p*;(q*;r)%(2,6))%(0,5)'
@@ -49,8 +49,7 @@ parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` :::
 
 
 #average and std
-echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" > results-${logs}-avg.csv
-cat results-${logs}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk '
+cat results-${logs}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk -F "," '
 {
 n[$1][$2][$3]++;
 dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
@@ -66,11 +65,12 @@ END{
 for(i in t){
       for(j in t[i]){
       	    for(k in t[i][j]){
-	    print i, j, k, m[i][j][k] ", "sqrt(m2m[i][j][k]/(n[i][j][k]-1)) ", "t[i][j][k] ", "sqrt(m2t[i][j][k]/(n[i][j][k]-1)) 
+	    print i ", "j ", "k ", "m[i][j][k] ", "sqrt(m2m[i][j][k]/(n[i][j][k]-1)) ", "t[i][j][k] ", "sqrt(m2t[i][j][k]/(n[i][j][k]-1)) 
 	    }}}
 }' >> results-${logs}-avg.csv
 
-cat results-${logs}-avg.csv | sort -n -k 2 > results-${logs}-final.csv
+echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" > results-${logs}-final.csv
+cat results-${logs}-avg.csv | sort -n -k 2 -t "," >> results-${logs}-final.csv
 
 mods=$(format_mode)
 mkdir -p figures

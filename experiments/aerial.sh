@@ -101,7 +101,7 @@ then
   cmd="$MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log ${logdir}/tr${trace}_${i}_${rate}.log -negate 2>&1 >/dev/null"
 elif [ "$mode" -eq "7" ]
 then 
-  cmd="$MONTRE -i -e '`cat formulas/montre_f$form.formula`' -o /dev/null '${logdir}/montre_tr${trace}_${i}_${rate}.log' 2>&1 > /dev/null"
+  cmd="$MONTRE -e '`cat formulas/montre_f$form.formula`' -o bla${form}_${i}.txt '${logdir}/montre_tr${trace}_${i}_${rate}.log' 2>&1 > /dev/null"
 elif [ "$mode" -eq "8" ]
 then 
   cmd="./aerialbdd.native -mtl -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"

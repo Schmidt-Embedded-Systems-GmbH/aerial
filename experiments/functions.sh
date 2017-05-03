@@ -13,34 +13,34 @@ function print_mode {
 #            9 -> aerial MTL bdd partial default
    if [ "$1" -eq "0" ]
    then
-     echo "aerial_MTL_naive"
+     echo "Aerial MTL (naive)"
    elif [ "$1" -eq "1" ]
    then
-     echo "aerial_MTL_local"
+     echo "Aerial MTL (local)"
    elif [ "$1" -eq "2" ]
    then
-     echo "aerial_MTL_global"
+     echo "Aerial MTL (global)"
    elif [ "$1" -eq "3" ]
    then
-     echo "aerial_MDL_naive"
+     echo "Aerial MDL (naive)"
    elif [ "$1" -eq "4" ]
    then
-     echo "aerial_MDL_local"
+     echo "Aerial MDL (local)"
    elif [ "$1" -eq "5" ]
    then
-     echo "aerial_MDL_global"
+     echo "Aerial MDL (global)"
    elif [ "$1" -eq "6" ]
    then
-     echo "monpoly"
+     echo "Monpoly"
    elif [ "$1" -eq "7" ]
    then
-     echo "montre"
+     echo "Montre"
    elif [ "$1" -eq "8" ]
    then
-     echo "aerial_bdd_default"
+     echo "Aerial BDD"
    elif [ "$1" -eq "9" ]
    then
-     echo "aerial_bdd_partial_default"  
+     echo "Aerial Partial BDD"  
    else
      echo "???"
    fi
@@ -50,14 +50,15 @@ function print_mode {
 function read_mode {
 
   while read  p || [[ -n "$p" ]]; do
-  print_mode $p
+  local m=$(print_mode $p)
+  echo "${m}, " 
   done < ./mods
 
 }
 
 function format_mode {
   local line=$(read_mode)
-  echo $line | sed -E "s/ /, /g"
+  echo $line | sed -E 's/\(.*\),/\1 /'
 }
 
 function run {
