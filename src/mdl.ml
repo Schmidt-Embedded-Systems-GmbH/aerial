@@ -357,11 +357,11 @@ let init f =
   let v i = V (true, i) in
   let mem = function
     | PossiblyF (j, ii, i, r, f) ->
-        derF (fun h -> Now (v (- idx_of h - 1))) (fun s ->
+        derF (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
           let k = find (PossiblyF (j, ii, i, s, f)) in
           Later (fun delta -> v (k - delta))) r
     | PossiblyP (j, ii, i, f, r) ->
-        derP (fun h -> Now (v (- idx_of h - 1))) (fun s ->
+        derP (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
           let k = find (PossiblyP (j, ii, i, f, s)) in
           Later (fun delta -> v (k - delta))) r
     | _ -> Later (fun _ -> (B true)) in
