@@ -28,10 +28,10 @@ module MTL : Language = struct
             [1, Gen.map Mtl.neg   (go (n-1));
             1, Gen.map2 Mtl.conj  (go m) (go (n - 1 - m));
             1, Gen.map2 Mtl.disj  (go m) (go (n - 1 - m));
-            1, Gen.map2 Mtl.next  interval_gen (go (n-1));
-            1, Gen.map3 Mtl.until interval_gen (go m) (go (n - 1 - m));
-            1, Gen.map2 Mtl.prev  interval_gen (go (n-1));
-            1, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))])
+            (*1, Gen.map2 Mtl.next  interval_gen (go (n-1));*)
+            2, Gen.map3 Mtl.until interval_gen (go m) (go (n - 1 - m));
+            (*1, Gen.map2 Mtl.prev  interval_gen (go (n-1));*)
+            2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))])
     let formula_to_string = Mtl.formula_to_string
     
 end

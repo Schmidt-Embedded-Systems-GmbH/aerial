@@ -104,10 +104,10 @@ then
   cmd="$MONTRE -e '`cat formulas/montre_f$form.formula`' -o bla${form}_${i}.txt '${logdir}/montre_tr${trace}_${i}_${rate}.log' 2>&1 > /dev/null"
 elif [ "$mode" -eq "8" ]
 then 
-  cmd="./aerialbdd.native -mtl -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mtl-bdd -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
 elif [ "$mode" -eq "9" ]
 then 
-  cmd="./aerialbddp.native -mtl -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mdl-bdd -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
 elif [ "$mode" -lt "6" ]
 then
   if [ "$mode" -lt "3" ]
