@@ -2,6 +2,7 @@ glob
 
 experiments/logs
 experiments/formulas
+experiments/results
 _build
 syntax: glob
 aerial.native

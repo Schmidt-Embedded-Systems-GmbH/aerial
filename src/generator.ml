@@ -19,11 +19,10 @@ end
 
 module MTL : Language = struct
   type formula = Mtl.formula
-  let generate atoms =
-    let rec go = function
+  let generate atoms = Gen.fix (fun go -> function
       | 0 -> Gen.oneofl (List.map Mtl.p atoms)
       | n -> 
-        let interval_gen = interval_gen 100 50 in
+        let interval_gen = interval_gen 50 25 in
         let m = Random.int n in
           Gen.frequency
             [1, Gen.map Mtl.neg   (go (n-1));
@@ -32,8 +31,7 @@ module MTL : Language = struct
             1, Gen.map2 Mtl.next  interval_gen (go (n-1));
             1, Gen.map3 Mtl.until interval_gen (go m) (go (n - 1 - m));
             1, Gen.map2 Mtl.prev  interval_gen (go (n-1));
-            1, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))] in
-      go
+            1, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))])
     let formula_to_string = Mtl.formula_to_string
     
 end
@@ -41,11 +39,10 @@ let mtl = (module MTL : Language)
 
 module MDL : Language = struct
   type formula = Mdl.formula
-  let generate atoms =
-    let rec go = function
-      | 0 -> Gen.map Mdl.p (Gen.oneofl atoms)
+  let generate atoms = Gen.fix (fun go -> function
+      | 0 -> Gen.oneofl (List.map Mdl.p atoms)
       | n ->
-        let interval_gen = interval_gen 100 50 in
+        let interval_gen = interval_gen 50 25 in
         let m = Random.int n in
           Gen.frequency
             [1, Gen.map Mdl.neg   (go (n-1));
@@ -54,8 +51,7 @@ module MDL : Language = struct
             1, Gen.map2 Mdl.next  interval_gen (go (n-1));
             1, Gen.map3 Mdl.until interval_gen (go m) (go (n - 1 - m));
             1, Gen.map2 Mdl.prev  interval_gen (go (n-1));
-            1, Gen.map3 Mdl.since interval_gen (go m) (go (n - 1 - m))] in
-      go
+            1, Gen.map3 Mdl.since interval_gen (go m) (go (n - 1 - m))])
     let formula_to_string = Mdl.formula_to_string
     
 end
