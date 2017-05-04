@@ -41,4 +41,4 @@ val bool: bool -> formula
 
 val formula_to_string: formula -> string
 
-module Monitor_MTL : Monitor.Monitor with type formula = formula
+module Monitor_MTL(C : Cell.Cell) : Monitor.Monitor with type formula = formula

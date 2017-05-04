@@ -18,21 +18,23 @@ module type Language = sig
   module Monitor: Monitor.Monitor with type formula = formula
 end
 
-module Mtl : Language = struct
+module Mtl(C : Cell.Cell) : Language = struct
   type formula = Mtl.formula
   let parse = Mtl_parser.formula Mtl_lexer.token
   let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
-  module Monitor = Mtl.Monitor_MTL
+  module Monitor = Mtl.Monitor_MTL(C)
 end
-let mtl = (module Mtl : Language)
+let mtl = (module Mtl(Bexp.Cell) : Language)
+let mtl_bdd = (module Mtl(Bdd.Cell) : Language)
 
-module Mdl : Language = struct
+module Mdl(C : Cell.Cell) : Language = struct
   type formula = Mdl.formula
   let parse = Mdl_parser.formula Mdl_lexer.token
   let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
-  module Monitor = Mdl.Monitor_MDL
+  module Monitor = Mdl.Monitor_MDL(C)
 end
-let mdl = (module Mdl : Language)
+let mdl = (module Mdl(Bexp.Cell) : Language)
+let mdl_bdd = (module Mdl(Bdd.Cell) : Language)
 
 let language_ref = ref mtl
 let fmla_ref = ref None
@@ -67,6 +69,8 @@ let usage () = Format.eprintf
 Arguments:
 \t -mdl - use Metric Dynamic Logic
 \t -mtl - use Metric Temporal Logic (default)
+\t -mdl-bdd - use Metric Dynamic Logic and BDDs
+\t -mtl-bdd - use Metric Temporal Logic and BDDs
 \t -mode
 \t\t 0 - naive
 \t\t 1 - compress locally (default)
@@ -100,6 +104,12 @@ let process_args =
         go args
     | ("-mtl" :: args) ->
         language_ref := mtl;
+        go args
+    | ("-mdl-bdd" :: args) ->
+        language_ref := mdl_bdd;
+        go args
+    | ("-mtl-bdd" :: args) ->
+        language_ref := mtl_bdd;
         go args
     | ("-fmla" :: fmlafile :: args) ->
         let in_ch = open_in fmlafile in

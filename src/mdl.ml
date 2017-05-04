@@ -236,10 +236,12 @@ let once i f = since i (bool true) f
 let historically i f = neg (once i (neg f))
 
 
-module MDL : Formula with type f = formula and type memory = future_cell array = struct
+module MDL (C : Cell) : Formula with type f = formula and type memory = C.future_cell array = struct
 
 type f = formula
-type memory = future_cell array
+type memory = C.future_cell array
+module C = C
+open C
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -398,4 +400,4 @@ let progress (f_vec, m) (delta, ev) a =
 
 end
 
-module Monitor_MDL = Monitor.Make(MDL)
+module Monitor_MDL(C : Cell) = Monitor.Make(MDL(C))

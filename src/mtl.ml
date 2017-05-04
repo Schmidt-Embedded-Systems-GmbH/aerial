@@ -86,10 +86,12 @@ let always i f = neg (eventually i (neg f))
 let once i f = since i (bool true) f
 let historically i f = neg (once i (neg f))
 
-module MTL : Formula with type f = formula = struct
+module MTL(C : Cell) : Formula with type f = formula = struct
 
 type f = formula
 type memory = ()
+module C = C
+open C
 
 let rec bounded_future = function
   | Bool _ -> true
@@ -177,4 +179,4 @@ let progress (f_vec, _) (delta, ev) a =
 
 end
 
-module Monitor_MTL = Monitor.Make(MTL)
+module Monitor_MTL(C : Cell) = Monitor.Make(MTL(C))

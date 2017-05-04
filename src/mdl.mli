@@ -8,6 +8,7 @@
 (*******************************************************************)
 
 open Util
+open Cell
 
 type formula = private
 | P of int * string
@@ -58,4 +59,4 @@ val bool: bool -> formula
 
 val formula_to_string: formula -> string
 
-module Monitor_MDL : Monitor.Monitor with type formula = formula
+module Monitor_MDL(C : Cell) : Monitor.Monitor with type formula = formula
