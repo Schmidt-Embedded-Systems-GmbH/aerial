@@ -33,9 +33,9 @@ rule token = parse
   | "false" | "⊥"                                 { FALSE }
   | "true" | "⊤" 		                              { TRUE }
   | "INFINITY" | "∞" 		                          { INFINITY }
-  | '!' | "¬"                                     { NEG }
-  | '&' | "∧"			                                { CONJ }
-  | '|' | "∨" 			                              { DISJ }
+  | '!' | "¬" | "NOT"                             { NEG }
+  | '&' | "∧" | "AND"                              { CONJ }
+  | '|' | "∨" | "OR"                             { DISJ }
   | "=>" | "->" | "→"                             { IMP }
   | "<=>"  | "<->" | "↔"                          { IFF }
   | "SINCE" | "S" | "U⁻"                          { SINCE }
@@ -44,7 +44,7 @@ rule token = parse
   | "RELEASE" | "R" 		                          { RELEASE }
   | "TRIGGER" |	"T"	| "R⁻"                        { TRIGGER }
   | "NEXT" | "X" | "○"	                          { NEXT }
-  | "PREV" | "Y" | "X⁻" | "●" 		                { PREV }
+  | "PREV" | "PREVIOUS" | "Y" | "X⁻" | "●" 		    { PREV }
   | "GLOBALLY" | "ALWAYS" | "G" | "□" 	          { ALWAYS }
   | "FINALLY" | "EVENTUALLY" | "F" | "◊"          { EVENTUALLY }
   | "GLOBALLY_PAST" | "HISTORICALLY" | "G⁻" | "■" { HISTORICALLY }
