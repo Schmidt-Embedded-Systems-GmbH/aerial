@@ -39,42 +39,10 @@ mkdir -p tmp
 #custom or monpoly or random or constant
 logs=$1
 
-
+#WARNING: script changed!
 echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
-parallel ./aerial.sh ::: `cat rates` ::: {1..4} ::: `eval echo {1..$MAXIDX}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
+parallel ./aerial_formula.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {0..79}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
 
-# echo "Tool, Rate, Formula, Space, Time" > results-${logs}-avg.csv
-#only average
-#cat results-${logs}.csv | grep -v Time | grep -v timeout | gawk '{m[$1][$2][$3]+=$5;t[$1][$2][$3]+=$6;n[$1][$2][$3]++}END{for(i in t){for(j in t[i]){for(k in t[i][j]){print i, j, k, m[i][j][k]/(1 < n[i][j][k] ? n[i][j][k] : 1)/1024/1024 ", " t[i][j][k]/(1 < n[i][j][k] ? n[i][j][k] : 1) }}}}' >> results-${logs}-avg.csv
+./process_results.sh ${logs} > results-${logs}-final.csv
 
-
-#average and std
-cat results-${logs}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk -F "," '
-{
-n[$1][$2][$3]++;
-dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
-dt[$1][$2][$3]=$6-t[$1][$2][$3];
-m[$1][$2][$3]+=dm[$1][$2][$3] / n[$1][$2][$3];
-t[$1][$2][$3]+=dt[$1][$2][$3] / n[$1][$2][$3];
-dm2[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
-dt2[$1][$2][$3]=$6-t[$1][$2][$3];
-m2m[$1][$2][$3]=dm[$1][$2][$3]*dm2[$1][$2][$3];
-m2t[$1][$2][$3]=dt[$1][$2][$3]*dt2[$1][$2][$3];
-}
-END{
-for(i in t){
-      for(j in t[i]){
-      	    for(k in t[i][j]){
-	    print i ", "j ", "k ", "m[i][j][k] ", "sqrt(m2m[i][j][k]/(n[i][j][k]-1)) ", "t[i][j][k] ", "sqrt(m2t[i][j][k]/(n[i][j][k]-1)) 
-	    }}}
-}' >> results-${logs}-avg.csv
-
-echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" > results-${logs}-final.csv
-cat results-${logs}-avg.csv | sort -n -k 2 -t "," >> results-${logs}-final.csv
-
-mods=$(format_mode)
-mkdir -p figures
-now=$(date +"%m_%d_%Y")
-sed "s/MODS/$mods/g" ./plots.tex > plots-$now.tex
-
-latexmk -shell-escape -pdf plots-$now.tex
+./visualize_results.sh ${logs}

@@ -1,28 +1,31 @@
 #!/bin/bash
 
-rm -rf tmp
-mkdir tmp
+source functions.sh
 
-for form in {1..4};
-do
-  rm -f f${form}_results.txt
-  grep "formula: $form," results.txt > tmp/f${form}.txt;
-  for tool in "MTL_naive" "MTL_local" "MTL_global" "MDL_naive" "MDL_local" "MDL_global" "monpoly" "montre";
-  do
-    grep $tool tmp/f${form}.txt > tmp/f${form}_${tool}.txt;
-    for rate in `cat rates`;
-    do
-      grep "rate: $rate," tmp/f${form}_${tool}.txt > tmp/f${form}_${tool}_${rate}.txt;
-      sed -i '' 's/.*space: //g' tmp/f${form}_${tool}_${rate}.txt;
-      awk '{for(i=1;i<=NF;i++) {sum[i] += $i; sumsq[i] += ($i)^2}}
-          END {for (i=1;i<=NF;i++) {
-          printf "%d %f %f \n", "'"$rate"'", sum[i]/NR/1024/1024, sqrt((sumsq[i]-sum[i]^2/NR)/NR)/1024/1024}
-         }' tmp/f${form}_${tool}_${rate}.txt >> tmp/f${form}_${tool}_ave.txt;
-    done
-    echo "$tool" >> f${form}_results.txt
-    cat tmp/f${form}_${tool}_ave.txt >> f${form}_results.txt
-    sed -i '' -e '$a\' f${form}_results.txt
-  done
-done
+logs=$1
 
-rm -rf tmp
+#average and std
+cat results-${logs}.csv | grep -v Time | grep -v disq | grep -v subformula | sed "s/(timeout)//g" | gawk -F "," '
+{
+n[$1][$2][$3]++;
+dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
+dt[$1][$2][$3]=$6-t[$1][$2][$3];
+m[$1][$2][$3]+=dm[$1][$2][$3] / n[$1][$2][$3];
+t[$1][$2][$3]+=dt[$1][$2][$3] / n[$1][$2][$3];
+dm2[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
+dt2[$1][$2][$3]=$6-t[$1][$2][$3];
+m2m[$1][$2][$3]=dm[$1][$2][$3]*dm2[$1][$2][$3];
+m2t[$1][$2][$3]=dt[$1][$2][$3]*dt2[$1][$2][$3];
+}
+END{
+for(i in t){
+      for(j in t[i]){
+      	    for(k in t[i][j]){
+	    print i ", "j ", "k ", "m[i][j][k] ", "sqrt(m2m[i][j][k]/(n[i][j][k]-1)) ", "t[i][j][k] ", "sqrt(m2t[i][j][k]/(n[i][j][k]-1)) 
+	    }}}
+}' >> results-${logs}-avg.csv
+
+echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" 
+cat results-${logs}-avg.csv | sort -n -k 3 -t "," 
+
+rm results-${logs}-avg.csv

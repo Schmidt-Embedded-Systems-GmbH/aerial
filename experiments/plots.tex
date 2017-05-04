@@ -85,7 +85,6 @@
    table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Rate, y=Time, y error=Tdev ,col sep=comma] {\csvfile};
 }
 
-%\legend{Aerial MTL (naive), Aerial MTL (local), Aerial MTL (global), Aerial MDL (naive), Aerial MDL (local), Aerial MDL (global), Monpoly, Montre}
 \legend{MODS}
     \end{axis}
 \end{tikzpicture}
@@ -112,7 +111,6 @@
 
 
 
-%\foreach\g in{aerial_MTL_naive, aerial_MTL_local, aerial_MTL_global, aerial_MDL_naive, aerial_MDL_local, aerial_MDL_global, monpoly, montre}{
 \foreach\g in{MODS}{    
    \addplot 
    plot [error bars/.cd, y dir = both, y explicit]

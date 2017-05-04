@@ -58,7 +58,7 @@ function read_mode {
 
 function format_mode {
   local line=$(read_mode)
-  echo $line | sed -E 's/\(.*\),/\1 /'
+  echo $line | sed 's/\(.*\),/\1 /' | tr -d " "
 }
 
 function run {
