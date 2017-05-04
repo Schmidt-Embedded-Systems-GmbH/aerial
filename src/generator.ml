@@ -17,6 +17,15 @@ module type Language = sig
   val formula_to_string: formula -> string
 end
 
+let rec formula_to_montre_string l = Mtl.(function
+  | P (_, x) -> Printf.sprintf "%s" x
+  | Bool b -> Printf.sprintf (if b then "p | !p" else "p & !p")
+  | Conj (f, g) -> Printf.sprintf (paren l 2 "%a && %a") (fun x -> formula_to_montre_string 2) f (fun x -> formula_to_montre_string 2) g
+  | Disj (f, g) -> Printf.sprintf (paren l 1 "%a || %a") (fun x -> formula_to_montre_string 1) f (fun x -> formula_to_montre_string 1) g
+  | Until (_, i, f, g) -> Printf.sprintf (paren l 0 "((%a)*;%a) %% %a") (fun x -> formula_to_montre_string 4) f (fun x -> formula_to_montre_string 4) g (fun x -> interval_to_string) i
+  | _ -> failwith "not supported")
+let formula_to_montre_string = formula_to_montre_string 0
+
 module MTL : Language = struct
   type formula = Mtl.formula
   let generate atoms = Gen.fix (fun go -> function
@@ -33,6 +42,7 @@ module MTL : Language = struct
             1, Gen.map2 Mtl.prev  interval_gen (go (n-1));
             1, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))])
     let formula_to_string = Mtl.formula_to_string
+    let formula_to_string x = formula_to_string x ^ "\n" ^ formula_to_montre_string x
     
 end
 let mtl = (module MTL : Language)
