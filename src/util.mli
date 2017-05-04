@@ -16,7 +16,7 @@ type trace = (SS.t * timestamp) list
 
 type binterval
 type uinterval
-type interval = B of binterval | U of uinterval
+type interval
 
 val lclosed_UI: int -> interval
 val lclosed_rclosed_BI: int -> int -> interval

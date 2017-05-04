@@ -53,6 +53,11 @@ let eval_future_cell t = function
   | Now c -> c
   | Later f -> f t
 
+let cbool b = B b
+let cvar b i = V (b, i)
+let fcbool b = Now (B b)
+let fcvar b i = Now (V (b, i))
+
 let rec cconj x y = match x, y with
   | (B c, d) | (d, B c) -> if c then d else B c
   | (C (c, d), e) -> cconj c (cconj d e)
