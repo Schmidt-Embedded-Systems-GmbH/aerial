@@ -9,8 +9,8 @@ function print_mode {
 #            5 -> aerial MDL global,
 #            6 -> monpoly,
 #            7 -> montre
-#            8 -> aerial MTL bdd default
-#            9 -> aerial MTL bdd partial default
+#            8 -> aerial MTL bdd 
+#            9 -> aerial MDL bdd 
    if [ "$1" -eq "0" ]
    then
      echo "Aerial MTL (naive)"
@@ -37,10 +37,10 @@ function print_mode {
      echo "Montre"
    elif [ "$1" -eq "8" ]
    then
-     echo "Aerial BDD"
+     echo "Aerial MTL BDD (local)"
    elif [ "$1" -eq "9" ]
    then
-     echo "Aerial Partial BDD"  
+     echo "Aerial MDL BDD (local)"  
    else
      echo "???"
    fi
@@ -58,7 +58,7 @@ function read_mode {
 
 function format_mode {
   local line=$(read_mode)
-  echo $line | sed 's/\(.*\),/\1 /' | tr -d " "
+  echo $line | sed 's/\(.*\),/\1 /' | sed 's/[[:space:]]\+$//'
 }
 
 function run {
