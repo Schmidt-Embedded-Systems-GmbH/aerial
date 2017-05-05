@@ -23,7 +23,6 @@ package manager. For example:
 
     apt-get install opam
     opam switch 4.04.1
-    opam install qcheck yojson js_of_ocaml menhir
     eval $(opam config env)
 
 then compile Aerial with

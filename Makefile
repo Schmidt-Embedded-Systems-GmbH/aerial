@@ -1,6 +1,7 @@
 NAME=src/aerial
-OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir -package num \
-           -plugin-tags "package(js_of_ocaml.ocamlbuild)" -yaccflag --explain
+OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -yaccflag --explain
+OCAMLBUILDWEB=ocamlbuild -use-ocamlfind \
+           -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson -yaccflag --explain
 OCAMLFIND=ocamlfind
 OBJS=$(wildcard _build/*.cm* _build/*.a _build/*.o)
 # OBJS=$(wildcard _build/*.{cmi,cmo,cma,cmx,cmxa,a,o})
@@ -66,7 +67,7 @@ nc-lib:
 	$(OCAMLBUILD) $(NAME).cmxa
 
 web:
-	$(OCAMLBUILD) -package yojson -I src applet/applet.byte
+	$(OCAMLBUILDWEB) -I src applet/applet.byte
 	js_of_ocaml -I . --file examples:/ applet.byte -o applet/aerial.js
 
 run:
