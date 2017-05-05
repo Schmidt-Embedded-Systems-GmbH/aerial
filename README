@@ -14,26 +14,23 @@ Bhargav Bhatt. The theory is described in the paper draft:
 Almost Event-Rate Independent Monitoring of Metric Temporal Logic
 http://people.inf.ethz.ch/trayteld/papers/aerial/aerial.pdf
 
-To compile, install a recent (>= 4.04.0) version of the OCaml compiler.
-For instance:
-
-    apt-get install ocaml
-
+Aerial depends on a recent (>= 4.04.0) version of the OCaml compiler.
 (An outdated PolyML implementation of Aerial referenced in the above
 paper can be found in this repository under the tag 'poly'.)
 
-Besides ocaml you will need some additional libraries that can be installed
-opam - ocaml's package manager. For example:
+To install ocaml and some additional libraries use opam - ocaml's 
+package manager. For example:
 
     apt-get install opam
-    opam install qcheck yojson js_of_ocaml
+    opam switch 4.04.1
+    opam install qcheck yojson js_of_ocaml menhir
     eval $(opam config env)
 
-then copile with
+then compile Aerial with
 
     make
 
-to obtain a binary aerial.native and
+to obtain a binary aerial.native file and
 
     ./aerial.native -fmla examples/test1.mtl -log examples/test2.log
 
