@@ -46,6 +46,10 @@ let subtract_UI n (UI i) = UI (subtract n i)
 let subtract_BI n (BI (i, j)) = BI (subtract n i, subtract n j)
 let subtract_I n = map_I (subtract_BI n) (subtract_UI n)
 
+let multiply_UI n (UI i) = UI (i*n)
+let multiply_BI n (BI (i, j)) = BI(i*n,j*n)
+let multiply_I n = map_I (multiply_BI n) (multiply_UI n)
+
 let mem_UI t (UI l) = l <= t
 let mem_BI t (BI (l, r)) = l <= t && t <= r
 let mem_I t = case_I (mem_BI t) (mem_UI t)

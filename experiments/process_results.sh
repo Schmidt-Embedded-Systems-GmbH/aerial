@@ -1,11 +1,12 @@
 #!/bin/bash
 
-source functions.sh
+source ./functions.sh
 
 logs=$1
 
+
 #average and std
-cat results-${logs}.csv | grep -v Time | grep -v disq | grep -v subformula | sed "s/(timeout)//g" | gawk -F "," '
+cat results-${logs}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk -F "," '
 {
 n[$1][$2][$3]++;
 dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];

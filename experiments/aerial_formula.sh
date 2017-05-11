@@ -7,10 +7,9 @@
 #use helper functions
 source ./functions.sh
 
-MAXIDX=40
+MAXIDX=80
 
-TIMEOUT="gtimeout 100s"
-TIME="/usr/bin/time -l"
+TIMEOUT="$TIMEOUT 100s"
 
 AERIAL=$(which aerial)
 # AERIAL=./aerial.native
@@ -73,7 +72,8 @@ fi
 #step 2
 if [ -f $prevtmpfile ]
 then
-  tos=$(wc -l $prevtmpfile | tr -s " " | cut -d " " -f2)
+  tos=$(wc -l $prevtmpfile | $AWK '{$1=$1;print}' | cut -d " " -f1)
+  # tos=$(wc -l $prevtmpfile | tr -s " " | cut -d " " -f2)
   if [ "$tos" -gt "$MAXIDX" ]
   then 
   echo "$modestr, $rate, $form, $index, disq, disq"
@@ -102,7 +102,7 @@ then
   cmd="$MONPOLY -sig f.sig -formula formulas/monpoly_r${form}_${i}.formula -log ${logdir}/tr${trace}_${j}_${rate}.log -negate 2>&1 >/dev/null"
 elif [ "$mode" -eq "7" ]
 then 
-  cmd="$MONTRE -i -e '`cat formulas/montre_r${form}_${i}.formula`' '${logdir}/montre_tr${trace}_${j}_${rate}.log' 2>&1 > /dev/null"
+  cmd="$MONTRE -i -e '`cat formulas/montre_r${form}_${rate}_${i}.formula`' '${logdir}/montre_tr${trace}_${j}_${rate}.log' 2>&1 > /dev/null"
 elif [ "$mode" -eq "8" ]
 then 
   cmd="$AERIAL -mtl-bdd -fmla formulas/r${form}_${i}.formula -log  ${logdir}/tr${trace}_${j}_${rate}.log -out /dev/null 2>&1"
@@ -118,13 +118,12 @@ then
       lang="-mdl"
       mode=$(($mode - 3))
   fi 
-  cmd="$AERIAL -mode $mode $lang -fmla formulas/r${form}_${i}.formula -log  ${logdir}/tr${trace}_1_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mode $mode $lang -fmla formulas/r${form}_${i}.formula -log  ${logdir}/tr${trace}_${j}_${rate}.log -out /dev/null 2>&1"
 else
   echo "Unrecognized mode!"
 fi
 
-
+#echo $cmd
 
 run "$cmd" "$params"
 
- #echo $cmd

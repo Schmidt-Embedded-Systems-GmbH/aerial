@@ -1,4 +1,19 @@
+#!/bin/bash
 
+system=`uname`
+
+if [ "$system" == "Linux" ]
+then
+  DATE="date"
+  TIMEOUT="timeout"
+  AWK="gawk"
+  TIME="/usr/bin/time -v"
+else
+  DATE="gdate"
+  TIMEOUT="gtimeout"
+  AWK="gawk"
+  TIME="/usr/bin/time -l"
+fi
 
 function print_mode {
 #mode can be 0 -> aerial MTL naive,
@@ -68,11 +83,17 @@ function run {
     local params="$2"
 
     #run the command, parse results...
-    local ts=$(gdate +%s%N)
+    local ts=$($DATE +%s%N)
     local result=$(eval "$TIME $TIMEOUT $cmd")
-    local time=$((($(gdate +%s%N) - $ts)/1000000)) 
-    local space=$(echo $result | cut -d " " -f7)
-    #local time=$(echo $result | cut -d " " -f1)
+    local time=$((($($DATE +%s%N) - $ts)/1000000)) 
+
+    if [ "$system" == "Linux" ]
+    then
+      local space=$(echo $result | cut -d ":" -f15 | cut -d " " -f2)
+      local space=$((space*1024))
+    else
+      local space=$(echo $result | cut -d " " -f7)
+    fi
 
     # step 3 (see below)
     if [ "$time" -gt "100000" ]

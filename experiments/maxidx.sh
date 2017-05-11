@@ -1,4 +1,4 @@
 #!/bin/bash
 
 #MAXIDX
-echo 10
+echo 8

@@ -40,7 +40,7 @@ and regex_to_string l = function
   | Wild -> Printf.sprintf "."
   | Test f -> Printf.sprintf "%a?" (fun x -> formula_to_string 3) f
   | Alt (r, s) -> Printf.sprintf (paren l 1 "%a + %a") (fun x -> regex_to_string 1) r (fun x -> regex_to_string 1) s
-  | Seq (r, s) -> Printf.sprintf (paren l 2 "%a%a") (fun x -> regex_to_string 2) r (fun x -> regex_to_string 2) s
+  | Seq (r, s) -> Printf.sprintf (paren l 2 "%a %a") (fun x -> regex_to_string 2) r (fun x -> regex_to_string 2) s
   | Star (r) -> Printf.sprintf  "%a*" (fun x -> regex_to_string 3) r
 let formula_to_string = formula_to_string 0
 
@@ -59,7 +59,7 @@ and print_regex l out = function
   | Wild -> Printf.fprintf out "."
   | Test f -> Printf.fprintf out "%a?" (print_formula 3) f
   | Alt (r, s) -> Printf.fprintf out (paren l 1 "%a + %a") (print_regex 1) r (print_regex 1) s
-  | Seq (r, s) -> Printf.fprintf out (paren l 2 "%a%a") (print_regex 2) r (print_regex 2) s
+  | Seq (r, s) -> Printf.fprintf out (paren l 2 "%a %a") (print_regex 2) r (print_regex 2) s
   | Star (r) -> Printf.fprintf out "%a*" (print_regex 3) r
 let print_formula = print_formula 0
 

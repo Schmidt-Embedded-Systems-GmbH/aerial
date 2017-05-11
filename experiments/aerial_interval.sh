@@ -7,7 +7,7 @@
 #use helper functions
 source ./functions.sh
 
-MAXIDX=$(./maxidx.sh)
+MAXIDX=80
 
 TIMEOUT="$TIMEOUT 100s"
 
@@ -30,10 +30,12 @@ MONTRE=$(which montre)
 
 rate=$1
 form=$2
-i=$3
+index=$3
 mode=$4
 logs=$5
 logdir="logs/$logs"
+
+
 
 modestr=$(print_mode $mode)
 
@@ -46,20 +48,20 @@ modestr=$(print_mode $mode)
 #  3. after running the tool+formula, if it times out, write a line in the file for the current rate ($tmpfile)
 
 #path to the current timeout counting file
-tmpfile="tmp/TO${mode}_${rate}_${form}.tmp"
+tmpfile="tmp/TO${mode}_${form}.tmp"
 #path to the previous timeout counting file
-prevrate=$(cat rates | egrep -B1 "^$rate$" | head -1)
-prevtmpfile="tmp/TO${mode}_${prevrate}_${form}.tmp"
+prevform=$(cat forms | egrep -B1 "^$form$" | head -1)
+prevtmpfile="tmp/TO${mode}_${prevform}.tmp"
 
 #path to the current stop file
-stopfile="tmp/STOP${mode}_${rate}_${form}.tmp"
+stopfile="tmp/STOP${mode}_${form}.tmp"
 #path to the previous stop file
-prevstopfile="tmp/STOP${mode}_${prevrate}_${form}.tmp"
+prevstopfile="tmp/STOP${mode}_${prevform}.tmp"
 
 # step 1
 if [ -f $prevstopfile ]
 then
-echo "$modestr, $rate, $form, $i, disq, disq"
+echo "$modestr, $rate, $form, $index, disq, disq"
 touch $stopfile
 exit
 fi
@@ -68,10 +70,10 @@ fi
 if [ -f $prevtmpfile ]
 then
   tos=$(wc -l $prevtmpfile | $AWK '{$1=$1;print}' | cut -d " " -f1)
-  
-  if [ "$tos" -eq "$MAXIDX" ]
+  # tos=$(wc -l $prevtmpfile | tr -s " " | cut -d " " -f2)
+  if [ "$tos" -gt "$MAXIDX" ]
   then 
-  echo "$modestr, $rate, $form, $i, disq, disq"
+  echo "$modestr, $rate, $form, $index, disq, disq"
   touch $prevstopfile
   touch $stopfile
   exit
@@ -79,12 +81,8 @@ then
 fi
 
 
-if [ "$form" -eq "1" ]
-then
-  trace=2
-else
-  trace=$form
-fi
+trace=2
+
 
 #constant and random traces are not tailored for specific formulas
 if [[ "$logs" == "constant" || "$logs" == "random" ]]
@@ -93,21 +91,21 @@ then
 fi
 
 
-params="$modestr, $rate, $form, $i"
+params="$modestr, $rate, $form, $index"
 
 
 if [ "$mode" -eq "6" ]
 then
-  cmd="$MONPOLY -sig f.sig -formula formulas/monpoly_f$form.formula -log ${logdir}/tr${trace}_${i}_${rate}.log 2>&1 >/dev/null"
+  cmd="$MONPOLY -sig f.sig -formula formulas/monpoly_r${form}.formula -log ${logdir}/tr${trace}_${index}_${rate}.log -negate 2>&1 >/dev/null"
 elif [ "$mode" -eq "7" ]
 then 
-  cmd="$MONTRE -i -e '`cat formulas/montre_f${form}_${rate}.formula`' -o montre/out${form}_${rate}_${i}.txt '${logdir}/montre_tr${trace}_${i}_${rate}.log' 2>&1 > /dev/null"
+  cmd="$MONTRE -i -e '`cat formulas/montre_r${form}.formula`' '${logdir}/montre_tr${trace}_${index}_${rate}.log' 2>&1 > /dev/null"
 elif [ "$mode" -eq "8" ]
 then 
-  cmd="$AERIAL -mtl-bdd -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mtl-bdd -fmla formulas/r${form}.formula -log  ${logdir}/tr${trace}_${index}_${rate}.log -out /dev/null 2>&1"
 elif [ "$mode" -eq "9" ]
 then 
-  cmd="$AERIAL -mdl-bdd -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mdl-bdd -fmla formulas/r${form}.formula -log  ${logdir}/tr${trace}_${index}_${rate}.log -out /dev/null 2>&1"
 elif [ "$mode" -lt "6" ]
 then
   if [ "$mode" -lt "3" ]
@@ -117,11 +115,12 @@ then
       lang="-mdl"
       mode=$(($mode - 3))
   fi 
-  cmd="$AERIAL -mode $mode $lang -fmla formulas/f$form.formula -log  ${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
+  cmd="$AERIAL -mode $mode $lang -fmla formulas/r${form}.formula -log  ${logdir}/tr${trace}_${index}_${rate}.log -out /dev/null 2>&1"
 else
   echo "Unrecognized mode!"
 fi
 
+#echo $cmd
+
 run "$cmd" "$params"
 
-#echo $cmd
