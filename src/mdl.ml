@@ -174,7 +174,7 @@ and compare_re r s = match r,s with
 module RES = Set.Make(struct type t = regex let compare = compare_re end)
 
 let rec split = function
-  | Alt (r, s) -> RES.union (split r) (split s)
+  | Alt (r, s) -> RES.union (split r) (split (lift_re (- maxidx_of_re r - 1) s))
   | r -> RES.singleton r
 
 let rec nullable_overapprox = function
@@ -337,6 +337,7 @@ let derP curr finish =
 
 let init f =
   let f_vec = Array.of_list (ssub f) in
+  (*let _ = Array.iteri (fun i g -> Printf.printf "%d-%d:: %a\n%!" i (idx_of g) print_formula g) f_vec in*)
   let n = Array.length f_vec in
   (*local search more efficient, than just traversing the whole array*)
   let rec find offset = function
