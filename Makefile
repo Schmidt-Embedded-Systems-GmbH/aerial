@@ -15,6 +15,9 @@ OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir \
 			   -plugin-tags "package(js_of_ocaml.ocamlbuild)"  -yaccflag --explain \
 			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/ 
 
+OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
+GENNAME=src/generator
+
 ifndef PREFIX
   PREFIX=/usr/local
 else
@@ -44,6 +47,9 @@ test-clean:
 
 test: test-clean test-generate test-compile
 	./$(TESTPATH).native
+
+generate:
+	$(OCAMLBUILDGEN) $(GENNAME).native
 
 lib:
 	$(OCAMLBUILD) $(NAME).cmxa
