@@ -27,6 +27,6 @@ for(i in t){
 }' >> results-${logs}-avg.csv
 
 echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" 
-cat results-${logs}-avg.csv | sort -n -k 3 -t "," 
+cat results-${logs}-avg.csv | sort -n -k 2 -t "," 
 
 rm results-${logs}-avg.csv

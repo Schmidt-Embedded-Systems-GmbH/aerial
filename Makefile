@@ -50,6 +50,7 @@ test: test-clean test-generate test-compile
 
 generate:
 	$(OCAMLBUILDGEN) $(GENNAME).native
+	cp generator.native experiments/
 
 lib:
 	$(OCAMLBUILD) $(NAME).cmxa

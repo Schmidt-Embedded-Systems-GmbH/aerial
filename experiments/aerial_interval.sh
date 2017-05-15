@@ -61,7 +61,7 @@ prevstopfile="tmp/STOP${mode}_${prevform}.tmp"
 # step 1
 if [ -f $prevstopfile ]
 then
-echo "$modestr, $rate, $form, $index, disq, disq"
+echo "$modestr, $form, $index, disq, disq"
 touch $stopfile
 exit
 fi
@@ -73,7 +73,7 @@ then
   # tos=$(wc -l $prevtmpfile | tr -s " " | cut -d " " -f2)
   if [ "$tos" -gt "$MAXIDX" ]
   then 
-  echo "$modestr, $rate, $form, $index, disq, disq"
+  echo "$modestr, $form, $index, disq, disq"
   touch $prevstopfile
   touch $stopfile
   exit
@@ -91,7 +91,7 @@ then
 fi
 
 
-params="$modestr, $rate, $form, $index"
+params="$modestr, $form, $index"
 
 
 if [ "$mode" -eq "6" ]
@@ -99,7 +99,7 @@ then
   cmd="$MONPOLY -sig f.sig -formula formulas/monpoly_r${form}.formula -log ${logdir}/tr${trace}_${index}_${rate}.log -negate 2>&1 >/dev/null"
 elif [ "$mode" -eq "7" ]
 then 
-  cmd="$MONTRE -i -e '`cat formulas/montre_r${form}.formula`' '${logdir}/montre_tr${trace}_${index}_${rate}.log' 2>&1 > /dev/null"
+  cmd="$MONTRE -i -e '`cat formulas/montre_r${form}.formula`' -o /dev/null '${logdir}/montre_tr${trace}_${index}_${rate}.log' 2>&1 > /dev/null"
 elif [ "$mode" -eq "8" ]
 then 
   cmd="$AERIAL -mtl-bdd -fmla formulas/r${form}.formula -log  ${logdir}/tr${trace}_${index}_${rate}.log -out /dev/null 2>&1"

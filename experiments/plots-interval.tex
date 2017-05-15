@@ -1,0 +1,134 @@
+\documentclass{article}
+
+
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.13}
+\pgfplotsset{filter discard warning=false} 
+\pgfdeclarelayer{edgelayer}
+\pgfdeclarelayer{nodelayer}
+\usepgfplotslibrary{fillbetween}
+
+\usepackage{tikz}
+\usepackage{tkz-euclide}	
+\usetikzlibrary{decorations.markings,fit,shapes.misc}
+\usetikzlibrary{arrows, shapes.geometric,snakes}
+\usetikzlibrary{patterns,snakes}
+%\usepgfplotslibrary{external}
+%\tikzexternalize[prefix=figures/]
+
+\pgfplotsset{
+    discard if/.style 2 args={
+        x filter/.append code={
+            \edef\tempa{\thisrow{#1}}
+            \edef\tempb{#2}
+            \ifx\tempa\tempb
+                \def\pgfmathresult{inf}
+            \fi
+        }
+    },
+    discard if not/.style 2 args={
+        x filter/.append code={
+            \edef\tempa{\thisrow{#1}}
+            \edef\tempb{#2}
+            \ifx\tempa\tempb
+            \else
+                \def\pgfmathresult{inf}
+            \fi
+        }
+    }
+}
+
+
+\newcommand{\plotHeight}{18cm}
+\newcommand{\plotWidth}{18cm}
+\newcommand{\csvfile}{""}
+%results-${logs}-final.csv
+%results-custom-final.csv
+%results-monpoly-final.csv
+%results-random-final.csv
+%results-constant-final.csv
+
+%\immediate\write18{./getmodes.sh > modenames.tex}
+
+
+\begin{document}
+
+\foreach\c in{./results-monpoly-final.csv, ./results-custom-final.csv, ./results-constant-final.csv, ./results-random-final.csv}{
+\renewcommand{\csvfile}{\c}
+
+\IfFileExists{\c}{
+
+\section{\c}
+
+\begin{figure}[b]
+
+\begin{tikzpicture}[scale=0.65]
+    \begin{axis}[
+      legend pos=north west,
+      legend style={font=\tiny},
+      xlabel={Interval size},
+      ylabel={Time (ms)},
+      height=\plotHeight,
+      width=\plotWidth,
+      xlabel near ticks,
+      ylabel near ticks
+    ]
+
+
+
+\foreach\g in{MODS}{
+
+   \addplot 
+   plot [error bars/.cd, y dir = both, y explicit]
+   table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Formula, y=Time, y error=Tdev ,col sep=comma] {\csvfile};
+}
+
+\legend{MODS}
+    \end{axis}
+\end{tikzpicture}
+
+\caption{Time wrt formula size}
+\end{figure}
+
+
+
+\begin{figure}
+
+\begin{tikzpicture}[scale=0.65]
+    \begin{axis}[
+      legend pos=north west,
+      legend style={font=\tiny},
+      xlabel={Interval size},
+      ylabel={Memory (MB)},
+      height=\plotHeight,
+      width=\plotWidth,
+      xlabel near ticks,
+      ylabel near ticks
+    ]
+
+
+
+\foreach\g in{MODS}{    
+   \addplot 
+   plot [error bars/.cd, y dir = both, y explicit]
+   table [discard if not={Formula}{\f}, discard if not={Tool}{\g}, x=Formula, y=Space, y error=Sdev , col sep=comma] {\csvfile};
+}
+
+\legend{MODS}
+    \end{axis}
+\end{tikzpicture}
+
+\caption{Space wrt formula size}
+\end{figure}
+
+
+}
+{
+    %false-branch
+}
+
+}
+
+
+\end{document}

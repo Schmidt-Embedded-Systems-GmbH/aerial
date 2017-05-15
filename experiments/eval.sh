@@ -4,6 +4,21 @@ source functions.sh
 
 MAXIDX=$(./maxidx.sh)
 
+#Used for disqualification
+rm -rf tmp
+mkdir -p tmp
+
+#Logs: "custom" or "monpoly" or "random" or "constant"
+logs=$1
+
+#Type of experiment: "rate" or "formula" or "interval"
+type=$2
+
+
+if [ "$type" == "rate" ]
+then
+
+#formulas for rates
 f1='! (true U[0,5] q)'
 f2='! (p U[0,5] q)'
 f3='! (p U[0,5] (q S[2,6] r))'
@@ -13,9 +28,6 @@ mf1='TRUE UNTIL [0, 5] q ()'
 mf2='p () UNTIL [0, 5] q ()'
 mf3='p () UNTIL [0, 5] (q () SINCE [2, 6] r ())'
 mf4='p () UNTIL [0, 5] (q () UNTIL [2, 6] r ())'
-
-
-
 
 mkdir -p formulas
 echo $f1 > formulas/f1.formula
@@ -46,31 +58,58 @@ echo $mof3 > formulas/montre_f3_$rate.formula
 echo $mof4 > formulas/montre_f4_$rate.formula
 done
 
+#Script for rates
+echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
+parallel ./aerial.sh ::: `cat rates` ::: `eval echo {1..4}` ::: `eval echo {1..8}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
 
-rm -rf tmp
-mkdir -p tmp
+elif [ "$type" == "formula" ]
+then 
 
-rm -rf montre
-mkdir -p montre
+mtl=$(cat mods | egrep "0|1|2|6|8")
 
-#custom or monpoly or random or constant
-logs=$1
-
-#Script for intervals
-# echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
-# parallel ./aerial_interval.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {1..8}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
-
+if [ -z "$mtl" ] 
+then
+./gen_formulas.sh mtl
+else
+./gen_formulas.sh mdl
+fi
 
 #Script for random formulas
 echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
 parallel ./aerial_formula.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {0..79}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
 
-#Script for rates
-# echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
-# parallel ./aerial.sh ::: `cat rates` ::: `eval echo {1..4}` ::: `eval echo {1..8}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
+elif [ "$type" == "interval" ]
+#Script for intervals
 
+#Generate interval formulas
+for i in 5 10 15 20 25 45 60 90; 
+do 
 
+ d=$((i/2))
+ irate=$((1000*i))
+ drate=$((irate/2))
 
- #./process_results.sh ${logs} > results-${logs}-final.csv
+ aef='! (p U[0,'${i}'] (q S['${d}','${i}'] r))' 
+ mpf='p () UNTIL [0, '${i}'] (q () SINCE ['${d}', '${i}'] r ())'
+ mof='(p*;(r;q*)%('${drate}','${irate}'))%(0,'${irate}')'
 
- #./visualize_results.sh ${logs}
+ echo $aef  > formulas/r${i}.formula;
+ echo $mpf  > formulas/monpoly_r${i}.formula;
+ echo $mof  > formulas/montre_r${i}.formula;
+
+done
+
+echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
+parallel ./aerial_interval.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {1..8}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
+
+else
+echo "Invalid options: ./eval <type of logs> <type of experiments>"
+echo "<type of logs> = custom or monpoly or random or constant"
+echo "<type of experiments> = rate or formula or interval"
+
+fi
+
+ ./process_results.sh ${logs} > results-${logs}-final.csv
+
+ ./visualize_results.sh ${logs} ${type}
+ 
