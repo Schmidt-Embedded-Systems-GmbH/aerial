@@ -17,6 +17,8 @@ OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir \
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator
+GENMONPOLY=experiments/gen_log
+
 
 ifndef PREFIX
   PREFIX=/usr/local
@@ -51,6 +53,10 @@ test: test-clean test-generate test-compile
 generate:
 	$(OCAMLBUILDGEN) $(GENNAME).native
 	cp generator.native experiments/
+
+generate-monpoly:
+	$(OCAMLBUILD) $(GENMONPOLY).native
+	cp gen_log.native experiments/
 
 lib:
 	$(OCAMLBUILD) $(NAME).cmxa

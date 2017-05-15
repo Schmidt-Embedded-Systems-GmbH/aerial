@@ -79,6 +79,7 @@ echo "Tool, Rate, Formula, IDX, Space, Time" > results-${logs}.csv
 parallel ./aerial_formula.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {0..79}` ::: `cat mods` ::: "${logs}" >> results-${logs}.csv
 
 elif [ "$type" == "interval" ]
+then
 #Script for intervals
 
 #Generate interval formulas
@@ -106,7 +107,7 @@ else
 echo "Invalid options: ./eval <type of logs> <type of experiments>"
 echo "<type of logs> = custom or monpoly or random or constant"
 echo "<type of experiments> = rate or formula or interval"
-
+exit 1
 fi
 
  ./process_results.sh ${logs} > results-${logs}-final.csv

@@ -39,6 +39,9 @@ function get_rate {
    fi
 }
 
+make -C ../ generate-monpoly
+
+
 rate=$1
 form=$2
 i=$3

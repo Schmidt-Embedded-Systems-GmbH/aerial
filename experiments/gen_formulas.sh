@@ -1,5 +1,8 @@
 type=$1
 
+
+make -C ../ generate
+
 for i in 5 10 15 20 25 45 60 90; 
 do 
 for j in `seq 1 10`; 
