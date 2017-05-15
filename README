@@ -41,6 +41,9 @@ provides some additional hints about the tool's user interface.
 
 This repository also contains the bash scripts used to generate log files and
 run the experiments reported on in the above paper (directory experiments).
-Some of the shell scripts assume the "aerial" and "monpoly" binary file to be
-places inside of the experiments directory and a working installation of GNU
-Parallel.
+The shell scripts assume the "aerial", "monpoly" and "montre" binary 
+files to be available in the PATH, a working installation of GNU Parallel and 
+coreutils package for macOS. Scripts are tested on macOS 10.12.4 and Ubuntu 16.04.
+
+A pre-configured environment for running the experiments can be found on the official 
+tool website: http://www.infsec.ethz.ch/research/software/aerial.html
