@@ -36,7 +36,7 @@ end
 let mdl = (module Mdl(Bexp.Cell) : Language)
 let mdl_bdd = (module Mdl(Bdd.Cell) : Language)
 
-let language_ref = ref mtl
+let language_ref = ref mdl
 let fmla_ref = ref None
 let mode_ref = ref COMPRESS_LOCAL
 let log_ref = ref stdin
@@ -67,8 +67,8 @@ let rec get_next log =
 let usage () = Format.eprintf
 "Example usage: aerial -mode 1 -fmla test.fmla -log test.log -out test.out
 Arguments:
-\t -mdl - use Metric Dynamic Logic
-\t -mtl - use Metric Temporal Logic (default)
+\t -mdl - use Metric Dynamic Logic (default)
+\t -mtl - use Metric Temporal Logic
 \t -mdl-bdd - use Metric Dynamic Logic and BDDs
 \t -mtl-bdd - use Metric Temporal Logic and BDDs
 \t -mode
