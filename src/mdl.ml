@@ -369,11 +369,11 @@ let init f =
     | PossiblyF (j, ii, i, r, f) ->
         derF (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
           let k = find (PossiblyF (j, ii, i, s, f)) in
-          Later (fun delta -> v (k - delta))) r
+          Later (fun delta -> v (k - min delta (right_I i)))) r
     | PossiblyP (j, ii, i, f, r) ->
         derP (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
           let k = find (PossiblyP (j, ii, i, f, s)) in
-          Later (fun delta -> v (Format.printf "%d<%d\n" delta k; k - delta))) r
+          Later (fun delta -> v (k - min delta (right_I i)))) r
     | _ -> Later (fun _ -> cbool true) in
   (* let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in *)
   (reindex f, f_vec, Array.map mem f_vec)
@@ -385,12 +385,8 @@ let progress (f_vec, m) (delta, ev) a =
   let prev = mk_fcell (fun i -> a.(i)) in
   let prev f = subst_cell_future b (eval_future_cell delta (prev f)) in
   let next = mk_cell (cvar true) in
-  let getF = map_future_cell (fun i ->
-    try if i < 0 then curr f_vec.(- 1 - i) else Now (next f_vec.(i))
-    with Invalid_argument _ -> fcbool false) in
-  let getP = map_cell_future (fun i ->
-    try if i < 0 then curr f_vec.(- 1 - i) else prev f_vec.(i)
-    with Invalid_argument _ -> fcbool false) in
+  let getF = map_future_cell (fun i -> if i < 0 then curr f_vec.(- 1 - i) else Now (next f_vec.(i))) in
+  let getP = map_cell_future (fun i -> if i < 0 then curr f_vec.(- 1 - i) else prev f_vec.(i)) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> fcbool (SS.mem x ev)
