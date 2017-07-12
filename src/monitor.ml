@@ -15,7 +15,7 @@ module type Formula = sig
   type memory
   module C : Cell
   val print_formula: out_channel -> f -> unit
-  val init: f -> f array * memory
+  val init: f -> f * f array * memory
   val bounded_future: f -> bool
   val idx_of: f -> int
   val mk_cell: (int -> C.cell) -> f -> C.cell
@@ -45,7 +45,7 @@ type monitor =
 
 let create fmt mode_hint formula =
   let _ = Printf.fprintf fmt "Monitoring %a\n%!" F.print_formula formula in
-  let (f_vec, m) = F.init formula in
+  let (formula, f_vec, m) = F.init formula in
   let mode = if F.bounded_future formula then mode_hint else
     (Printf.fprintf fmt
     "The formula contains unbounded future operators and
@@ -69,13 +69,13 @@ will therefore be monitored in global mode.\n%!"; COMPRESS_GLOBAL) in
   let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
 
   let step (ev, t') ctxt =
+    (* let _ = Printf.printf "Processing %a @ %d\n" (fun _ -> SS.iter print_string) ev t' in *)
     let (t, i) as d = ctxt.now in
     let fa = ctxt.arr in
     let skip = ctxt.skip in
     let delta = t' - t in
     let eval = C.eval_future_cell delta in
-    (*let _ = Array.iteri (fun i -> Printf.printf "%d %a: %a\n%!" i F.print_formula f_vec.(i) print_cell) a in*)
-    (*let _ = Printf.printf "-------------------------\n\n" in*)
+    (* let _ = Array.iteri (fun i fc -> Printf.printf "%d-%d %a: %a\n%!" i (F.idx_of f_vec.(i)) F.print_formula f_vec.(i) C.print_cell (eval fc)) fa in *)
     let old_history = ctxt.history in
     let clean_history = List.fold_left (fun history (d, cell) ->
       C.maybe_output_cell fmt false d (eval (C.subst_cell_future fa cell)) add history) [] old_history in

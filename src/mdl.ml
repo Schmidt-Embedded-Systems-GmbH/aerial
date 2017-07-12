@@ -357,6 +357,13 @@ let init f =
       else find (offset + 1) g
     | _ -> -1 in
   let find = find 0 in
+  let rec reindex = function
+    | PossiblyF (j, ii, i, r, f) as g -> PossiblyF (find g, ii, i, r, f)
+    | PossiblyP (j, ii, i, f, r) as g -> PossiblyP (find g, ii, i, f, r)
+    | Conj (f, g) -> Conj (reindex f, reindex g)
+    | Disj (f, g) -> Disj (reindex f, reindex g)
+    | Neg f -> Neg (reindex f)
+    | g -> g in
   let v = cvar true in
   let mem = function
     | PossiblyF (j, ii, i, r, f) ->
@@ -368,8 +375,8 @@ let init f =
           let k = find (PossiblyP (j, ii, i, f, s)) in
           Later (fun delta -> v (k - delta))) r
     | _ -> Later (fun _ -> cbool true) in
-  (*let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in*)
-  (f_vec, Array.map mem f_vec)
+  (* let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in *)
+  (reindex f, f_vec, Array.map mem f_vec)
 
 let progress (f_vec, m) (delta, ev) a =
   let n = Array.length f_vec in

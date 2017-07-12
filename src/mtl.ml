@@ -136,7 +136,7 @@ let aux = function
   | Until (j,i,f,g) -> List.map (fun n -> Until (j - n, subtract_I n i, f, g)) (0 -- right_I i)
   | f -> [f]
 
-let init f = (Array.of_list (List.rev (List.concat (List.map aux (sub f)))), ())
+let init f = (f, Array.of_list (List.rev (List.concat (List.map aux (sub f)))), ())
 let mk cnj dsj neg bo idx =
   let rec go = function
     | Conj (f, g) -> cnj (go f) (go g)

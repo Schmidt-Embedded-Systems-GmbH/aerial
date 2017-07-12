@@ -15,7 +15,7 @@ module type Formula = sig
   type memory
   module C : Cell
   val print_formula: out_channel -> f -> unit
-  val init: f -> f array * memory
+  val init: f -> f * f array * memory
   val bounded_future: f -> bool
   val idx_of: f -> int
   val mk_cell: (int -> C.cell) -> f -> C.cell
