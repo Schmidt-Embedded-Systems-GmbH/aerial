@@ -22,8 +22,8 @@ type binterval = BI of int * int
 type interval = B of binterval | U of uinterval
 
 let case_I f1 f2 = function
-  | (B i) -> f1 i
-  | (U i) -> f2 i
+  | B i -> f1 i
+  | U i -> f2 i
 let map_I f1 f2 = case_I (fun i -> B (f1 i)) (fun i -> U (f2 i))
 
 let subtract n i = if i < n then 0 else i - n

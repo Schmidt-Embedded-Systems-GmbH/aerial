@@ -37,6 +37,8 @@ val eval_future_cell: timestamp -> future_cell -> cell
 
 val map_cell_future: (int -> future_cell) -> cell -> future_cell
 val map_cell: (int -> cell) -> cell -> cell
+val map_future_cell: (int -> future_cell) -> future_cell -> future_cell
+
 val subst_cell: cell array -> cell -> cell
 val subst_cell_future: future_cell array -> cell -> future_cell
 

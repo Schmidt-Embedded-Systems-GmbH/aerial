@@ -13,7 +13,7 @@ TESTFOLDER=test
 TESTPATH=$(TESTBUILD)/$(TESTNAME)
 OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir \
 			   -plugin-tags "package(js_of_ocaml.ocamlbuild)"  -yaccflag --explain \
-			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/ 
+			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator
@@ -29,7 +29,7 @@ endif
 standalone:
 	$(OCAMLBUILD) $(NAME).native
 
-install: 
+install:
 	cp ./aerial.native $(PREFIX)/bin/aerial
 
 uninstall:
@@ -44,7 +44,7 @@ test-compile: test-generate
 	mv $(TESTNAME).native $(TESTBUILD)/
 	mv $(TESTNAME).targets.log $(TESTBUILD)/
 
-test-clean: 
+test-clean:
 	rm -rf $(TESTBUILD)
 
 test: test-clean test-generate test-compile
@@ -60,7 +60,7 @@ generate-monpoly:
 
 lib:
 	$(OCAMLBUILD) $(NAME).cmxa
-	$(OCAMLBUILD) 
+	$(OCAMLBUILD)
 doc:
 	$(OCAMLBUILD) $(NAME).docdir/index.html
 

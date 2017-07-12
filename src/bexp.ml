@@ -143,6 +143,10 @@ let rec map_cell_future f = function
   | B b -> Now (B b)
   | V (b, x) -> maybe_flip_future b (f x)
 
+let map_future_cell f = function
+  | Now c -> map_cell_future f c
+  | Later g -> Later (fun delta -> map_cell (fun x -> eval_future_cell delta (f x)) (g delta))
+
 let subst_cell v = map_cell (Array.get v)
 let subst_cell_future v = map_cell_future (Array.get v)
 

@@ -155,6 +155,10 @@ let rec map_cell_future f = function
        norm empty (eval_future_cell d c) (eval_future_cell d l) (eval_future_cell d r)))
   | b -> Now b
 
+let map_future_cell f = function
+  | Now c -> map_cell_future f c
+  | Later g -> Later (fun delta -> map_cell (fun x -> eval_future_cell delta (f x)) (g delta))
+
 let subst_cell v = map_cell (Array.get v)
 let subst_cell_future v = map_cell_future (Array.get v)
 

@@ -355,7 +355,7 @@ let init f =
       else if u > l && u < n && compare f_vec.(u) (PossiblyP (u, ii, i, f, r)) = 0 then u
       else if l < 0 && u >= n then failwith "find: out of bounds (P)"
       else find (offset + 1) g
-    | _ -> -1 in
+    | _ -> failwith "find: not a temporal subformula" in
   let find = find 0 in
   let rec reindex = function
     | PossiblyF (j, ii, i, r, f) as g -> PossiblyF (find g, ii, i, r, f)
@@ -373,7 +373,7 @@ let init f =
     | PossiblyP (j, ii, i, f, r) ->
         derP (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
           let k = find (PossiblyP (j, ii, i, f, s)) in
-          Later (fun delta -> v (k - delta))) r
+          Later (fun delta -> v (Format.printf "%d<%d\n" delta k; k - delta))) r
     | _ -> Later (fun _ -> cbool true) in
   (* let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in *)
   (reindex f, f_vec, Array.map mem f_vec)
@@ -385,18 +385,19 @@ let progress (f_vec, m) (delta, ev) a =
   let prev = mk_fcell (fun i -> a.(i)) in
   let prev f = subst_cell_future b (eval_future_cell delta (prev f)) in
   let next = mk_cell (cvar true) in
-  let getF delta' =
-    map_cell (fun i -> if i < 0 then eval_future_cell delta' (curr f_vec.(- 1 - i)) else next f_vec.(i)) in
-  let getP =
-    map_cell_future (fun i -> if i < 0 then curr f_vec.(- 1 - i) else prev f_vec.(i)) in
+  let getF = map_future_cell (fun i ->
+    try if i < 0 then curr f_vec.(- 1 - i) else Now (next f_vec.(i))
+    with Invalid_argument _ -> fcbool false) in
+  let getP = map_cell_future (fun i ->
+    try if i < 0 then curr f_vec.(- 1 - i) else prev f_vec.(i)
+    with Invalid_argument _ -> fcbool false) in
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> fcbool (SS.mem x ev)
     | PossiblyF (j, _, i, r, f) -> fcdisj
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else fcbool false)
-        (Later (fun delta' -> if case_I (fun i -> delta' > right_BI i) (fun _ -> false) i
-          then cbool false
-          else getF delta' (eval_future_cell delta' m.(j))))
+        (fcconj (Later (fun delta' -> cbool (case_I (fun i -> delta' <= right_BI i) (fun _ -> true) i)))
+          (getF m.(j)))
     | PossiblyP (j, _, i, f, r) -> fcdisj
         (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else fcbool false)
         (if case_I (fun i -> delta > right_BI i) (fun _ -> false) i
