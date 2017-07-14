@@ -24,8 +24,11 @@ module Mtl(C : Cell.Cell) : Language = struct
   let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
   module Monitor = Mtl.Monitor_MTL(C)
 end
-let mtl = (module Mtl(Bexp.Cell) : Language)
-let mtl_bdd = (module Mtl(Bdd.Cell) : Language)
+
+let cell_ref = ref (module Bexp.Cell : Cell.Cell)
+let mtl () =
+  let (module C) = !cell_ref in
+  (module Mtl(C) : Language)
 
 module Mdl(C : Cell.Cell) : Language = struct
   type formula = Mdl.formula
@@ -33,8 +36,9 @@ module Mdl(C : Cell.Cell) : Language = struct
   let example_formula = parse (Lexing.from_string "P0 U[0,5] (P1 U[2,6] P2)")
   module Monitor = Mdl.Monitor_MDL(C)
 end
-let mdl = (module Mdl(Bexp.Cell) : Language)
-let mdl_bdd = (module Mdl(Bdd.Cell) : Language)
+let mdl () =
+  let (module C) = !cell_ref in
+  (module Mdl(C) : Language)
 
 let language_ref = ref mdl
 let fmla_ref = ref None
@@ -69,8 +73,8 @@ let usage () = Format.eprintf
 Arguments:
 \t -mdl - use Metric Dynamic Logic (default)
 \t -mtl - use Metric Temporal Logic
-\t -mdl-bdd - use Metric Dynamic Logic and BDDs
-\t -mtl-bdd - use Metric Temporal Logic and BDDs
+\t -bdd - use BDDs
+\t -nobdd - don't use BDDs (default)
 \t -mode
 \t\t 0 - naive
 \t\t 1 - compress locally (default)
@@ -105,11 +109,11 @@ let process_args =
     | ("-mtl" :: args) ->
         language_ref := mtl;
         go args
-    | ("-mdl-bdd" :: args) ->
-        language_ref := mdl_bdd;
+    | ("-bdd" :: args) ->
+        cell_ref := (module Bdd.Cell);
         go args
-    | ("-mtl-bdd" :: args) ->
-        language_ref := mtl_bdd;
+    | ("-nobdd" :: args) ->
+        cell_ref := (module Bexp.Cell);
         go args
     | ("-fmla" :: fmlafile :: args) ->
         let in_ch = open_in fmlafile in
@@ -132,7 +136,7 @@ let fly step init log =
 let _ =
   try
     process_args (List.tl (Array.to_list Sys.argv));
-    let (module L) = !language_ref in
+    let (module L) = !language_ref () in
     let f = match !fmla_ref with
       | None -> L.example_formula
       | Some ch -> let f = L.parse (Lexing.from_channel ch) in (close_in ch; f) in
