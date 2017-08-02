@@ -1,3 +1,12 @@
+(*******************************************************************)
+(*     This is part of Aerial, it is distributed under the         *)
+(*  terms of the GNU Lesser General Public License version 3       *)
+(*           (see file LICENSE for more details)                   *)
+(*                                                                 *)
+(*  Copyright 2017:                                                *)
+(*  Dmitriy Traytel (ETH Zürich)                                   *)
+(*******************************************************************)
+
 (* This is an example test file
    Whenever you want to test a module
    from src folder, create a new .ml file 

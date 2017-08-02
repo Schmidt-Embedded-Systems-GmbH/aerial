@@ -11,8 +11,8 @@ TESTNAME=qtest
 TESTBUILD=_buildtest
 TESTFOLDER=test
 TESTPATH=$(TESTBUILD)/$(TESTNAME)
-OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir \
-			   -plugin-tags "package(js_of_ocaml.ocamlbuild)"  -yaccflag --explain \
+OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
+			   -no-plugin -yaccflag --explain \
 			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
