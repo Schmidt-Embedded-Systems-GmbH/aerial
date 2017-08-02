@@ -1,5 +1,5 @@
 NAME=src/aerial
-OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -yaccflag --explain
+OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -yaccflags --explain
 OCAMLBUILDWEB=ocamlbuild -use-ocamlfind \
            -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson -yaccflag --explain
 OCAMLFIND=ocamlfind

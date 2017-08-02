@@ -22,8 +22,9 @@ open Mdl
 %token SINCE UNTIL WUNTIL RELEASE TRIGGER
 %token NEXT PREV ALWAYS EVENTUALLY HISTORICALLY ONCE
 
+%nonassoc BASE
 %nonassoc LOPEN ROPEN LANGLE LCLOSED
-%nonassoc BASE TRUE FALSE EMPTY EPSILON ATOM
+%nonassoc TRUE FALSE EMPTY EPSILON ATOM
 %right IFF
 %right IMP
 %nonassoc MODALITY
@@ -68,10 +69,10 @@ e:
 | LANGLE reF RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
 | LCLOSED reF RCLOSED interval e { necessarilyF $2 $4 $5 } %prec MODALITY
 | LCLOSED reF RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
-| e interval LANGLE reP RANGLE   { possiblyP $1 $2 $4 }
-| e LANGLE reP RANGLE            { possiblyP $1 full $3 }
-| e interval LCLOSED reP RCLOSED { necessarilyP $1 $2 $4 }
-| e LCLOSED reP RCLOSED          { necessarilyP $1 full $3 }
+| e interval LANGLE reP RANGLE   { possiblyP $1 $2 $4 } %prec MODALITY
+| e LANGLE reP RANGLE            { possiblyP $1 full $3 } %prec MODALITY
+| e interval LCLOSED reP RCLOSED { necessarilyP $1 $2 $4 } %prec MODALITY
+| e LCLOSED reP RCLOSED          { necessarilyP $1 full $3 } %prec MODALITY
 | e SINCE interval e            { since $3 $1 $4 }
 | e SINCE e                     { since full $1 $3 }
 | e TRIGGER interval e          { trigger $3 $1 $4 }
