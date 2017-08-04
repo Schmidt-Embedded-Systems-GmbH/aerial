@@ -8,6 +8,7 @@
 (*******************************************************************)
 
 open Util
+open Channel
 (*open Big_int*)
 
 module Cell : Cell.Cell = struct
@@ -67,17 +68,26 @@ let rec norm xs x t1 t2 = match x with
     | Some true -> norm xs u1 t1 t2
     | Some false -> norm xs u2 t1 t2
 
+
 let maybe_output case_cell fmt skip d cell f =
-  case_cell (fun b -> (if skip then fun _ -> () else output_verdict fmt) (d, b); fun x -> x) (f (d, cell)) cell
+  case_cell
+    (fun b ->
+      let fmt = if skip then fmt else output_verdict fmt (d, b)
+      in fun x -> (x, fmt))
+    (fun x -> f (d, cell) x) cell 
 
 type cell = bdd
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-let rec print_cell l out = function
-  | TT -> Printf.fprintf out "⊤"
-  | FF -> Printf.fprintf out "⊥"
-  | Node (_, x, u1, u2) -> Printf.fprintf out (paren l 1 "if %d then %a else %a") x (print_cell 1) u1 (print_cell 1) u2
-let print_cell = print_cell 0
+let rec cell_to_string l = function
+  | TT -> Printf.sprintf "⊤"
+  | FF -> Printf.sprintf "⊥"
+  | Node (_, x, u1, u2) -> Printf.sprintf (paren l 1 "if %d then %a else %a") x (fun x -> cell_to_string 1) u1 (fun x -> cell_to_string 1) u2
+
+
+let cell_to_string = cell_to_string 0
+
+let print_cell out c = output_event out (cell_to_string c)
 
 let cbool b = if b then TT else FF
 let cvar b i = if b then node i TT FF else node i FF TT

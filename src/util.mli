@@ -7,6 +7,7 @@
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
 
+
 val ( -- ): int -> int -> int list
 val paren: int -> int -> ('b, 'c, 'd, 'e, 'f, 'g) format6 -> ('b, 'c, 'd, 'e, 'f, 'g) format6
 
@@ -31,10 +32,7 @@ val full: interval
 val subtract_I: int -> interval -> interval
 val multiply_I: int -> interval -> interval
 val case_I: (binterval -> 'a) -> (uinterval -> 'a) -> interval -> 'a
-val print_interval: out_channel -> interval -> unit
 val interval_to_string: interval -> string
 
-val output_verdict: out_channel -> (timestamp * int) * bool -> unit
-val output_eq: out_channel -> (timestamp * int) * (timestamp * int) -> unit
 
 type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL

@@ -9,12 +9,13 @@
 
 open Util
 open Cell
+open Channel
 
 module type Formula = sig
   type f
   type memory
   module C : Cell
-  val print_formula: out_channel -> f -> unit
+  val print_formula: output_channel -> f -> output_channel
   val init: f -> f * f array * memory
   val bounded_future: f -> bool
   val idx_of: f -> int
@@ -27,7 +28,7 @@ module type Monitor = sig
   type formula
   type ctxt
   type monitor = {init: ctxt; step: SS.t * timestamp -> ctxt -> ctxt}
-  val create: out_channel -> mode -> formula -> monitor
+  val create: output_channel -> mode -> formula -> monitor
 end
 
 module Make : functor (F : Formula) -> Monitor with type formula = F.f

@@ -54,13 +54,6 @@ let mem_UI t (UI l) = l <= t
 let mem_BI t (BI (l, r)) = l <= t && t <= r
 let mem_I t = case_I (mem_BI t) (mem_UI t)
 
-let print_binterval out = function
-  | BI (i, j) -> Printf.fprintf out "[%d,%d]" i j
-
-let print_interval out = function
-  | U (UI i) -> Printf.fprintf out "[%d,∞)" i
-  | B i -> Printf.fprintf out "%a" print_binterval i
-
 let binterval_to_string = function
   | BI (i, j) -> Printf.sprintf "[%d,%d]" i j
 
@@ -68,7 +61,5 @@ let interval_to_string = function
   | U (UI i) -> Printf.sprintf "[%d,∞)" i
   | B i -> Printf.sprintf "%a" (fun x -> binterval_to_string) i
 
-let output_verdict fmt ((t, i), b) = Printf.fprintf fmt "%d:%d %B\n" t i b
-let output_eq fmt ((t, i), (t', j)) = Printf.fprintf fmt "%d:%d = %d:%d\n" t i t' j
 
 type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL

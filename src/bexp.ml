@@ -8,11 +8,17 @@
 (*******************************************************************)
 
 open Util
+open Channel
 
 module Cell : Cell.Cell = struct
 
+
 let maybe_output case_cell fmt skip d cell f =
-  case_cell (fun b -> (if skip then fun _ -> () else output_verdict fmt) (d, b); fun x -> x) (f (d, cell)) cell
+  case_cell
+    (fun b ->
+      let fmt = if skip then fmt else output_verdict fmt (d, b)
+      in fun x -> (x, fmt))
+    (fun x -> f (d, cell) x) cell 
 
 type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
 
@@ -33,12 +39,16 @@ let rec compare c d = match c, d with
 
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-let rec print_cell l out = function
-  | V (b, x) -> Printf.fprintf out "%sx%d" (if b then "" else "¬") x
-  | B b -> Printf.fprintf out (if b then "⊤" else "⊥")
-  | C (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_cell 2) f (print_cell 2) g
-  | D (f, g) -> Printf.fprintf out (paren l 1 "%a ∨ %a") (print_cell 1) f (print_cell 1) g
-let print_cell = print_cell 0
+let rec cell_to_string l = function 
+  | V (b, x) -> Printf.sprintf "%sx%d" (if b then "" else "¬") x
+  | B b -> Printf.sprintf (if b then "⊤" else "⊥")
+  | C (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> cell_to_string 2) f (fun x -> cell_to_string 2) g
+  | D (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> cell_to_string 1) f (fun x -> cell_to_string 1) g
+
+let cell_to_string = cell_to_string 0
+
+
+let print_cell out c = output_event out (cell_to_string c)
 
 let case_cell_bool f g = function
   | B b -> f b
@@ -51,9 +61,9 @@ let maybe_output_future fmt d fcell f =
   | Now cell -> maybe_output_cell fmt false d cell (fun _ -> f)
   | Later _ -> f
 
-let eval_future_cell t = function
+let eval_future_cell t = function 
   | Now c -> c
-  | Later f -> f t
+  | Later f -> f t 
 
 let cbool b = B b
 let cvar b i = V (b, i)

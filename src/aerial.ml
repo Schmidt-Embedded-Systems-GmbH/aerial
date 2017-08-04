@@ -8,6 +8,7 @@
 (*******************************************************************)
 
 open Util
+open Channel
 
 exception EXIT
 
@@ -40,33 +41,15 @@ let mdl () =
   let (module C) = !cell_ref in
   (module Mdl(C) : Language)
 
+
 let language_ref = ref mdl
 let fmla_ref = ref None
 let mode_ref = ref COMPRESS_LOCAL
-let log_ref = ref stdin
-let out_ref = ref stdout
+let log_ref = ref (Input stdin)
+let out_ref = ref (Output stdout)
 
-let read_file filename = 
-  let lines = ref [] in
-  let chan = open_in filename in
-  try
-    while true; do
-      lines := input_line chan :: !lines
-    done; !lines
-  with End_of_file ->
-    close_in chan;
-    List.rev !lines
 
-let parse_line s =
-  match String.split_on_char ' ' (String.sub s 1 (String.length s - 1)) with
-  | [] -> None
-  | raw_t :: preds ->
-    try Some (SS.of_list (List.filter (fun x -> x <> "()") preds), int_of_string raw_t)
-    with Failure _ -> None
 
-let rec get_next log =
-  match parse_line (input_line log) with None -> get_next log | Some x -> x
-  
 
 let usage () = Format.eprintf
 "Example usage: aerial -mode 1 -fmla test.fmla -log test.log -out test.out
@@ -101,7 +84,7 @@ let process_args =
       mode_ref := mode;
       go args
     | ("-log" :: logfile :: args) ->
-        log_ref := open_in logfile;
+        log_ref := Input (open_in logfile);
         go args
     | ("-mdl" :: args) ->
         language_ref := mdl;
@@ -121,7 +104,7 @@ let process_args =
         fmla_ref := Some in_ch;
         go args
     | ("-out" :: outfile :: args) ->
-        out_ref := open_out outfile;
+        out_ref := Output (open_out outfile);
         go args
     | [] -> ()
     | _ -> usage () in
@@ -130,9 +113,13 @@ let process_args =
 let rec loop f x = loop f (f x)
 
 let fly step init log =
-  let step ctxt = step (get_next log) ctxt
-  in loop step init
+  let step (ctxt,ch) = 
+    let (line,ch) = input_event ch in
+    (step line ctxt,ch) in 
+  loop step (init,log)
 
+let close () = match !out_ref with Output x -> close_out x | OutputMock x -> ()
+ 
 let _ =
   try
     process_args (List.tl (Array.to_list Sys.argv));
@@ -143,6 +130,6 @@ let _ =
     let m = L.Monitor.create !out_ref !mode_ref f in
     fly m.L.Monitor.step m.L.Monitor.init !log_ref
   with
-    | End_of_file -> Printf.fprintf !out_ref "Bye.\n%!"; close_out !out_ref; exit 0
-    | EXIT -> close_out !out_ref; exit 1
+    | End_of_file -> let _ = output_event !out_ref "Bye.\n%!" in close (); exit 0
+    | EXIT -> close (); exit 1
  

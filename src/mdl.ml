@@ -10,6 +10,7 @@
 open Util
 open Cell
 open Monitor
+open Channel
 
 type formula =
 | P of int * string
@@ -45,7 +46,7 @@ and regex_to_string l = function
 let formula_to_string = formula_to_string 0
 
 
-let rec print_formula l out = function
+(* let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
   | Bool b -> Printf.fprintf out (if b then "⊤" else "⊥")
   | Conj (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_formula 2) f (print_formula 2) g
@@ -61,7 +62,9 @@ and print_regex l out = function
   | Alt (r, s) -> Printf.fprintf out (paren l 1 "%a + %a") (print_regex 1) r (print_regex 1) s
   | Seq (r, s) -> Printf.fprintf out (paren l 2 "%a %a") (print_regex 2) r (print_regex 2) s
   | Star (r) -> Printf.fprintf out "%a*" (print_regex 3) r
-let print_formula = print_formula 0
+let print_formula = print_formula 0 *)
+
+let print_formula out f = output_event out (formula_to_string f)
 
 let rec maxidx_of = function
   | P (i, x) -> i

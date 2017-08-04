@@ -10,6 +10,7 @@
 open Util
 open Cell
 open Monitor
+open Channel
 
 type formula =
 | P of int * string
@@ -33,6 +34,9 @@ let rec formula_to_string l = function
   | Since (_, i, f, g) -> Printf.sprintf (paren l 0 "%a S%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
   | Until (_, i, f, g) -> Printf.sprintf (paren l 0 "%a U%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
 let formula_to_string = formula_to_string 0
+
+let print_formula out f = output_event out (formula_to_string f)
+
 
 (*precondition: temporal formulas always bigger than their subformulas*)
 let rec maxidx_of = function
@@ -101,7 +105,7 @@ let rec bounded_future = function
       case_I (fun _ -> true) (fun _ -> false) i && bounded_future f && bounded_future g
   | Neg f | Prev (_, _, f) | Next (_, _, f) -> bounded_future f
 
-let rec print_formula l out = function
+(* let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
   | Bool b -> Printf.fprintf out (if b then "⊤" else "⊥")
   | Conj (f, g) -> Printf.fprintf out (paren l 2 "%a ∧ %a") (print_formula 2) f (print_formula 2) g
@@ -111,7 +115,9 @@ let rec print_formula l out = function
   | Next (_, i, f) -> Printf.fprintf out (paren l 3 "○%a %a") print_interval i (print_formula 4) f
   | Since (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a S%a %a") (print_formula 4) f print_interval i (print_formula 4) g
   | Until (_, i, f, g) -> Printf.fprintf out (paren l 0 "%a U%a %a") (print_formula 4) f print_interval i (print_formula 4) g
-let print_formula = print_formula 0
+let print_formula = print_formula 0 *)
+
+let print_formula = print_formula
 
 let idx_of = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
