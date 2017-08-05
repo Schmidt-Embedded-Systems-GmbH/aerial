@@ -1,4 +1,6 @@
-NAME=src/aerial
+EXENAME=aerial
+MODULENAME=main
+NAME=src/$(MODULENAME)
 OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -yaccflags --explain
 OCAMLBUILDWEB=ocamlbuild -use-ocamlfind \
            -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson -yaccflag --explain
@@ -28,16 +30,17 @@ endif
 
 standalone:
 	$(OCAMLBUILD) $(NAME).native
+	mv -f $(MODULENAME).native $(EXENAME).native
 
-install:
-	cp ./aerial.native $(PREFIX)/bin/aerial
+install: standalone
+	cp ./$(EXENAME).native $(PREFIX)/bin/$(EXENAME)
 
 uninstall:
-	rm -f ${PREFIX}/bin/aerial
+	rm -f ${PREFIX}/bin/$(EXENAME)
 
 test-generate:
 	mkdir -p $(TESTBUILD)
-	qtest -o $(TESTPATH).ml extract $(TESTFOLDER)/*.ml
+	qtest -o $(TESTPATH).ml extract $(TESTFOLDER)/*_test.ml
 
 test-compile: test-generate
 	$(OCAMLBUILDTEST) $(TESTPATH).native
@@ -83,6 +86,5 @@ web:
 	$(OCAMLBUILDWEB) -I src applet/applet.byte
 	js_of_ocaml -I . --file examples:/ applet.byte -o applet/aerial.js
 
-run:
-	$(OCAMLBUILD) $(NAME).native
+run: standalone
 	./aerial.native $(CMD)
