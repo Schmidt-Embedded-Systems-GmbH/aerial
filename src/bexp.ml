@@ -18,7 +18,7 @@ let maybe_output case_cell fmt skip d cell f =
     (fun b ->
       let fmt = if skip then fmt else output_verdict fmt (d, b)
       in fun x -> (x, fmt))
-    (fun x -> f (d, cell) x) cell 
+    (fun x -> f (d, cell) fmt x) cell 
 
 type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
 
@@ -59,7 +59,7 @@ let maybe_output_cell fmt = maybe_output case_cell_bool fmt
 let maybe_output_future fmt d fcell f =
   match fcell with
   | Now cell -> maybe_output_cell fmt false d cell (fun _ -> f)
-  | Later _ -> f
+  | Later _ -> f fmt
 
 let eval_future_cell t = function 
   | Now c -> c

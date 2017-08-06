@@ -89,8 +89,8 @@ let _ =
       | None -> L.example_formula
       | Some ch -> let f = L.parse (Lexing.from_channel ch) in (close_in ch; f) in
     let m = L.Monitor.create !out_ref !mode_ref f in
-    monitor m.L.Monitor.step m.L.Monitor.init !log_ref
+    L.Monitor.monitor m.L.Monitor.step m.L.Monitor.init !log_ref
   with
-    | End_of_file -> let _ = output_event !out_ref "Bye.\n%!" in close (); exit 0
+    | End_of_file o -> let _ = output_event o "Bye.\n" in close (); exit 0
     | EXIT -> close (); exit 1
  

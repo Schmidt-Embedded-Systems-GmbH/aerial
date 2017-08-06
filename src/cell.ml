@@ -15,7 +15,7 @@ module type Cell = sig
 type cell
 type future_cell = Now of cell | Later of (timestamp -> cell)
 val print_cell: output_channel -> cell -> output_channel
-val maybe_output_cell: output_channel -> bool -> timestamp * int -> cell -> ((timestamp * int) * cell -> 'a -> 'a * output_channel) -> 'a ->  ('a * output_channel)
+val maybe_output_cell: output_channel -> bool -> timestamp * int -> cell -> ((timestamp * int) * cell -> output_channel -> 'a -> 'a * output_channel) -> 'a ->  ('a * output_channel)
 
 val cbool: bool -> cell
 val cvar: bool -> int -> cell
@@ -25,7 +25,7 @@ val cneg: cell -> cell
 val cimp: cell -> cell -> cell
 val cif: cell -> cell -> cell -> cell
 
-val maybe_output_future: output_channel -> timestamp * int -> future_cell -> ('a -> 'a * output_channel) -> 'a -> ('a * output_channel)
+val maybe_output_future: output_channel -> timestamp * int -> future_cell -> (output_channel -> 'a -> 'a * output_channel) -> 'a -> ('a * output_channel)
 val fcbool: bool -> future_cell
 val fcvar: bool -> int -> future_cell
 val fcconj: future_cell -> future_cell -> future_cell

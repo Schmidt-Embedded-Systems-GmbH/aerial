@@ -43,11 +43,13 @@ let mdl () =
   let (module C) = !cell_ref in
   (module Mdl(C) : Language)
 
-let rec loop f x = loop f (f x)
 
-let monitor step init log =
-  let step (ctxt,ch) = 
-    let (line,ch) = input_event ch in
-    (step line ctxt,ch) in 
-  loop step (init,log)
 
+let check fma log out language mode =
+  let (module L:Language) = language () in
+  try
+  let f = L.parse (Lexing.from_string fma) in
+  let m = L.Monitor.create out mode f in
+    L.Monitor.monitor m.L.Monitor.step m.L.Monitor.init log
+  with
+    | End_of_file o -> output_event o "Bye.\n" 

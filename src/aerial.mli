@@ -6,6 +6,9 @@
 (*  Copyright 2017:                                                *)
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
+open Channel
+open Cell
+open Util
 
 module type Language = sig
   type formula
@@ -16,7 +19,8 @@ module type Language = sig
 end 
 
 
-val cell_ref: (module Cell.Cell) ref
+val cell_ref: (module Cell) ref
 val mtl: unit -> (module Language)
 val mdl: unit -> (module Language)
-val monitor: (Util.SS.t * int -> 'a -> 'a) -> 'a -> Channel.input_channel -> 'b
+(* val monitor: (Util.SS.t * int -> 'a -> 'a) -> 'a -> input_channel -> 'b *)
+val check: string -> input_channel -> output_channel -> (unit -> (module Language)) -> mode -> output_channel
