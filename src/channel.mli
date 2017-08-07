@@ -17,7 +17,7 @@ type output_channel =
   | Output of out_channel 
   | OutputMock of output_type list
 
-exception End_of_file of output_channel
+exception End_of_mock of output_channel
 
 (* val input_string: input_channel -> string * input_channel *)
 val input_event: input_channel -> output_channel -> (SS.t * int) * input_channel

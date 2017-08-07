@@ -43,8 +43,7 @@ let mdl () =
   let (module C) = !cell_ref in
   (module Mdl(C) : Language)
 
-
-
+(* TODO: pass a generic L.formula instead of string? *)
 let check fma log out language mode =
   let (module L:Language) = language () in
   try
@@ -52,4 +51,4 @@ let check fma log out language mode =
   let m = L.Monitor.create out mode f in
     L.Monitor.monitor m.L.Monitor.step m.L.Monitor.init log
   with
-    | End_of_file o -> output_event o "Bye.\n" 
+    | End_of_mock o -> output_event o "Bye.\n" 

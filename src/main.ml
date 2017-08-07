@@ -78,9 +78,10 @@ let process_args =
     | _ -> usage () in
   go
 
+ let close out = match out with Output x -> close_out x | OutputMock x -> ()
 
-let close () = match !out_ref with Output x -> close_out x | OutputMock x -> ()
- 
+(*TODO: reuse check from aerial module*)
+(* check f !log_ref !out_ref !language_ref !mode_ref *)
 let _ =
   try
     process_args (List.tl (Array.to_list Sys.argv));
@@ -91,6 +92,6 @@ let _ =
     let m = L.Monitor.create !out_ref !mode_ref f in
     L.Monitor.monitor m.L.Monitor.step m.L.Monitor.init !log_ref
   with
-    | End_of_file o -> let _ = output_event o "Bye.\n" in close (); exit 0
-    | EXIT -> close (); exit 1
- 
+    | End_of_file -> let _ = output_event !out_ref "Bye.\n" in close !out_ref; exit 0
+    | EXIT -> close !out_ref; exit 1
+  

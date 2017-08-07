@@ -17,7 +17,7 @@ type output_channel =
   | Output of out_channel 
   | OutputMock of output_type list
 
-exception End_of_file of output_channel
+exception End_of_mock of output_channel
 
 let parse_line s =
   match String.split_on_char ' ' (String.sub s 1 (String.length s - 1)) with
@@ -35,7 +35,7 @@ let rec parse_lines line ch out =
   | InputMock x -> (match parse_line line with 
     | Some x -> (x,ch)
     | None -> match x with 
-      | [] -> raise (End_of_file out)
+      | [] -> raise (End_of_mock out)
       | a::ax -> match a with 
           | Event ev -> (ev, InputMock ax)
           | Noise str -> parse_lines str (InputMock ax) out)
@@ -45,7 +45,7 @@ let input_event log out =
   match log with 
   | Input x ->  parse_lines (input_line x) log out
   | InputMock x -> match x with
-    | [] -> raise (End_of_file out)
+    | [] -> raise (End_of_mock out)
     | a::ax -> match a with 
       | Event ev -> (ev, InputMock ax)
       | Noise s -> parse_lines s (InputMock ax) out
