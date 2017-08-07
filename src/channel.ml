@@ -66,6 +66,13 @@ let channel_to_string log = match log with
       | Info s -> s)
   ) "" ls
 
+  let verdicts log = match log with 
+  | Output _ -> log
+  | OutputMock ls -> OutputMock (List.filter (fun x -> match x with 
+      | BoolVerdict _ | EqVerdict _ -> true
+      | _ -> false
+  ) ls )
+
 
 let output_verdict fmt ((t, i), b) =
   match fmt with 

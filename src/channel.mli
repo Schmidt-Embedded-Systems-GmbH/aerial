@@ -24,6 +24,8 @@ val input_event: input_channel -> output_channel -> (SS.t * int) * input_channel
 val output_event: output_channel -> string -> output_channel 
 
 val channel_to_string: output_channel -> string
+val verdicts: output_channel -> output_channel
+
 
 val output_verdict: output_channel -> (timestamp * int) * bool -> output_channel
 val output_eq: output_channel -> (timestamp * int) * (timestamp * int) -> output_channel
