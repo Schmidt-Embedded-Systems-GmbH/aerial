@@ -47,3 +47,9 @@ coreutils package for macOS. Scripts are tested on macOS 10.12.4 and Ubuntu 16.0
 
 A pre-configured environment for running the experiments can be found on the official 
 tool website: http://www.infsec.ethz.ch/research/software/aerial.html
+
+Alternatively, if Docker is available run:
+
+    docker run -it krledmno1/aerial
+    
+to pull and run a Docker container with Aerial installed.
