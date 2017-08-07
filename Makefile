@@ -21,6 +21,7 @@ OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator
 GENMONPOLY=experiments/gen_log
 
+IMAGE=krledmno1/aerial
 
 ifndef PREFIX
   PREFIX=/usr/local
@@ -88,3 +89,10 @@ web:
 
 run: standalone
 	./aerial.native $(CMD)
+
+docker: 
+	docker build -t $(IMAGE) .
+
+docker-push: docker
+	docker login
+	docker push $(IMAGE)
