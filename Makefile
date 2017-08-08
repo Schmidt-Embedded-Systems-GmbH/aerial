@@ -16,6 +16,9 @@ TESTPATH=$(TESTBUILD)/$(TESTNAME)
 OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
 			   -no-plugin -yaccflag --explain \
 			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
+OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
+			   -no-plugin -yaccflag --explain \
+			   -pkgs bisect_ppx,qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator
@@ -96,3 +99,13 @@ docker:
 docker-push: docker
 	docker login
 	docker push $(IMAGE)
+
+coverage: test-clean test-generate
+	$(OCAMLBUILDCOVERAGE) $(TESTPATH).native
+	mv $(TESTNAME).native $(TESTBUILD)/
+	mv $(TESTNAME).targets.log $(TESTBUILD)/
+	./$(TESTPATH).native
+	bisect-ppx-report -I _build/ -html _build/coverage/ bisect*.out
+	rm bisect*.out
+	open _build/coverage/index.html
+	
