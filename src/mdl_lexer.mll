@@ -34,8 +34,8 @@ rule token = parse
   | "true" | "⊤" 		                              { TRUE }
   | "INFINITY" | "∞" 		                          { INFINITY }
   | '!' | "¬" | "NOT"                             { NEG }
-  | '&' | "∧" | "AND"                              { CONJ }
-  | '|' | "∨" | "OR"                             { DISJ }
+  | '&' | "∧" | "AND"                             { CONJ }
+  | '|' | "∨" | "OR"                              { DISJ }
   | "=>" | "->" | "→"                             { IMP }
   | "<=>"  | "<->" | "↔"                          { IFF }
   | "SINCE" | "S" | "U⁻"                          { SINCE }
@@ -57,6 +57,7 @@ rule token = parse
   | ">"                                           { RANGLE }
   | ","                                           { COMMA }
   | "?"                                           { QUESTION }
+  | "."                                           { WILDCARD }
   | "empty" | "{}" | "∅"                          { EMPTY }
   | "epsilon" | "ɛ​" | "λ"                         { EPSILON }
   | "+" | "|"                                     { PLUS }

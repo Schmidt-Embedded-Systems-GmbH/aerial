@@ -17,14 +17,14 @@ open Mdl
 %token LOPEN LCLOSED ROPEN RCLOSED LANGLE RANGLE COMMA INFINITY
 %token FALSE TRUE EMPTY EPSILON NEG CONJ DISJ PLUS IMP IFF EOF
 %token CONCAT
-%token QUESTION STAR BASE
+%token WILDCARD QUESTION STAR BASE
 %token MODALITY
 %token SINCE UNTIL WUNTIL RELEASE TRIGGER
 %token NEXT PREV ALWAYS EVENTUALLY HISTORICALLY ONCE
 
 %nonassoc BASE
 %nonassoc LOPEN ROPEN LANGLE LCLOSED
-%nonassoc TRUE FALSE EMPTY EPSILON ATOM
+%nonassoc TRUE FALSE EMPTY EPSILON WILDCARD ATOM
 %right IFF
 %right IMP
 %nonassoc MODALITY
@@ -100,6 +100,7 @@ reF:
 | LOPEN reF ROPEN         { $2 }
 | EMPTY                   { empty }
 | EPSILON                 { epsilon }
+| WILDCARD                { wild }
 | e                       { baseF $1 } %prec BASE
 | e QUESTION              { test $1 }
 | reF PLUS reF            { alt $1 $3 }
@@ -110,6 +111,7 @@ reP:
 | LOPEN reP ROPEN         { $2 }
 | EMPTY                   { empty }
 | EPSILON                 { epsilon }
+| WILDCARD                { wild }
 | e                       { baseP $1 } %prec BASE
 | e QUESTION              { test $1 }
 | reP PLUS reP            { alt $1 $3 }
