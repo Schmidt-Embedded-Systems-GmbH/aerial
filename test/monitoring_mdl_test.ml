@@ -1,3 +1,4 @@
+open Generator
 open Aerial
 open Channel
 open Util
@@ -150,4 +151,26 @@ let checktest = check
 
 *) 
  
-(* let () =  print_endline (channel_to_string (check formula log out mtl mode)) *)
+let fma5  = MDL.to_string (generate_mdl 5 ["P0";"P1";"P2";"P3"])
+let fma10 = MDL.to_string (generate_mdl 10 ["P0";"P1";"P2";"P3"])
+let fma15 = MDL.to_string (generate_mdl 15 ["P0";"P1";"P2";"P3"])
+let fma20 = MDL.to_string (generate_mdl 20 ["P0";"P1";"P2";"P3"])
+let fma40 = MDL.to_string (generate_mdl 40 ["P0";"P1";"P2";"P3"])
+let fma60 = MDL.to_string (generate_mdl 60 ["P0";"P1";"P2";"P3"])
+let fma100= MDL.to_string (generate_mdl 100 ["P0";"P1";"P2";"P3"])
+
+
+let log10 = generate_log 300 20 ["P0";"P1";"P2";"P3"]
+
+let no_eq_verdicts=eliminate_eq_verdicts
+let mode_xref = NAIVE
+let sort_verdicts = sort
+(*$= checktest & ~printer:pretty_print
+  (sort_verdicts (filter_verdicts (checktest fma5   log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma5   log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma10  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma10  log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma15  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma15  log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma20  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma20  log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma40  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma40  log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma60  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma60  log10 out test_language mode))
+  (sort_verdicts (filter_verdicts (checktest fma100 log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma100 log10 out test_language mode))
+*)

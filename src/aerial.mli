@@ -22,5 +22,4 @@ end
 val cell_ref: (module Cell) ref
 val mtl: unit -> (module Language)
 val mdl: unit -> (module Language)
-(* val monitor: (Util.SS.t * int -> 'a -> 'a) -> 'a -> input_channel -> 'b *)
 val check: string -> input_channel -> output_channel -> (unit -> (module Language)) -> mode -> output_channel

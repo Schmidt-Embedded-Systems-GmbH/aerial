@@ -1,5 +1,5 @@
-open Aerial
 open Generator
+open Aerial
 open Channel
 open Util
 open Mtl
@@ -137,7 +137,7 @@ let out10 = fun _ -> OutputMock [
 (* Functions under test: *)
 let pretty_print = fun x -> channel_to_string (OC x)
 let filter_verdicts = verdicts
-let test_language = Aerial.mtl
+let test_language = mtl
 let checktest formula log out test_language mode = 
   let _ = print_endline "Checking random log:" in
   let _ = print_endline (channel_to_string (IC log)) in 
@@ -157,13 +157,13 @@ let checktest formula log out test_language mode =
 *)
 
 
-let fma5  = Generator.MTL.to_string (Generator.generate_mtl 5 ["P0";"P1";"P2";"P3"])
-let fma10 = Generator.MTL.to_string (Generator.generate_mtl 10 ["P0";"P1";"P2";"P3"])
-let fma15 = Generator.MTL.to_string (Generator.generate_mtl 15 ["P0";"P1";"P2";"P3"])
-let fma20 = Generator.MTL.to_string (Generator.generate_mtl 20 ["P0";"P1";"P2";"P3"])
-let fma40 = Generator.MTL.to_string (Generator.generate_mtl 40 ["P0";"P1";"P2";"P3"])
-let fma60 = Generator.MTL.to_string (Generator.generate_mtl 60 ["P0";"P1";"P2";"P3"])
-let fma100= Generator.MTL.to_string (Generator.generate_mtl 100 ["P0";"P1";"P2";"P3"])
+let fma5  = MTL.to_string (generate_mtl 5 ["P0";"P1";"P2";"P3"])
+let fma10 = MTL.to_string (generate_mtl 10 ["P0";"P1";"P2";"P3"])
+let fma15 = MTL.to_string (generate_mtl 15 ["P0";"P1";"P2";"P3"])
+let fma20 = MTL.to_string (generate_mtl 20 ["P0";"P1";"P2";"P3"])
+let fma40 = MTL.to_string (generate_mtl 40 ["P0";"P1";"P2";"P3"])
+let fma60 = MTL.to_string (generate_mtl 60 ["P0";"P1";"P2";"P3"])
+let fma100= MTL.to_string (generate_mtl 100 ["P0";"P1";"P2";"P3"])
 
 
 let log10 = generate_log 300 20 ["P0";"P1";"P2";"P3"]
@@ -180,30 +180,3 @@ let sort_verdicts = sort
   (sort_verdicts (filter_verdicts (checktest fma60  log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma60  log10 out test_language mode))
   (sort_verdicts (filter_verdicts (checktest fma100 log10 out test_language mode_xref))) (no_eq_verdicts (checktest fma100 log10 out test_language mode))
 *)
-
-
-(* let ex = OutputMock [
-                    BoolVerdict((0,0), false);
-                    BoolVerdict((0,1), false);
-                    BoolVerdict((0,2), false);
-                    BoolVerdict((0,3), false);
-                    EqVerdict((0,5),(0,4));
-                    EqVerdict((0,7),(0,4));
-                    BoolVerdict((0,4), false);
-                    BoolVerdict((0,6), false);
-                    BoolVerdict((0,8), false);
-                    BoolVerdict((0,9), false);
-                    BoolVerdict((0,10), false);
-                    BoolVerdict((0,11), false);
-                    BoolVerdict((0,12), false);
-                    BoolVerdict((0,13), false);
-                    BoolVerdict((1,0), false);
-                    BoolVerdict((4,0), false);
-                    BoolVerdict((11,0), false);
-                    BoolVerdict((32,0), false);
-                    BoolVerdict((98,0), false);
-                    BoolVerdict((188,0), false);
-                    ] *)
-
-(* let _ =  print_endline (channel_to_string (IC (generate_log 100 10 ["P0";"P1";"P2";"P3"]))) *)
-(* let _ = print_endline (channel_to_string (OC (eliminate_eq_verdicts ex))) *)
