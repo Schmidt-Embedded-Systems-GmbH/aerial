@@ -6,6 +6,7 @@
 (*  Copyright 2017:                                                *)
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
+open Channel
 
 module type Language = sig 
   type formula
@@ -22,6 +23,6 @@ val mdl: (module Language)
 
 val generate_mtl: int -> string list -> MTL.formula
 val generate_mdl: int -> string list -> MDL.formula
-
+val generate_log: int -> int -> Util.SS.elt list -> input_channel
 
 

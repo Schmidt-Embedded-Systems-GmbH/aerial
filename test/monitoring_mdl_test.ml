@@ -134,7 +134,7 @@ let out10 = fun _ -> OutputMock [
 (* ... *)
 
 (* Functions under test: *)
-let pretty_print = channel_to_string
+let pretty_print = fun x -> channel_to_string (OC x)
 let filter_verdicts = verdicts
 let test_language = mdl
 let checktest = check

@@ -179,7 +179,7 @@ let fmasMDL = [
   (parseMDLAndBack "P2 <P0 + P1>"               ) ("(P2 [0,∞) <P1>) ∨ (P2 [0,∞) <P0>)") 
 *)
 
-let mdlfma5  = Generator.MDL.to_string (Generator.generate_mdl 5 ["P0";"P1";"P2";"P3"])
+(* let mdlfma5  = Generator.MDL.to_string (Generator.generate_mdl 5 ["P0";"P1";"P2";"P3"])
 let mdlfma10 = Generator.MDL.to_string (Generator.generate_mdl 10 ["P0";"P1";"P2";"P3"])
 let mdlfma15 = Generator.MDL.to_string (Generator.generate_mdl 15 ["P0";"P1";"P2";"P3"])
 let mdlfma20 = Generator.MDL.to_string (Generator.generate_mdl 20 ["P0";"P1";"P2";"P3"])
@@ -190,7 +190,7 @@ let mdlfma20 = Generator.MDL.to_string (Generator.generate_mdl 20 ["P0";"P1";"P2
   (parseMDLAndBack mdlfma10) (mdlfma10)
   (parseMDLAndBack mdlfma15) (mdlfma15)
   (parseMDLAndBack mdlfma20) (mdlfma20)
-*)
+*) *)
 
 (*TODO check with Dmitriy about MTL DSL*)
 (* let fma = until (lclosed_rclosed_BI 0 5) (p "P0") (until (lclosed_rclosed_BI 2 6) (p "P1") (p "P2")) *)

@@ -9,6 +9,7 @@
 
 open Util
 open QCheck
+open Channel
 
 
 let interval_gen max_lb max_delta = 
@@ -34,13 +35,13 @@ module MTL : Language = struct
         let m = Random.int n in
           Gen.frequency
             [
-            (*1, Gen.map Mtl.neg   (go (n-1));*)
+            1, Gen.map Mtl.neg   (go (n-1)); (* comment for evaluation *)
             1, Gen.map2 Mtl.conj  (go m) (go (n - 1 - m));
             1, Gen.map2 Mtl.disj  (go m) (go (n - 1 - m));
-            (*1, Gen.map2 Mtl.next  interval_gen (go (n-1));*)
+            1, Gen.map2 Mtl.next  interval_gen (go (n-1)); (* comment for evaluation *)
             2, Gen.map3 Mtl.until interval_gen (go m) (go (n - 1 - m));
-            (*1, Gen.map2 Mtl.prev  interval_gen (go (n-1));*)
-            (*2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))*)
+            1, Gen.map2 Mtl.prev  interval_gen (go (n-1)); (* comment for evaluation *)
+            2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m)) (* comment for evaluation *)
             ])
 
     let rec formula_to_montre_string l = Mtl.(function 
@@ -107,3 +108,19 @@ let generate_mtl size atoms  =
 let generate_mdl size atoms  = 
   List.hd (Gen.generate ~n:1 (MDL.generate atoms size))
 
+let generate_log bound size atoms = 
+  (* let bound_gen tb = Gen.int_bound tb in *)
+  let rec props acc = function
+  | [] -> acc
+  | s::ss -> props ([]::(List.map (fun x -> s::x) acc)) ss in 
+  let props a = props [[]] a in 
+  let event_gen tb = Gen.oneofl (List.map (fun x -> Event(SS.of_list x, tb)) (props atoms)) in
+  (* let event_gen tb = Gen.map2 (fun x y -> Event(SS.of_list x, y)) (Gen.oneofl (props atoms)) (bound_gen tb) in *)
+  let rec log_gen tb = function
+  | 0 -> Gen.map (fun x -> [x]) (event_gen tb)
+  | n -> (let ts = if tb = 0 then 0 else Random.int tb in 
+          let event = (event_gen tb) in
+          Gen.map2 (fun x y -> x::y) event (log_gen ts (n-1))
+         ) in
+  let log_generator = Gen.map (fun x->InputMock (List.rev x)) (log_gen bound size) in
+  List.hd (Gen.generate ~n:1 (log_generator))
