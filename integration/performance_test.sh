@@ -2,29 +2,36 @@
 MAXIDX=`cat maxidx`
 type=$1
 offset=$2
+db=$3
 
+if [ -z "$db" ]
+then
+    echo "Detecting logs and formulas..."
+    #...
+else
+    echo "Generating logs..."
+    # traces
+    rm -rf logs
+    mkdir -p logs
+    parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `eval echo {1..$MAXIDX}`  ::: 10 2> /dev/null 
 
-echo "Generating logs..."
-# traces
-rm -rf logs
-mkdir -p logs
-parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `eval echo {1..$MAXIDX}`  ::: 10 2> /dev/null 
+    echo "Generating formulas..."
+    # formulas
+    rm -rf formulas
+    mkdir -p formulas
+    echo "   Compiling the formula generator..."
+    make -C ../ generate
+    for i in `cat forms`; 
+    do 
+    for j in `seq 1 $MAXIDX`; 
+    do 
+    fmas=$(./generator_main.native -$type -size $i)
+    f1=$(echo "$fmas" | cut -d "#" -f1)
+    echo "$f1" > formulas/r${i}_${j}.formula; 
+    done;
+    done
 
-echo "Generating formulas..."
-# formulas
-rm -rf formulas
-mkdir -p formulas
-echo "   Compiling the formula generator..."
-make -C ../ generate
-for i in `cat forms`; 
-do 
-for j in `seq 1 $MAXIDX`; 
-do 
-fmas=$(./generator_main.native -$type -size $i)
-f1=$(echo "$fmas" | cut -d "#" -f1)
-echo "$f1" > formulas/r${i}_${j}.formula; 
-done;
-done
+fi
 
 echo "Performance tests (this will take a while)..."
 # monitring 

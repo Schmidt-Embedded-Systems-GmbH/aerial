@@ -8,6 +8,7 @@
 (*******************************************************************)
 
 open Util
+open Generator
 
 (*TEST MTL parsing*)
 
@@ -67,16 +68,17 @@ let fmasMTL = [
   (parseMTLAndBack "P0 U[0,5] (P1 U[2,6] P2)")   ("P0 U[0,5] (P1 U[2,6] P2)")
 *)
 
-let fma5  = Generator.MTL.to_string (Generator.generate_mtl 5 ["P0";"P1";"P2";"P3"])
-let fma10 = Generator.MTL.to_string (Generator.generate_mtl 10 ["P0";"P1";"P2";"P3"])
-let fma15 = Generator.MTL.to_string (Generator.generate_mtl 15 ["P0";"P1";"P2";"P3"])
-let fma20 = Generator.MTL.to_string (Generator.generate_mtl 20 ["P0";"P1";"P2";"P3"])
+let fma5  = MTL.to_string (generate_mtl 5 ["P0";"P1";"P2";"P3"])
+let fma10 = MTL.to_string (generate_mtl 10 ["P0";"P1";"P2";"P3"])
+let fma15 = MTL.to_string (generate_mtl 15 ["P0";"P1";"P2";"P3"])
+let fma20 = MTL.to_string (generate_mtl 20 ["P0";"P1";"P2";"P3"])
 
-(*$= parseMTLAndBack
-  (parseMTLAndBack fma5)  (fma5)
-  (parseMTLAndBack fma10) (fma10)
-  (parseMTLAndBack fma15) (fma15)
-  (parseMTLAndBack fma20) (fma20)
+let string_printer s = s^""
+(*$= parseMTLAndBack & ~printer:string_printer
+  (fma5)  (parseMTLAndBack fma5)
+  (fma10) (parseMTLAndBack fma10)
+  (fma15) (parseMTLAndBack fma15)
+  (fma20) (parseMTLAndBack fma20)
 *)
 
 
@@ -179,18 +181,17 @@ let fmasMDL = [
   (parseMDLAndBack "P2 <P0 + P1>"               ) ("(P2 [0,∞) <P1>) ∨ (P2 [0,∞) <P0>)") 
 *)
 
-(* let mdlfma5  = Generator.MDL.to_string (Generator.generate_mdl 5 ["P0";"P1";"P2";"P3"])
-let mdlfma10 = Generator.MDL.to_string (Generator.generate_mdl 10 ["P0";"P1";"P2";"P3"])
-let mdlfma15 = Generator.MDL.to_string (Generator.generate_mdl 15 ["P0";"P1";"P2";"P3"])
-let mdlfma20 = Generator.MDL.to_string (Generator.generate_mdl 20 ["P0";"P1";"P2";"P3"])
+let mdlfma5  = let fma = MDL.to_string (generate_mdl 5 ["P0";"P1";"P2";"P3"]) in print_endline fma; fma
+let mdlfma10 = let fma = MDL.to_string (generate_mdl 10 ["P0";"P1";"P2";"P3"]) in print_endline fma; fma
+let mdlfma15 = let fma = MDL.to_string (generate_mdl 15 ["P0";"P1";"P2";"P3"]) in print_endline fma; fma
+let mdlfma20 = let fma = MDL.to_string (generate_mdl 20 ["P0";"P1";"P2";"P3"]) in print_endline fma; fma
 
-
-(*$= parseMDLAndBack
-  (parseMDLAndBack mdlfma5)  (mdlfma5)
-  (parseMDLAndBack mdlfma10) (mdlfma10)
-  (parseMDLAndBack mdlfma15) (mdlfma15)
-  (parseMDLAndBack mdlfma20) (mdlfma20)
-*) *)
+(*$= parseMDLAndBack & ~printer:string_printer
+  (mdlfma5)  (parseMDLAndBack mdlfma5)
+  (mdlfma10) (parseMDLAndBack mdlfma10)
+  (mdlfma15) (parseMDLAndBack mdlfma15)
+  (mdlfma20) (parseMDLAndBack mdlfma20)
+*)
 
 (*TODO check with Dmitriy about MTL DSL*)
 (* let fma = until (lclosed_rclosed_BI 0 5) (p "P0") (until (lclosed_rclosed_BI 2 6) (p "P1") (p "P2")) *)

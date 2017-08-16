@@ -113,12 +113,14 @@ clean-coverage:
 	rm bisect*.out
 	rm -r _build/coverage
 
+# set the value in maxidx to less then 5 (with 3 it takes about a minute)
 performance: install
 	test -f ./integration/db.csv || (echo Database file does not exist, run make performance-db first; exit -1)
-	(cd ./integration; ./performance_test.sh mtl 0.25)
+	(cd ./integration; ./performance_test.sh mtl 0.05)
 
+# set the value in maxidx to roughly 20 or more (takes about 2 hours)
 performance-db: 
-	(cd ./integration; ./performance_test.sh mtl 0.25 2> /dev/null) 
+	(cd ./integration; ./performance_test.sh mtl 0.25 db 2> /dev/null) 
 	mv ./integration/results-avg.csv ./integration/db.csv
 
 clean-performance:
