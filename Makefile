@@ -21,7 +21,7 @@ OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
 			   -pkgs bisect_ppx,qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
-GENNAME=src/generator
+GENNAME=src/generator_main
 GENMONPOLY=experiments/gen_log
 
 IMAGE=krledmno1/aerial
@@ -59,7 +59,8 @@ test: test-clean test-generate test-compile
 
 generate:
 	$(OCAMLBUILDGEN) $(GENNAME).native
-	cp generator.native experiments/
+	cp generator_main.native experiments/
+	cp generator_main.native integration/
 
 generate-monpoly:
 	$(OCAMLBUILD) $(GENMONPOLY).native
@@ -75,7 +76,7 @@ clean:
 	rm -f applet/aerial.js
 	$(OCAMLBUILD) -clean
 
-clean-all: clean test-clean
+clean-all: clean test-clean clean-performance clean-coverage
 
 bc-standalone:
 	$(OCAMLBUILD) $(NAME).byte
@@ -106,6 +107,23 @@ coverage: test-clean test-generate
 	mv $(TESTNAME).targets.log $(TESTBUILD)/
 	./$(TESTPATH).native
 	bisect-ppx-report -I _build/ -html _build/coverage/ bisect*.out
-	rm bisect*.out
 	open _build/coverage/index.html
-	
+
+clean-coverage:
+	rm bisect*.out
+	rm -r _build/coverage
+
+performance: install
+	test -f ./integration/db.csv || (echo Database file does not exist, run make performance-db first; exit -1)
+	(cd ./integration; ./performance_test.sh mtl 0.25)
+
+performance-db: 
+	(cd ./integration; ./performance_test.sh mtl 0.25 2> /dev/null) 
+	mv ./integration/results-avg.csv ./integration/db.csv
+
+clean-performance:
+	rm -r ./integration/formulas
+	rm -r ./integration/logs
+	rm ./integration/generator_main.native
+	rm ./integration/results*
+

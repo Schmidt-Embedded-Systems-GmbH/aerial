@@ -1,7 +1,13 @@
 rate=$1
 form=$2
 i=$3
+
+if [ -z "$4" ]
+then
 MAXTS=100
+else
+MAXTS=$4
+fi
 
 logdir="logs/random"
 mkdir -p $logdir

@@ -35,13 +35,17 @@ module MTL : Language = struct
         let m = Random.int n in
           Gen.frequency
             [
-            1, Gen.map Mtl.neg   (go (n-1)); (* comment for evaluation *)
+            (* comment for evaluation *)
+            (* 1, Gen.map Mtl.neg   (go (n-1));  *)
             1, Gen.map2 Mtl.conj  (go m) (go (n - 1 - m));
             1, Gen.map2 Mtl.disj  (go m) (go (n - 1 - m));
-            1, Gen.map2 Mtl.next  interval_gen (go (n-1)); (* comment for evaluation *)
+            (* comment for evaluation *)
+            (* 1, Gen.map2 Mtl.next  interval_gen (go (n-1));  *)
             2, Gen.map3 Mtl.until interval_gen (go m) (go (n - 1 - m));
-            1, Gen.map2 Mtl.prev  interval_gen (go (n-1)); (* comment for evaluation *)
-            2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m)) (* comment for evaluation *)
+            (* comment for evaluation *)
+            (* 1, Gen.map2 Mtl.prev  interval_gen (go (n-1)); *)
+            (* comment for evaluation *)
+            (* 2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))  *)
             ])
 
     let rec formula_to_montre_string l = Mtl.(function 
