@@ -36,3 +36,5 @@ val interval_to_string: interval -> string
 
 
 type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL
+
+val lex_interval: (unit -> interval) -> char -> string -> string -> char -> interval

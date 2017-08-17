@@ -8,6 +8,7 @@
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
 
+open Util
 open Mtl_parser
 open Mtl
 
@@ -19,6 +20,7 @@ exception ParsingError of string
 let parsing_error i j fmt = Format.kasprintf (fun s -> raise (ParsingError_(i,j,s))) fmt
 let lexing_error lexbuf fmt = parsing_error (lexeme_start_p lexbuf) (lexeme_end_p lexbuf) fmt
 
+let interval lexbuf = lex_interval (fun () -> lexing_error lexbuf "bad interval")
 }
 
 let blank = [' ' '\t' ]+
@@ -32,7 +34,6 @@ rule token = parse
   | blank                                         { token lexbuf }
   | "false" | "⊥"                                 { FALSE }
   | "true" | "⊤" 		                              { TRUE }
-  | "INFINITY" | "∞" 		                          { INFINITY }
   | '!' | "¬" | "NOT"                             { NEG }
   | '&' | "∧" | "AND"                             { CONJ }
   | '|' | "∨" | "OR"                              { DISJ }
@@ -49,13 +50,11 @@ rule token = parse
   | "FINALLY" | "EVENTUALLY" | "F" | "◊"          { EVENTUALLY }
   | "GLOBALLY_PAST" | "HISTORICALLY" | "G⁻" | "■" { HISTORICALLY }
   | "FINALLY_PAST" | "ONCE" | "F⁻" | "⧫"          { ONCE }
-  | "["                                           { LCLOSED }
   | "("                                           { LOPEN }
-  | "]"                                           { RCLOSED }
   | ")"                                           { ROPEN }
-  | ","                                           { COMMA }
-  | num as i                                      { NUM (int_of_string i) }
-  | (alpha alphanums)	as name                     { ATOM name }
+  | (alpha alphanums)	as name "()"?               { ATOM name }
+  | (['(' '['] as l) blank* (num as i) blank* "," blank* ((num | "INFINITY" | "∞") as j) blank* ([')' ']'] as r)
+                                                  { INTERVAL (interval lexbuf l i j r) }
   | "/*"                                          { skip 1 lexbuf }
   | '#'                                           { skip_line lexbuf }
   | _ as c                                        { lexing_error lexbuf "unexpected character: `%c'" c }

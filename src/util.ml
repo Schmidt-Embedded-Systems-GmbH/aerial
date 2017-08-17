@@ -63,3 +63,19 @@ let interval_to_string = function
 
 
 type mode = NAIVE | COMPRESS_LOCAL | COMPRESS_GLOBAL
+
+let lex_interval error l i j r =
+  (match j with
+    | "INFINITY" | "∞" ->
+      (match l with
+      | '[' -> lclosed_UI (int_of_string i)
+      | '(' -> lopen_UI (int_of_string i)
+      | _ -> error ())
+    | _ ->
+      (match l, r with
+      | '[',']' -> lclosed_rclosed_BI (int_of_string i) (int_of_string j)
+      | '(',']' -> lopen_rclosed_BI (int_of_string i) (int_of_string j)
+      | '[',')' -> lclosed_ropen_BI (int_of_string i) (int_of_string j)
+      | '(',')' -> lopen_ropen_BI (int_of_string i) (int_of_string j)
+      | _ -> error ()))
+
