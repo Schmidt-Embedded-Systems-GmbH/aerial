@@ -14,7 +14,8 @@ type output_type =
   | Info of string
 
 type output_channel = 
-  | Output of out_channel 
+  | Output of out_channel
+  | OutputFlushed of out_channel
   | OutputMock of output_type list
 
 type channel = 

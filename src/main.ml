@@ -15,21 +15,23 @@ exception EXIT
 
 let language_ref = ref mdl
 let fmla_ref = ref None
-let mode_ref = ref COMPRESS_LOCAL
+let mode_ref = ref COMPRESS_GLOBAL
 let log_ref = ref (Input stdin)
 let out_ref = ref (Output stdout)
 
 let usage () = Format.eprintf
 "Example usage: aerial -mode 1 -fmla test.fmla -log test.log -out test.out
 Arguments:
-\t -mdl - use Metric Dynamic Logic (default)
-\t -mtl - use Metric Temporal Logic
-\t -bdd - use BDDs
-\t -nobdd - don't use BDDs (default)
+\t -mdl     \t- use Metric Dynamic Logic (default)
+\t -mtl     \t- use Metric Temporal Logic
+\t -bdd     \t- use BDDs
+\t -nobdd   \t- don't use BDDs (default)
+\t -flush   \t- flush output channel after every write
+\t -noflush \t- let runtime flush the output (default)
 \t -mode
-\t\t 0 - naive
-\t\t 1 - compress locally (default)
-\t\t 2 - compress globally
+\t\t naive  - naive
+\t\t local  - compress locally
+\t\t global - compress globally (default)
 \t -fmla
 \t\t <file> - formula to be monitored (if none given some default formula will be used)\n
 \t -log
@@ -44,11 +46,17 @@ let process_args =
     | ("-mode" :: mode :: args) ->
       let mode =
         try (match int_of_string mode with
-                0 -> NAIVE
-              | 1 -> COMPRESS_LOCAL
-              | 2 -> COMPRESS_GLOBAL
-              | _ -> mode_error ())
-        with Failure _ -> mode_error () in
+            | 0 -> NAIVE
+            | 1 -> COMPRESS_LOCAL
+            | 2 -> COMPRESS_GLOBAL
+            | _ -> mode_error ())
+        with Failure _ ->
+            try (match mode with
+                | "naive" | "NAIVE" | "Naive" -> NAIVE
+                | "local" | "LOCAL" | "Local" -> COMPRESS_LOCAL
+                | "global" | "GLOBAL" | "Global" -> COMPRESS_GLOBAL
+                | _ -> mode_error ())
+           with Failure _ -> mode_error () in
       mode_ref := mode;
       go args
     | ("-log" :: logfile :: args) ->
@@ -74,11 +82,17 @@ let process_args =
     | ("-out" :: outfile :: args) ->
         out_ref := Output (open_out outfile);
         go args
+    | ("-flush" :: args) ->
+        out_ref := (match !out_ref with Output ch -> OutputFlushed ch | x -> x);
+        go args
+    | ("-noflush" :: args) ->
+        out_ref := (match !out_ref with OutputFlushed ch -> Output ch | x -> x);
+        go args
     | [] -> ()
     | _ -> usage () in
   go
 
- let close out = match out with Output x -> close_out x | OutputMock x -> ()
+ let close out = match out with Output x | OutputFlushed x -> close_out x | OutputMock x -> ()
 
 (*TODO: reuse check from aerial module*)
 (* check f !log_ref !out_ref !language_ref !mode_ref *)

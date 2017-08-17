@@ -14,7 +14,8 @@ type output_type =
   | Info of string
 
 type output_channel = 
-  | Output of out_channel 
+  | Output of out_channel
+  | OutputFlushed of out_channel
   | OutputMock of output_type list
 
 type channel = 
@@ -59,12 +60,13 @@ let input_event log out =
 let output_event log event =
   match log with 
   | Output x -> Printf.fprintf x "%s" event; log
+  | OutputFlushed x -> Printf.fprintf x "%s%!" event; log
   | OutputMock x -> OutputMock(x@[Info event])
 
 
 let channel_to_string log = match log with 
 | OC c -> (match c with
-  | Output _ -> ""
+  | Output _ | OutputFlushed _ -> ""
   | OutputMock ls -> List.fold_left (fun a x -> a ^ (match x with 
       | BoolVerdict ((t, i), b) -> Printf.sprintf "%d:%d %B\n" t i b
       | EqVerdict ((t, i), (t', j)) -> Printf.sprintf "%d:%d = %d:%d\n" t i t' j
@@ -78,7 +80,7 @@ let channel_to_string log = match log with
 ) "" ls)
 
   let verdicts log = match log with 
-  | Output _ -> log
+  | Output _ | OutputFlushed _ -> log
   | OutputMock ls -> OutputMock (List.filter (fun x -> match x with 
       | BoolVerdict _ | EqVerdict _ -> true
       | _ -> false
@@ -95,6 +97,7 @@ let sort ch = match ch with
 let output_verdict fmt ((t, i), b) =
   match fmt with 
   | Output x -> Printf.fprintf x "%d:%d %B\n" t i b; fmt
+  | OutputFlushed x -> Printf.fprintf x "%d:%d %B\n%!" t i b; fmt
   | OutputMock x -> OutputMock(x@[BoolVerdict ((t, i), b)]) 
 
 let eliminate_eq_verdicts ch = 
@@ -109,13 +112,14 @@ let eliminate_eq_verdicts ch =
     | EqVerdict (a,b) -> eliminate_eq_verdicts_rec lss (fun x -> match x with z when z=b -> a::(feqs x) | _ -> feqs x ) res 
     | Info _ -> eliminate_eq_verdicts_rec lss feqs res) in
   match ch with 
-  | Output _ -> ch
+  | Output _ | OutputFlushed _ -> ch
   | OutputMock ls -> sort (OutputMock (List.rev (eliminate_eq_verdicts_rec ls (fun x -> []) [])))
   
  
 let output_eq fmt ((t, i), (t', j)) = 
   match fmt with 
   | Output x -> Printf.fprintf x "%d:%d = %d:%d\n" t i t' j; fmt
+  | OutputFlushed x -> Printf.fprintf x "%d:%d = %d:%d\n%!" t i t' j; fmt
   | OutputMock x -> OutputMock(x@[EqVerdict ((t, i), (t', j))])
 
 let print_interval out i = output_event out (interval_to_string i)
