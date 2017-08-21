@@ -23,9 +23,6 @@ open Mdl
 %token NEXT PREV ALWAYS EVENTUALLY HISTORICALLY ONCE
 
 %nonassoc INTERVAL
-%nonassoc LOPEN
-%nonassoc BASE
-%nonassoc LANGLE LCLOSED ROPEN
 %nonassoc TRUE FALSE EMPTY EPSILON WILDCARD
 %right IFF
 %right IMP
@@ -38,6 +35,9 @@ open Mdl
 %left CONCAT
 %nonassoc NEG
 %nonassoc STAR
+%nonassoc LOPEN
+%nonassoc BASE
+%nonassoc LANGLE LCLOSED ROPEN
 %nonassoc ATOM
 
 %type <Mdl.formula> formula
