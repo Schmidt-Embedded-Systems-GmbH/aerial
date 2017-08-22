@@ -105,12 +105,12 @@ coverage: test-clean test-generate
 	$(OCAMLBUILDCOVERAGE) $(TESTPATH).native
 	mv $(TESTNAME).native $(TESTBUILD)/
 	mv $(TESTNAME).targets.log $(TESTBUILD)/
-	./$(TESTPATH).native
-	bisect-ppx-report -I _build/ -html _build/coverage/ bisect*.out
+	cd _build; ../$(TESTPATH).native
+	bisect-ppx-report -I _build/ -html _build/coverage/ _build/bisect*.out
 	open _build/coverage/index.html
 
 clean-coverage:
-	rm bisect*.out
+	rm -rf _build/bisect*.out
 	rm -r _build/coverage
 
 # set the value in maxidx to less then 5 (with 3 it takes about a minute)
