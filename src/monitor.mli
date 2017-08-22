@@ -29,7 +29,7 @@ module type Monitor = sig
   type ctxt
   type monitor = {init: ctxt; step: SS.t * timestamp -> ctxt -> ctxt}
   val create: output_channel -> mode -> formula -> monitor
-  val monitor: (SS.t * int -> ctxt -> ctxt) -> ctxt -> input_channel -> output_channel
+  val fly: monitor -> input_channel -> output_channel
 end
 
 module Make : functor (F : Formula) -> Monitor with type formula = F.f

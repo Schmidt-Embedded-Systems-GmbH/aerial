@@ -49,6 +49,6 @@ let check fma log out language mode =
   try 
   let f = L.parse (Lexing.from_string fma) in
   let m = L.Monitor.create out mode f in
-    L.Monitor.monitor m.L.Monitor.step m.L.Monitor.init log
+    L.Monitor.fly m log
   with
     | End_of_mock o -> output_event o "Bye.\n" 

@@ -30,7 +30,7 @@ module type Monitor = sig
   type ctxt
   type monitor = {init: ctxt; step: SS.t * timestamp -> ctxt -> ctxt}
   val create: output_channel -> mode -> formula -> monitor
-  val monitor: (SS.t * int -> ctxt -> ctxt) -> ctxt -> input_channel -> output_channel
+  val fly: monitor -> input_channel -> output_channel
 end
 
 module Make(F : Formula) : Monitor with type formula = F.f = struct
@@ -48,12 +48,12 @@ type monitor =
    step: SS.t * timestamp -> ctxt -> ctxt}
 
 
-let monitor step init log =
+let fly mon log =
   let rec loop f x = loop f (f x) in
   let s (ctxt,ch) = 
     let (line,ch) = input_event ch ctxt.output in
-    (step line ctxt,ch) in 
-  loop s (init,log) 
+    (mon.step line ctxt,ch) in 
+  loop s (mon.init,log) 
 
 let create outch mode_hint formula =
     let outch = output_event outch "Monitoring "  in
