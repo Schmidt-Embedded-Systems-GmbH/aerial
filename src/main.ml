@@ -39,24 +39,19 @@ Arguments:
 \t -out
 \t\t <file> - output file where the verdicts are printed to (default: stdout)\n%!"; raise EXIT
 
-let mode_error () = Format.eprintf "mode should be either of 0, 1, 2\n"; raise EXIT
+let mode_error () =
+  Format.eprintf "mode should be either of \"naive\", \"local\", or \"global\" (without quotes)\n%!";
+  raise EXIT
 
 let process_args =
   let rec go = function
     | ("-mode" :: mode :: args) ->
       let mode =
-        try (match int_of_string mode with
-            | 0 -> NAIVE
-            | 1 -> COMPRESS_LOCAL
-            | 2 -> COMPRESS_GLOBAL
-            | _ -> mode_error ())
-        with Failure _ ->
-            try (match mode with
-                | "naive" | "NAIVE" | "Naive" -> NAIVE
-                | "local" | "LOCAL" | "Local" -> COMPRESS_LOCAL
-                | "global" | "GLOBAL" | "Global" -> COMPRESS_GLOBAL
-                | _ -> mode_error ())
-           with Failure _ -> mode_error () in
+        match mode with
+        | "0" | "naive" | "NAIVE" | "Naive" -> NAIVE
+        | "1" | "local" | "LOCAL" | "Local" -> COMPRESS_LOCAL
+        | "2" | "global" | "GLOBAL" | "Global" -> COMPRESS_GLOBAL
+        | _ -> mode_error () in
       mode_ref := mode;
       go args
     | ("-log" :: logfile :: args) ->
