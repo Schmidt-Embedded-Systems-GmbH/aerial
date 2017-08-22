@@ -58,7 +58,9 @@ let fly mon log =
 let create outch mode_hint formula =
     let outch = output_event outch "Monitoring "  in
     let outch = F.print_formula outch formula in
-    let outch = output_event outch "\n" in
+    let outch = output_event outch
+      (" in mode \"" ^ (match mode_hint with NAIVE -> "naive" | COMPRESS_LOCAL -> "local" | COMPRESS_GLOBAL -> "global") ^ "\"") in
+      let outch = output_event outch "\n" in
   let (formula, f_vec, m) = F.init formula in
   
   let mode = if F.bounded_future formula then mode_hint else  
