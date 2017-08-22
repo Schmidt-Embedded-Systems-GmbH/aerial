@@ -138,7 +138,11 @@ let out10 = fun _ -> OutputMock [
 let pretty_print = fun x -> channel_to_string (OC x)
 let filter_verdicts = verdicts
 let test_language = mdl
-let checktest = check
+let checktest formula log out test_language mode = 
+  let _ = print_endline "Checking random log:" in
+  let _ = print_endline (channel_to_string (IC log)) in 
+  let _ = print_endline ("w.r.t. random formula: " ^ formula) in
+  check formula log out test_language mode
  
 (*$= checktest & ~printer:pretty_print
   (out1 mode) (filter_verdicts (checktest formula1 log out test_language mode))

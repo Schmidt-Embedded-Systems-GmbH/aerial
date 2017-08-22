@@ -105,15 +105,17 @@ let eliminate_eq_verdicts ch =
   match ls with
   | [] -> res
   | l::lss -> (match l with 
-    | BoolVerdict ((f,g),h) -> 
-      let neweqs = fun x -> match x with | (a,b) when a=f && b=g  -> [] | _ -> feqs x in 
-      let verdicts = List.map (fun x -> BoolVerdict (x,h)) (feqs (f,g)) in 
-      eliminate_eq_verdicts_rec lss neweqs (verdicts@(BoolVerdict ((f,g),h)::res))
-    | EqVerdict (a,b) -> eliminate_eq_verdicts_rec lss (fun x -> match x with z when z=b -> a::(feqs x) | _ -> feqs x ) res 
+    | BoolVerdict (d, b) ->
+      let neweqs e = if d = e then [] else feqs e in
+      let verdicts = List.map (fun e -> BoolVerdict (e, b)) (feqs d) in
+      eliminate_eq_verdicts_rec lss neweqs (verdicts @ BoolVerdict (d, b) :: res)
+    | EqVerdict (l, r) ->
+      let neweqs e = if r = e then l :: feqs l @ feqs e else feqs e in
+      eliminate_eq_verdicts_rec lss neweqs res
     | Info _ -> eliminate_eq_verdicts_rec lss feqs res) in
   match ch with 
   | Output _ | OutputFlushed _ -> ch
-  | OutputMock ls -> sort (OutputMock (List.rev (eliminate_eq_verdicts_rec ls (fun x -> []) [])))
+  | OutputMock ls -> sort (OutputMock (List.rev (eliminate_eq_verdicts_rec ls (fun _ -> []) [])))
   
  
 let output_eq fmt ((t, i), (t', j)) = 
