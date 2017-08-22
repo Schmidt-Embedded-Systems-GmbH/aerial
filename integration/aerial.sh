@@ -77,7 +77,7 @@ function run {
 params="$form, $rate"
 idxs="$fma_index, $log_index"
 
-cmd="$AERIAL -mode 1 -$lang -fmla formulas/r${form}_${fma_index}.formula -log  ${logdir}/tr2_${log_index}_${rate}.log -out /dev/null 2>&1"
+cmd="$AERIAL -$lang -fmla formulas/r${form}_${fma_index}.formula -log  ${logdir}/tr2_${log_index}_${rate}.log -out /dev/null 2>&1"
 
 run "$cmd" "$params" "$idxs"
 
