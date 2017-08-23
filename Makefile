@@ -124,8 +124,6 @@ performance-db:
 	mv ./integration/results-avg.csv ./integration/db.csv
 
 clean-performance:
-	rm -r ./integration/formulas
-	rm -r ./integration/logs
 	rm ./integration/generator_main.native
 	rm ./integration/results*
 
