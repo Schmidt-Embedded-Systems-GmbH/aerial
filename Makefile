@@ -119,7 +119,7 @@ performance: install
 	(cd ./integration; ./performance_test.sh mtl 0.05)
 
 # set the value in maxidx to roughly 20 or more (takes about 2 hours)
-performance-db:
+performance-db: install
 	(cd ./integration; ./performance_test.sh mtl 0.25 db 2> /dev/null)
 	mv ./integration/results-avg.csv ./integration/db.csv
 
