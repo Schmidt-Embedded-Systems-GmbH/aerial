@@ -4,10 +4,21 @@
 
 MAXIDX=`cat maxidx`
 
-DATE="gdate"
-TIMEOUT="gtimeout"
-AWK="gawk"
-TIME="/usr/bin/time -l"
+system=`uname`
+
+if [ "$system" == "Linux" ]
+then
+  DATE="date"
+  TIMEOUT="timeout"
+  AWK="gawk"
+  TIME="/usr/bin/time -v"
+else
+  DATE="gdate"
+  TIMEOUT="gtimeout"
+  AWK="gawk"
+  TIME="/usr/bin/time -l"
+fi
+
 TIMEOUT="$TIMEOUT 10s"
 AERIAL=$(which aerial)
 
@@ -29,10 +40,16 @@ function run {
     #run the command, parse results...
     local ts=$($DATE +%s%N)
     local result=$(eval "$TIME $TIMEOUT $cmd")
-    local time=$((($($DATE +%s%N) - $ts)/1000000)) 
-    local space=$(echo $result | cut -d " " -f7)
+    local time=$((($($DATE +%s%N) - $ts)/1000000))
+    if [ "$system" == "Linux" ]
+    then
+      local space=$(echo $result | cut -d ":" -f15 | cut -d " " -f2)
+      local space=$((space*1024))
+    else
+      local space=$(echo $result | cut -d " " -f7)
+    fi
 
-    # the actual test 
+    # the actual test
     # ...
       # read bounds
     smin=$(cat db.csv | egrep "$params," | cut -d "," -f5)
@@ -45,13 +62,13 @@ function run {
     smax=$(echo "$smax * (1 + $offset)" | bc -l)
     tmin=$(echo "$tmin * (1 - $offset)" | bc -l)
     tmax=$(echo "$tmax * (1 + $offset)" | bc -l)
-    
+
 
     if [ $(echo "$space < $smin" | bc -l) -eq 1 ];
     then
       >&2 echo "Warning: used space (= $space B) is LESS than the bound (= $smin B) for ($params, $idxs)"
     fi
-    
+
     if [ $(echo "$smax < $space" | bc -l) -eq 1 ];
     then
       >&2 echo "Warning: used space (= $space B) is MORE than the bound (= $smax B) for ($params, $idxs)"
@@ -61,7 +78,7 @@ function run {
     then
       >&2 echo "Warning: used time (= $time ms) is LESS than the bound (= $tmin ms) for ($params, $idxs)"
     fi
-    
+
     if [ $(echo "$tmax < $time" | bc -l) -eq 1 ];
     then
       >&2 echo "Warning: used time (= $time ms) is MORE than the bound (= $tmax ms) for ($params, $idxs)"
