@@ -103,6 +103,8 @@ let create outch mode_hint formula =
     let (history',outch3) = List.fold_left (fun (history, outch') ((d, cell) as x) ->
       C.maybe_output_future outch' d (C.subst_cell_future fa' cell) (fun c b -> (List.cons x b,c)) history) ([],outch2) history in
     let (skip',outch3) = C.maybe_output_future outch3 d' (mk_top_fcell fa') (fun c _ -> (false,c)) true in
+    (* let _ = Format.printf "%d\n%!" (List.length history') in *)
+    (* let outch3 = List.fold_left (fun outch (_, cell) -> output_event (C.print_cell outch cell) "\n\n") outch3 history' in *)
     {history = history'; now = d'; arr = fa'; skip = skip'; output = outch3} in
 
   {init=init; step=step}
