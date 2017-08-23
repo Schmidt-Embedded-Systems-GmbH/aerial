@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rate=$1
 form=$2
 i=$3

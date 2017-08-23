@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #parameters
 MAXIDX=`cat maxidx`
 type=$1
@@ -13,7 +15,7 @@ else
     # traces
     rm -rf logs
     mkdir -p logs
-    parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `seq 1 $MAXIDX`  ::: 10 2> /dev/null
+    parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `seq 1 $MAXIDX` ::: 10 2> /dev/null
 
     echo "Generating formulas..."
     # formulas
