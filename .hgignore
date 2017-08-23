@@ -11,6 +11,7 @@ experiments/aerial
 experiments/aerial-poly
 experiments/monpoly
 experiments/tmp
+integration/*.csv
 *.out
 *.aux
 *.auxlock
