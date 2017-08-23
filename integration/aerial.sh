@@ -19,7 +19,7 @@ else
   TIME="/usr/bin/time -l"
 fi
 
-TIMEOUT="$TIMEOUT 10s"
+TIMEOUT="$TIMEOUT 100s"
 AERIAL=$(which aerial)
 
 rate=$1
