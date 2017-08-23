@@ -13,7 +13,7 @@ else
     # traces
     rm -rf logs
     mkdir -p logs
-    parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `eval echo {1..$MAXIDX}`  ::: 10 2> /dev/null 
+    parallel ../experiments/gen_logs_random.sh  ::: `cat rates` ::: 2 ::: `seq 1 $MAXIDX`  ::: 10 2> /dev/null
 
     echo "Generating formulas..."
     # formulas
@@ -21,23 +21,23 @@ else
     mkdir -p formulas
     echo "   Compiling the formula generator..."
     make -C ../ generate
-    for i in `cat forms`; 
-    do 
-    for j in `seq 1 $MAXIDX`; 
-    do 
+    for i in `cat forms`;
+    do
+    for j in `seq 1 $MAXIDX`;
+    do
     fmas=$(./generator_main.native -$type -size $i)
     f1=$(echo "$fmas" | cut -d "#" -f1)
-    echo "$f1" > formulas/r${i}_${j}.formula; 
+    echo "$f1" > formulas/r${i}_${j}.formula;
     done;
     done
 
 fi
 
 echo "Performance tests (this will take a while)..."
-# monitring 
+# monitring
 #Script for random formulas
 echo "Formula, FID, Rate, LID, Space, Time" > results.csv
-parallel ./aerial.sh ::: `cat rates` ::: `cat forms` ::: `eval echo {1..$MAXIDX}` ::: `eval echo {1..$MAXIDX}` ::: $type ::: $offset >> results.csv 
+parallel ./aerial.sh ::: `cat rates` ::: `cat forms` ::: `seq 1 $MAXIDX` ::: `seq 1 $MAXIDX` ::: $type ::: $offset >> results.csv
 
 
 echo "Aggregating results..."
@@ -65,7 +65,7 @@ if ($6>tmax[$1][$2]) tmax[$1][$2]=$6;
 }
 END{
 for(i in t){
-      for(j in t[i]){  
+      for(j in t[i]){
 	    print i ","j ", "m[i][j] ", "sqrt(m2m[i][j]/(n[i][j]-1)) ","mmin[i][j] ","mmax[i][j] ", "t[i][j] ", "sqrt(m2t[i][j]/(n[i][j]-1)) ","tmin[i][j] ","tmax[i][j]
 	    }}
 }' >> results-avg.csv
