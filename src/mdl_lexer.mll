@@ -16,7 +16,7 @@ open Mdl
 open Lexing
 exception ParsingError_ of position*position*string
 exception ParsingError of string
-                                                          
+
 let parsing_error i j fmt = Format.kasprintf (fun s -> raise (ParsingError_(i,j,s))) fmt
 let lexing_error lexbuf fmt = parsing_error (lexeme_start_p lexbuf) (lexeme_end_p lexbuf) fmt
 

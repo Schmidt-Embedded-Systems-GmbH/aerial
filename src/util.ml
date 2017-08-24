@@ -57,7 +57,7 @@ let mem_I t = case_I (mem_BI t) (mem_UI t)
 let binterval_to_string = function
   | BI (i, j) -> Printf.sprintf "[%d,%d]" i j
 
-let interval_to_string = function 
+let interval_to_string = function
   | U (UI i) -> Printf.sprintf "[%d,∞)" i
   | B i -> Printf.sprintf "%a" (fun x -> binterval_to_string) i
 

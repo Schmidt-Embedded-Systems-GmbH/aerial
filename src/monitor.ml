@@ -49,10 +49,10 @@ type monitor =
 
 let fly mon log =
   let rec loop f x = loop f (f x) in
-  let s (ctxt,ch) = 
+  let s (ctxt,ch) =
     let (line,ch) = input_event ch ctxt.output in
-    (mon.step line ctxt,ch) in 
-  loop s (mon.init,log) 
+    (mon.step line ctxt,ch) in
+  loop s (mon.init,log)
 
 let create outch mode_hint formula =
     let outch = output_event outch "Monitoring "  in
@@ -61,8 +61,8 @@ let create outch mode_hint formula =
       (" in mode \"" ^ (match mode_hint with NAIVE -> "naive" | COMPRESS_LOCAL -> "local" | COMPRESS_GLOBAL -> "global") ^ "\"") in
       let outch = output_event outch "\n" in
   let (formula, f_vec, m) = F.init formula in
-  
-  let mode = if F.bounded_future formula then mode_hint else  
+
+  let mode = if F.bounded_future formula then mode_hint else
     COMPRESS_GLOBAL in
   let outch = if F.bounded_future formula then outch else output_event outch
     "The formula contains unbounded future operators and will therefore be monitored in global mode.\n" in
@@ -79,7 +79,7 @@ let create outch mode_hint formula =
           then let out1 = output_eq out ((t, i), (t', j)) in (List.rev res @ entry' :: history, out1)
           else check_dup (entry' :: res) entry out history
         else (entry :: List.rev res @ entry' :: history, out) in
-  
+
   let add = if mode != NAIVE then check_dup [] else fun x c y  -> (List.cons x y, c) in
 
   let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
@@ -99,7 +99,7 @@ let create outch mode_hint formula =
      (* let _ = Array.iteri (fun i fc -> Printf.printf "%d-%d %a: %a\n%!" i (F.idx_of f_vec.(i)) F.print_formula f_vec.(i) C.print_cell (eval fc)) fa in  *)
     let old_history = ctxt.history in
     let (clean_history, outch) = List.fold_left (fun (history, outch') (d, cell) ->
-      C.maybe_output_cell outch' false d (eval (C.subst_cell_future fa cell)) add history) ([], outch) old_history in 
+      C.maybe_output_cell outch' false d (eval (C.subst_cell_future fa cell)) add history) ([], outch) old_history in
     let (history, outch) = C.maybe_output_cell outch skip d (eval (mk_top_fcell fa)) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
     let fa' = F.progress (f_vec, m) (delta, ev) fa in

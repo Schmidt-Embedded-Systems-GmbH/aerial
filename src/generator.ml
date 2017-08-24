@@ -12,14 +12,14 @@ open QCheck
 open Channel
 
 
-let interval_gen max_lb max_delta = 
+let interval_gen max_lb max_delta =
   let lb = Gen.int_bound max_lb in
   let delta = Gen.int_bound max_delta in
   Gen.map2 (fun l d -> lclosed_rclosed_BI l (l + d)) lb delta
 
 module type Language = sig
   type formula
-  val generate: string list -> int -> formula QCheck.Gen.t 
+  val generate: string list -> int -> formula QCheck.Gen.t
   val formula_to_string: formula -> string
   val to_string: formula -> string
 end
@@ -30,7 +30,7 @@ module MTL : Language = struct
   type formula = Mtl.formula
   let generate atoms = Gen.fix (fun go -> function
       | 0 -> Gen.oneofl (List.flatten (List.map (fun x-> [Mtl.p x; Mtl.neg (Mtl.p x)]) atoms))
-      | n -> 
+      | n ->
         let interval_gen = interval_gen 50 25 in
         let m = Random.int n in
           Gen.frequency
@@ -48,7 +48,7 @@ module MTL : Language = struct
             (* 2, Gen.map3 Mtl.since interval_gen (go m) (go (n - 1 - m))  *)
             ])
 
-    let rec formula_to_montre_string l = Mtl.(function 
+    let rec formula_to_montre_string l = Mtl.(function
       | P (_, x) -> Printf.sprintf "%s" x
       | Neg(x) -> Printf.sprintf "! %a" (fun x -> formula_to_montre_string 0) x
       | Bool b -> Printf.sprintf (if b then "p || !p" else "p && !p")
@@ -84,7 +84,7 @@ module MDL : Language = struct
             1, Gen.map Mdl.star   (gor (n-1));
             1, Gen.map2 Mdl.seq  (gor m) (gor (n - 1 - m));
             1, Gen.map2 Mdl.alt  (gor m) (gor (n - 1 - m))])) n)
-    let rec formula_to_montre_string l = Mdl.(function 
+    let rec formula_to_montre_string l = Mdl.(function
       | P (_, x) -> Printf.sprintf "%s" x
       | Neg(x) -> Printf.sprintf "! %a" (fun x -> formula_to_montre_string 0) x
       | Bool b -> Printf.sprintf (if b then "p || !p" else "p && !p")
@@ -106,23 +106,23 @@ module MDL : Language = struct
 end
 let mdl = (module MDL : Language)
 
-let generate_mtl size atoms  = 
+let generate_mtl size atoms  =
   List.hd (Gen.generate ~n:1 (MTL.generate atoms size))
 
-let generate_mdl size atoms  = 
+let generate_mdl size atoms  =
   List.hd (Gen.generate ~n:1 (MDL.generate atoms size))
 
-let generate_log bound size atoms = 
+let generate_log bound size atoms =
   (* let bound_gen tb = Gen.int_bound tb in *)
   let rec props acc = function
   | [] -> acc
-  | s::ss -> props ([]::(List.map (fun x -> s::x) acc)) ss in 
-  let props a = props [[]] a in 
+  | s::ss -> props ([]::(List.map (fun x -> s::x) acc)) ss in
+  let props a = props [[]] a in
   let event_gen tb = Gen.oneofl (List.map (fun x -> Event(SS.of_list x, tb)) (props atoms)) in
   (* let event_gen tb = Gen.map2 (fun x y -> Event(SS.of_list x, y)) (Gen.oneofl (props atoms)) (bound_gen tb) in *)
   let rec log_gen tb = function
   | 0 -> Gen.map (fun x -> [x]) (event_gen tb)
-  | n -> (let ts = if tb = 0 then 0 else Random.int tb in 
+  | n -> (let ts = if tb = 0 then 0 else Random.int tb in
           let event = (event_gen tb) in
           Gen.map2 (fun x y -> x::y) event (log_gen ts (n-1))
          ) in

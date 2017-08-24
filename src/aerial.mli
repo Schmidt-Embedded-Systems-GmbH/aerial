@@ -16,7 +16,7 @@ module type Language = sig
   val example_formula: formula
   val formula_to_string: formula -> string
   module Monitor: Monitor.Monitor with type formula = formula
-end 
+end
 
 
 val cell_ref: (module Cell) ref

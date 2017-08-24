@@ -74,7 +74,7 @@ let maybe_output case_cell fmt skip d cell f =
     (fun b ->
       let fmt = if skip then fmt else output_verdict fmt (d, b)
       in fun x -> (x, fmt))
-    (fun x -> f (d, cell) fmt x) cell 
+    (fun x -> f (d, cell) fmt x) cell
 
 type cell = bdd
 type future_cell = Now of cell | Later of (timestamp -> cell)
@@ -118,7 +118,7 @@ let eval_future_cell t = function
   | Now c -> c
   | Later f -> f t
 
-let cimp l r = cdisj (cneg l) r 
+let cimp l r = cdisj (cneg l) r
 let cif b t e = cconj (cimp b t) (cimp (cneg b) e)
 
 let is_true = function
@@ -152,7 +152,7 @@ let fcneg = function
   | Now c -> Now (cneg c)
   | Later f -> Later (fun t -> cneg (f t))
 
-let fcimp l r = fcdisj (fcneg l) r 
+let fcimp l r = fcdisj (fcneg l) r
 let fcif b t e = fcconj (fcimp b t) (fcimp (fcneg b) e)
 
 let maybe_flip b = if b then fun x -> x else cneg

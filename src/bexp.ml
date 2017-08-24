@@ -18,7 +18,7 @@ let maybe_output case_cell fmt skip d cell f =
     (fun b ->
       let fmt = if skip then fmt else output_verdict fmt (d, b)
       in fun x -> (x, fmt))
-    (fun x -> f (d, cell) fmt x) cell 
+    (fun x -> f (d, cell) fmt x) cell
 
 type cell = V of bool * int | B of bool | C of cell * cell | D of cell * cell
 
@@ -39,7 +39,7 @@ let rec compare c d = match c, d with
 
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-let rec cell_to_string l = function 
+let rec cell_to_string l = function
   | V (b, x) -> Printf.sprintf "%sx%d" (if b then "" else "¬") x
   | B b -> Printf.sprintf (if b then "⊤" else "⊥")
   | C (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> cell_to_string 2) f (fun x -> cell_to_string 2) g
@@ -61,9 +61,9 @@ let maybe_output_future fmt d fcell f =
   | Now cell -> maybe_output_cell fmt false d cell (fun _ -> f)
   | Later _ -> f fmt
 
-let eval_future_cell t = function 
+let eval_future_cell t = function
   | Now c -> c
-  | Later f -> f t 
+  | Later f -> f t
 
 let cbool b = B b
 let cvar b i = V (b, i)
@@ -78,7 +78,7 @@ let rec cconj x y = match x, y with
     if cd = 0 then C (d, e)
     else if cd < 0 then C (c, C (d, e))
     else C (d, cconj c e)
-  | _ -> 
+  | _ ->
     let xy = compare x y in
     if xy = 0 then x
     else if xy < 0 then C (x, y)
@@ -92,7 +92,7 @@ let rec cdisj x y = match x, y with
     if cd = 0 then D (d, e)
     else if cd < 0 then D (c, D (d, e))
     else D (d, cdisj c e)
-  | _ -> 
+  | _ ->
     let xy = compare x y in
     if xy = 0 then x
     else if xy < 0 then D (x, y)
@@ -104,7 +104,7 @@ let rec cneg = function
   | B b -> B (not b)
   | V (b, x) -> V (not b, x)
 
-let cimp l r = cdisj (cneg l) r 
+let cimp l r = cdisj (cneg l) r
 let cif b t e = cconj (cimp b t) (cimp (cneg b) e)
 
 let is_true = function
@@ -135,7 +135,7 @@ let fcneg = function
   | Now c -> Now (cneg c)
   | Later f -> Later (fun t -> cneg (f t))
 
-let fcimp l r = fcdisj (fcneg l) r 
+let fcimp l r = fcdisj (fcneg l) r
 let fcif b t e = fcconj (fcimp b t) (fcimp (fcneg b) e)
 
 let maybe_flip b = if b then fun x -> x else cneg

@@ -15,10 +15,10 @@ let num_ref = ref None
 let atoms_ref = ref ["p"; "q"; "r"]
 
 
-(*let interval_gen = 
+(*let interval_gen =
   let lb = Gen.small_nat in
   let ub = Gen.small_int in
-  if lb < ub then (Gen.map2 lclosed_rclosed_BI lb ub) 
+  if lb < ub then (Gen.map2 lclosed_rclosed_BI lb ub)
              else (Gen.map2 lclosed_rclosed_BI ub lb)*)
 
 
@@ -50,19 +50,19 @@ let process_args =
     | _ -> usage () in
   go
 
-let rec print_list = function 
+let rec print_list = function
 [] -> ()
 | e::l -> print_string e ; print_newline () ; print_list l
 
-let _ = 
+let _ =
     Random.self_init ();
     process_args (List.tl (Array.to_list Sys.argv));
     let (module L:Language) = !language_ref in
-    let size = match !size_ref with 
+    let size = match !size_ref with
       | None -> 10
       | Some x -> x in
-    let num = match !num_ref with 
+    let num = match !num_ref with
       | None -> 1
       | Some x -> x in
     print_list (List.map L.formula_to_string (Gen.generate ~n:num (L.generate !atoms_ref size)))
-    
+

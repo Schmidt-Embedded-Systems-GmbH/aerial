@@ -65,7 +65,7 @@ let conj f g =
   | Bool true, g | g, Bool true -> g
   | Bool false, _ | _, Bool false -> bool false
   | _ -> Conj (f, lift (maxidx_of f + 1) g)
-let disj f g = 
+let disj f g =
   match f, g with
   | Bool false, g | g, Bool false -> g
   | Bool true, _ | _, Bool true -> bool true
@@ -126,7 +126,7 @@ let idx_of = function
 let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
 let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
 
-let rec sub = function 
+let rec sub = function
   | Neg f -> sub f
   | Conj (f, g) -> sub g @ sub f
   | Disj (f, g) -> sub g @ sub f

@@ -14,7 +14,7 @@ open Generator
 
 let parseMTL = fun x -> Mtl_parser.formula Mtl_lexer.token (Lexing.from_string x)
 let parseMTLAndBack s = Mtl.formula_to_string (parseMTL s)
-let checkMTL s =  parseMTLAndBack s = s 
+let checkMTL s =  parseMTLAndBack s = s
 
 let fmasMTL = [
   "⊤";
@@ -40,7 +40,7 @@ let fmasMTL = [
   "P0 U[0,5] (P1 U[2,6] P2)"
 ]
 
-(*(*$T  checkMTL 
+(*(*$T  checkMTL
       List.for_all (fun x -> x) (List.map (fun x -> checkMTL x) fmasMTL)
 *)*)
 
@@ -51,7 +51,7 @@ let fmasMTL = [
   (parseMTLAndBack "¬P0"                     )   ("¬P0")
   (parseMTLAndBack "P0 ∧ P1"                 )   ("P0 ∧ P1")
   (parseMTLAndBack "P0 ∨ P1"                 )   ("P0 ∨ P1")
-  (parseMTLAndBack "P0 ∧ P1 ∧ P2"            )   ("P0 ∧ P1 ∧ P2")               
+  (parseMTLAndBack "P0 ∧ P1 ∧ P2"            )   ("P0 ∧ P1 ∧ P2")
   (parseMTLAndBack "P0 ∧ P1 ∨ P2"            )   ("P0 ∧ P1 ∨ P2")
   (parseMTLAndBack "P0 ∨ P1 ∧ P2"            )   ("P0 ∨ P1 ∧ P2")
   (parseMTLAndBack "P0 ∨ P1 ∨ P2"            )   ("P0 ∨ P1 ∨ P2")
@@ -90,54 +90,54 @@ let parseMDLAndBack s = Mdl.formula_to_string (parseMDL s)
 let checkMDL s =  parseMDLAndBack s = s
 
 let fmasMDL = [
-  "⊤";                          
-  "⊥";                          
-  "P0";                         
-  "¬P0";                        
-  "P0 ∧ P1";                    
-  "P0 ∨ P1";                    
-  "P0 ∧ P1 ∧ P2";               
-  "P0 ∧ P1 ∨ P2";               
-  "P0 ∨ P1 ∧ P2";               
-  "P0 ∨ P1 ∨ P2";               
-  "<P0>  P1";                   
-  "P1  <P0>";                   
-  "<P0>  (<P1>  P2)";           
-  "<P0>  (P2  <P1>)";           
-  "(<P1>  P2)  <P0>";           
-  "(P2  <P1>)  <P0>";           
-  "<<P0>  P1>  P2";             
-  "P2  <<P0>  P1>";             
-  "<P1  <P0>>  P2";             
-  "P2  <P1  <P0>>";             
-  "<P0> [0,∞) P1";              
-  "P1 [0,∞) <P0>";              
-  "<P0> [0,∞) (<P1> [0,∞) P2)"; 
-  "<P0> [0,∞) (P2 [0,∞) <P1>)"; 
-  "(<P1> [0,∞) P2) [0,∞) <P0>"; 
-  "(P2 [0,∞) <P1>) [0,∞) <P0>"; 
-  "<<P0> [0,∞) P1> [0,∞) P2";   
-  "P2 [0,∞) <<P0> [0,∞) P1>";   
-  "<P1 [0,∞) <P0>> [0,∞) P2";   
-  "P2 [0,∞) <P1 [0,∞) <P0>>";   
-  "<P0> (4,9] P1";              
-  "P1 (4,9] <P0>";              
-  "<P0> (4,9] (<P1> (4,9] P2)"; 
-  "<P0> (4,9] (P2 (4,9] <P1>)"; 
-  "(<P1> (4,9] P2) (4,9] <P0>"; 
-  "(P2 (4,9] <P1>) (4,9] <P0>"; 
-  "<<P0> (4,9] P1> (4,9] P2";   
-  "P2 (4,9] <<P0> (4,9] P1>";   
-  "<P1 (4,9] <P0>> (4,9] P2";   
-  "P2 (4,9] <P1 (4,9] <P0>>";   
-  "<P0 P1> P2";                 
-  "P2 <P0 P1>";                 
-  "<P0* P1> P2";                
-  "P2 <P0* P1>";                
-  "<P0 + P1> P2";               
-  "P2 <P0 + P1>";               
+  "⊤";
+  "⊥";
+  "P0";
+  "¬P0";
+  "P0 ∧ P1";
+  "P0 ∨ P1";
+  "P0 ∧ P1 ∧ P2";
+  "P0 ∧ P1 ∨ P2";
+  "P0 ∨ P1 ∧ P2";
+  "P0 ∨ P1 ∨ P2";
+  "<P0>  P1";
+  "P1  <P0>";
+  "<P0>  (<P1>  P2)";
+  "<P0>  (P2  <P1>)";
+  "(<P1>  P2)  <P0>";
+  "(P2  <P1>)  <P0>";
+  "<<P0>  P1>  P2";
+  "P2  <<P0>  P1>";
+  "<P1  <P0>>  P2";
+  "P2  <P1  <P0>>";
+  "<P0> [0,∞) P1";
+  "P1 [0,∞) <P0>";
+  "<P0> [0,∞) (<P1> [0,∞) P2)";
+  "<P0> [0,∞) (P2 [0,∞) <P1>)";
+  "(<P1> [0,∞) P2) [0,∞) <P0>";
+  "(P2 [0,∞) <P1>) [0,∞) <P0>";
+  "<<P0> [0,∞) P1> [0,∞) P2";
+  "P2 [0,∞) <<P0> [0,∞) P1>";
+  "<P1 [0,∞) <P0>> [0,∞) P2";
+  "P2 [0,∞) <P1 [0,∞) <P0>>";
+  "<P0> (4,9] P1";
+  "P1 (4,9] <P0>";
+  "<P0> (4,9] (<P1> (4,9] P2)";
+  "<P0> (4,9] (P2 (4,9] <P1>)";
+  "(<P1> (4,9] P2) (4,9] <P0>";
+  "(P2 (4,9] <P1>) (4,9] <P0>";
+  "<<P0> (4,9] P1> (4,9] P2";
+  "P2 (4,9] <<P0> (4,9] P1>";
+  "<P1 (4,9] <P0>> (4,9] P2";
+  "P2 (4,9] <P1 (4,9] <P0>>";
+  "<P0 P1> P2";
+  "P2 <P0 P1>";
+  "<P0* P1> P2";
+  "P2 <P0* P1>";
+  "<P0 + P1> P2";
+  "P2 <P0 + P1>";
 ]
-(*(*$T  checkMDL 
+(*(*$T  checkMDL
       List.for_all (fun x -> x) (List.map (fun x -> checkMDL x) fmasMDL)
 *)*)
 
@@ -152,7 +152,7 @@ let fmasMDL = [
   (parseMDLAndBack "P0 ∧ P1 ∧ P2"               ) ("P0 ∧ P1 ∧ P2")
   (parseMDLAndBack "P0 ∧ P1 ∨ P2"               ) ("P0 ∧ P1 ∨ P2")
   (parseMDLAndBack "P0 ∨ P1 ∧ P2"               ) ("P0 ∨ P1 ∧ P2")
-  (parseMDLAndBack "P0 ∨ P1 ∨ P2"               ) ("P0 ∨ P1 ∨ P2")  
+  (parseMDLAndBack "P0 ∨ P1 ∨ P2"               ) ("P0 ∨ P1 ∨ P2")
   (parseMDLAndBack "<P0> [0,∞) P1"              ) ("<P0> [0,∞) P1" )
   (parseMDLAndBack "P1 [0,∞) <P0>"              ) ("P1 [0,∞) <P0>" )
   (parseMDLAndBack "<P0> [0,∞) (<P1> [0,∞) P2)" ) ("<P0> [0,∞) (<P1> [0,∞) P2)")
@@ -178,7 +178,7 @@ let fmasMDL = [
   (parseMDLAndBack "<P0* P1> P2"                ) ("<P0* P1> [0,∞) P2")
   (parseMDLAndBack "P2 <P0* P1>"                ) ("P2 [0,∞) <P0* P1>")
   (parseMDLAndBack "<P0 + P1> P2"               ) ("(<P1> [0,∞) P2) ∨ (<P0> [0,∞) P2)")
-  (parseMDLAndBack "P2 <P0 + P1>"               ) ("(P2 [0,∞) <P1>) ∨ (P2 [0,∞) <P0>)") 
+  (parseMDLAndBack "P2 <P0 + P1>"               ) ("(P2 [0,∞) <P1>) ∨ (P2 [0,∞) <P0>)")
 *)
 
 let mdlfma5  = let fma = MDL.to_string (generate_mdl 5 ["P0";"P1";"P2";"P3"]) in print_endline fma; fma

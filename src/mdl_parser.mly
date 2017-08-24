@@ -60,8 +60,8 @@ e:
 | ATOM                          { p $1 }
 | LANGLE reF RANGLE INTERVAL e   { possiblyF $2 $4 $5 }  %prec MODALITY
 | LANGLE reF RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
-| LCLOSED reF RCLOSED INTERVAL e { necessarilyF $2 $4 $5 } %prec MODALITY 
-| LCLOSED reF RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY 
+| LCLOSED reF RCLOSED INTERVAL e { necessarilyF $2 $4 $5 } %prec MODALITY
+| LCLOSED reF RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
 | e INTERVAL LANGLE reP RANGLE   { possiblyP $1 $2 $4 }
 | e LANGLE reP RANGLE            { possiblyP $1 full $3 }
 | e INTERVAL LCLOSED reP RCLOSED { necessarilyP $1 $2 $4 }

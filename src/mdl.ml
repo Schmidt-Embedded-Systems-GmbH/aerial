@@ -101,7 +101,7 @@ let conj f g =
   | Bool true, g | g, Bool true -> g
   | Bool false, _ | _, Bool false -> bool false
   | _ -> Conj (f, lift (maxidx_of f + 1) g)
-let disj f g = 
+let disj f g =
   match f, g with
   | Bool false, g | g, Bool false -> g
   | Bool true, _ | _, Bool true -> bool true
@@ -116,12 +116,12 @@ let test f = Test f
 let empty = test (bool false)
 let epsilon = test (bool true)
 let alt f g = Alt (f, lift_re (maxidx_of_re f + 1) g)
-let seq f g = 
+let seq f g =
   match f, g with
   | Test (Bool true), g | g, Test (Bool true) -> g
   | Test (Bool false), _ | _, Test (Bool false) -> Test (Bool false)
   | _ -> Seq (f, lift_re (maxidx_of_re f + 1) g)
-let seq_lifted f g = 
+let seq_lifted f g =
   match f, g with
   | Test (Bool true), g | g, Test (Bool true) -> g
   | Test (Bool false), _ | _, Test (Bool false) -> Test (Bool false)
@@ -277,7 +277,7 @@ let mk cnj dsj neg bo idx =
 let mk_cell = mk cconj cdisj cneg cbool
 let mk_fcell = mk fcconj fcdisj fcneg fcbool
 
-let rec sub = function 
+let rec sub = function
   | Neg f -> sub f
   | Conj (f, g) -> sub g @ sub f
   | Disj (f, g) -> sub g @ sub f

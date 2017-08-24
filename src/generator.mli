@@ -8,15 +8,15 @@
 (*******************************************************************)
 open Channel
 
-module type Language = sig 
+module type Language = sig
   type formula
-  val generate: string list -> int -> formula QCheck.Gen.t 
+  val generate: string list -> int -> formula QCheck.Gen.t
   val formula_to_string: formula -> string
   val to_string: formula -> string
-end 
+end
 
-module MTL : Language 
-module MDL : Language 
+module MTL : Language
+module MDL : Language
 
 val mtl: (module Language)
 val mdl: (module Language)

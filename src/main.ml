@@ -120,4 +120,3 @@ let _ =
   with
     | End_of_file -> let _ = output_event !out_ref "Bye.\n" in close !out_ref; exit 0
     | EXIT -> close !out_ref; exit 1
-  

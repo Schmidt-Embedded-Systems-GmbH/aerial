@@ -29,7 +29,7 @@ let out1 = fun _ -> OutputMock [
                       BoolVerdict((3,1),false);
                       BoolVerdict((4,0),false);
                       BoolVerdict((4,1),false);
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((100,0),false);
                      ]
 let formula2 = formula_to_string(conj (p "P0") (p "P1"))
 let out2 = fun _ -> OutputMock [
@@ -39,7 +39,7 @@ let out2 = fun _ -> OutputMock [
                       BoolVerdict((3,1),false);
                       BoolVerdict((4,0),false);
                       BoolVerdict((4,1),false);
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((100,0),false);
                      ]
 let formula3 = formula_to_string(disj (p "P0") (p "P1"))
 let out3 = fun _ -> OutputMock [
@@ -49,7 +49,7 @@ let out3 = fun _ -> OutputMock [
                       BoolVerdict((3,1),false);
                       BoolVerdict((4,0),false);
                       BoolVerdict((4,1),false);
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((100,0),false);
                      ]
 let formula4 = formula_to_string(neg (p "P0"))
 let out4 = fun _ -> OutputMock [
@@ -59,7 +59,7 @@ let out4 = fun _ -> OutputMock [
                       BoolVerdict((3,1),true);
                       BoolVerdict((4,0),true);
                       BoolVerdict((4,1),true);
-                      BoolVerdict((100,0),true); 
+                      BoolVerdict((100,0),true);
                      ]
 let formula5 = formula_to_string(next full (p "P1"))
 let out5 = fun _ -> OutputMock [
@@ -79,7 +79,7 @@ let out6 = fun _ -> OutputMock [
                       BoolVerdict((3,1),true);
                       BoolVerdict((4,0),false);
                       BoolVerdict((4,1),false);
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((100,0),false);
                      ]
 let formula7 = formula_to_string(until full (p "P0")  (p "P1"))
 let out7 = fun _ -> OutputMock [
@@ -88,7 +88,7 @@ let out7 = fun _ -> OutputMock [
                       BoolVerdict((3,0),true);
                       BoolVerdict((3,1),false);
                       BoolVerdict((4,0),false);
-                      BoolVerdict((4,1),false); 
+                      BoolVerdict((4,1),false);
                       (* BoolVerdict((100,0),false);  *)
                      ]
 let formula8 = formula_to_string(since full (p "P1")  (p "P0"))
@@ -98,11 +98,11 @@ let out8 = fun _ -> OutputMock [
                       BoolVerdict((3,0),true);
                       BoolVerdict((3,1),false);
                       BoolVerdict((4,0),false);
-                      BoolVerdict((4,1),false); 
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((4,1),false);
+                      BoolVerdict((100,0),false);
                      ]
 let formula9 = formula_to_string(eventually small (p "P1") )
-let out9 = function 
+let out9 = function
            | NAIVE -> OutputMock [
                       BoolVerdict((1,0),true);
                       BoolVerdict((2,0),false);
@@ -128,8 +128,8 @@ let out10 = fun _ -> OutputMock [
                       BoolVerdict((3,0),true);
                       BoolVerdict((3,1),true);
                       BoolVerdict((4,0),true);
-                      BoolVerdict((4,1),true); 
-                      BoolVerdict((100,0),false); 
+                      BoolVerdict((4,1),true);
+                      BoolVerdict((100,0),false);
                      ]
 
 (* ... *)
@@ -138,23 +138,23 @@ let out10 = fun _ -> OutputMock [
 let pretty_print = fun x -> channel_to_string (OC x)
 let filter_verdicts = verdicts
 let test_language = mdl
-let checktest formula log out test_language mode = 
+let checktest formula log out test_language mode =
   let _ = print_endline "Checking random log:" in
-  let _ = print_endline (channel_to_string (IC log)) in 
+  let _ = print_endline (channel_to_string (IC log)) in
   let _ = print_endline ("w.r.t. random formula: " ^ formula) in
   check formula log out test_language mode
- 
+
 (*$= checktest & ~printer:pretty_print
   (out1 mode) (filter_verdicts (checktest formula1 log out test_language mode))
   (out2 mode) (filter_verdicts (checktest formula2 log out test_language mode))
   (out3 mode) (filter_verdicts (checktest formula3 log out test_language mode))
   (out4 mode) (filter_verdicts (checktest formula4 log out test_language mode))
-  
+
   (out7 mode) (filter_verdicts (checktest formula7 log out test_language mode))
   (out8 mode) (filter_verdicts (checktest formula8 log out test_language mode))
 
-*) 
- 
+*)
+
 let fma5  = MDL.to_string (generate_mdl 5 ["P0";"P1";"P2";"P3"])
 let fma10 = MDL.to_string (generate_mdl 10 ["P0";"P1";"P2";"P3"])
 let fma15 = MDL.to_string (generate_mdl 15 ["P0";"P1";"P2";"P3"])

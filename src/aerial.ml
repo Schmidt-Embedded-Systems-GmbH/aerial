@@ -46,9 +46,9 @@ let mdl () =
 (* TODO: pass a generic L.formula instead of string? *)
 let check fma log out language mode =
   let (module L:Language) = language () in
-  try 
+  try
   let f = L.parse (Lexing.from_string fma) in
   let m = L.Monitor.create out mode f in
     L.Monitor.fly m log
   with
-    | End_of_mock o -> output_event o "Bye.\n" 
+    | End_of_mock o -> output_event o "Bye.\n"

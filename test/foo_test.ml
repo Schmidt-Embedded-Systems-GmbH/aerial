@@ -9,17 +9,17 @@
 
 (* This is an example test file
    Whenever you want to test a module
-   from src folder, create a new .ml file 
-   in the test folder, open the module, 
-   bind some function from the module to 
+   from src folder, create a new .ml file
+   in the test folder, open the module,
+   bind some function from the module to
    a new name, and write the tests in the
-   special comments above each method 
+   special comments above each method
    (as shown in examples below).
 
    Special comment has the following syntax
    (*<test type> <header>
       <statement>
-      ... 
+      ...
     *)
 
    There are couple of types of tests: simple ($T),
@@ -34,7 +34,7 @@
    Once the tests are written invoke
     $ make test
    from the project root
-   
+
 *)
 
 (* Simple test cases *)
@@ -48,10 +48,10 @@
 
 (* Equality test cases
   They are simple test cases that also report the values
-  of the left-hand side and the right-hand side of the 
+  of the left-hand side and the right-hand side of the
   boolean expressions, if they differ.
-  To pretty print them one needs to also include in the 
-  header printing function of type 'a -> string, where 
+  To pretty print them one needs to also include in the
+  header printing function of type 'a -> string, where
   'a is the type of the expressions.
  *)
 
@@ -60,9 +60,9 @@
 *)
 
 
-(* Quickcheck test cases 
-  The Quickcheck module is accessible simply as Q 
-  within inline tests. Tests are of the form: 
+(* Quickcheck test cases
+  The Quickcheck module is accessible simply as Q
+  within inline tests. Tests are of the form:
   (*$Q <header>
     <generator> (fun <generated value> -> <statement>)
     ...
@@ -86,4 +86,3 @@
 
 let rec foo x0 f = function
   [] -> x0 | x::xs -> f x (foo x0 f xs)
-  
