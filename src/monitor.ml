@@ -94,18 +94,20 @@ let create outch mode_hint formula =
   let step (ev, t') ctxt =
     let (t, i) as d = ctxt.now in
     let outch = ctxt.output in
-    let outch = output_debug 0 outch (fun _ ->
-      Printf.sprintf "processing %a @ %d\n" print_event ev t') in
     let fa = ctxt.arr in
     let skip = ctxt.skip in
     let delta = t' - t in
     let eval = C.eval_future_cell delta in
+
+    let outch = output_debug 0 outch (fun _ ->
+      Printf.sprintf "processing %a @ %d\n" print_event ev t') in
     let outch = output_debug 10 outch (fun _ -> "prev array:\n") in
     let outch = output_debug 10 outch (fun _ ->
       fst (Array.fold_left (fun (s, i) fc ->
         (s ^ Printf.sprintf "%d) %a: %a\n%!" (F.idx_of f_vec.(i))
           formula_to_string f_vec.(i) cell_to_string (eval fc), i + 1))
       ("", 0) fa)) in
+
     let old_history = ctxt.history in
     let (history, outch) = List.fold_left (fun (history, outch') (d, cell) ->
       C.maybe_output_cell outch' false d (eval (C.subst_cell_future fa cell)) add history)
@@ -120,11 +122,13 @@ let create outch mode_hint formula =
       C.maybe_output_future outch d' (mk_top_fcell fa') (fun c _ -> (false, c)) true in
     let outch = output_debug 1 outch (fun _ ->
       Printf.sprintf "events in history: %d\n" (List.length history)) in
+
     let outch = output_debug 20 outch (fun _ -> "history:\n") in
     let outch = output_debug 20 outch (fun _ ->
       List.fold_left (fun s ((t, i), c) ->
         s ^ Printf.sprintf "%d:%d %a\n%!" t i cell_to_string c)
       "" history) in
+
     {history = history; now = d'; arr = fa'; skip = skip; output = outch} in
 
   {init=init; step=step}
