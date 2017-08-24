@@ -28,7 +28,7 @@ Arguments:
 \t -nobdd   \t- don't use BDDs (default)
 \t -flush   \t- flush output channel after every write
 \t -noflush \t- let runtime flush the output (default)
-\t -debug [n] \t- debug output (optional level parameter; default = 1; greater means more debug messages)
+\t -debug [n] \t- debug output (optional level parameter; default = 0; greater means more debug messages)
 \t -nodebug \t- no debug output (default)
 \t -mode
 \t\t naive  - naive
