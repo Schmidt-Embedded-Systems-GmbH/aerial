@@ -15,7 +15,7 @@ type output_type =
 
 type output_channel = 
   | Output of out_channel
-  | OutputFlushed of out_channel
+  | OutputDebug of int * out_channel
   | OutputMock of output_type list
 
 type channel = 
@@ -27,6 +27,7 @@ exception End_of_mock of output_channel
 (* val input_string: input_channel -> string * input_channel *)
 val input_event: input_channel -> output_channel -> (SS.t * int) * input_channel
 val output_event: output_channel -> string -> output_channel 
+val output_debug: int -> output_channel -> (unit -> string) -> output_channel
 
 val channel_to_string: channel -> string
 val verdicts: output_channel -> output_channel

@@ -15,10 +15,10 @@ type output_type =
 
 type output_channel = 
   | Output of out_channel
-  | OutputFlushed of out_channel
+  | OutputDebug of int * out_channel
   | OutputMock of output_type list
 
-type channel = 
+type channel =
   | IC of input_channel 
   | OC of output_channel
 
@@ -60,13 +60,18 @@ let input_event log out =
 let output_event log event =
   match log with 
   | Output x -> Printf.fprintf x "%s" event; log
-  | OutputFlushed x -> Printf.fprintf x "%s%!" event; log
+  | OutputDebug (_, x) -> Printf.fprintf x "%s%!" event; log
   | OutputMock x -> OutputMock(x@[Info event])
+
+let output_debug k log event =
+  match log with 
+  | OutputDebug (l, x) when k <= l -> Printf.fprintf x "[DEBUG]: %s%!" (event ()); log
+  | _ -> log
 
 
 let channel_to_string log = match log with 
 | OC c -> (match c with
-  | Output _ | OutputFlushed _ -> ""
+  | Output _ | OutputDebug _ -> ""
   | OutputMock ls -> List.fold_left (fun a x -> a ^ (match x with 
       | BoolVerdict ((t, i), b) -> Printf.sprintf "%d:%d %B\n" t i b
       | EqVerdict ((t, i), (t', j)) -> Printf.sprintf "%d:%d = %d:%d\n" t i t' j
@@ -80,7 +85,7 @@ let channel_to_string log = match log with
 ) "" ls)
 
   let verdicts log = match log with 
-  | Output _ | OutputFlushed _ -> log
+  | Output _ | OutputDebug _ -> log
   | OutputMock ls -> OutputMock (List.filter (fun x -> match x with 
       | BoolVerdict _ | EqVerdict _ -> true
       | _ -> false
@@ -94,10 +99,10 @@ let sort ch = match ch with
   | OutputMock c -> OutputMock (List.sort (fun a b -> if a<b then -1 else 1) c)
   | _ -> ch
   
-let output_verdict fmt ((t, i), b) =
-  match fmt with 
-  | Output x -> Printf.fprintf x "%d:%d %B\n" t i b; fmt
-  | OutputFlushed x -> Printf.fprintf x "%d:%d %B\n%!" t i b; fmt
+let output_verdict ch ((t, i), b) =
+  match ch with 
+  | Output x -> Printf.fprintf x "%d:%d %B\n" t i b; ch
+  | OutputDebug (_, x) -> Printf.fprintf x "%d:%d %B\n%!" t i b; ch
   | OutputMock x -> OutputMock(x@[BoolVerdict ((t, i), b)]) 
 
 let eliminate_eq_verdicts ch = 
@@ -114,14 +119,14 @@ let eliminate_eq_verdicts ch =
       eliminate_eq_verdicts_rec lss neweqs res
     | Info _ -> eliminate_eq_verdicts_rec lss feqs res) in
   match ch with 
-  | Output _ | OutputFlushed _ -> ch
+  | Output _ | OutputDebug _ -> ch
   | OutputMock ls -> sort (OutputMock (List.rev (eliminate_eq_verdicts_rec ls (fun _ -> []) [])))
   
  
-let output_eq fmt ((t, i), (t', j)) = 
-  match fmt with 
-  | Output x -> Printf.fprintf x "%d:%d = %d:%d\n" t i t' j; fmt
-  | OutputFlushed x -> Printf.fprintf x "%d:%d = %d:%d\n%!" t i t' j; fmt
+let output_eq ch ((t, i), (t', j)) = 
+  match ch with 
+  | Output x -> Printf.fprintf x "%d:%d = %d:%d\n" t i t' j; ch
+  | OutputDebug (_, x) -> Printf.fprintf x "%d:%d = %d:%d\n%!" t i t' j; ch
   | OutputMock x -> OutputMock(x@[EqVerdict ((t, i), (t', j))])
 
 let print_interval out i = output_event out (interval_to_string i)

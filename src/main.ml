@@ -20,7 +20,7 @@ let log_ref = ref (Input stdin)
 let out_ref = ref (Output stdout)
 
 let usage () = Format.eprintf
-"Example usage: aerial -mode 1 -fmla test.fmla -log test.log -out test.out
+"Example usage: aerial -mode local -debug 2 -fmla test.fmla -log test.log -out test.out
 Arguments:
 \t -mdl     \t- use Metric Dynamic Logic (default)
 \t -mtl     \t- use Metric Temporal Logic
@@ -28,6 +28,8 @@ Arguments:
 \t -nobdd   \t- don't use BDDs (default)
 \t -flush   \t- flush output channel after every write
 \t -noflush \t- let runtime flush the output (default)
+\t -debug [n] \t- debug output (optional level parameter; default = 1; greater means more debug messages)
+\t -nodebug \t- no debug output (default)
 \t -mode
 \t\t naive  - naive
 \t\t local  - compress locally
@@ -41,6 +43,10 @@ Arguments:
 
 let mode_error () =
   Format.eprintf "mode should be either of \"naive\", \"local\", or \"global\" (without quotes)\n%!";
+  raise EXIT
+
+let level_error () =
+  Format.eprintf "debug level should be a positive integer\n%!";
   raise EXIT
 
 let process_args =
@@ -78,16 +84,27 @@ let process_args =
         out_ref := Output (open_out outfile);
         go args
     | ("-flush" :: args) ->
-        out_ref := (match !out_ref with Output ch -> OutputFlushed ch | x -> x);
+        out_ref := (match !out_ref with Output ch -> OutputDebug (-1, ch) | x -> x);
         go args
     | ("-noflush" :: args) ->
-        out_ref := (match !out_ref with OutputFlushed ch -> Output ch | x -> x);
+        out_ref := (match !out_ref with OutputDebug (i, ch) -> Output ch | x -> x);
+        go args
+    | ("-debug" :: level :: args) ->
+        (try
+          let level = int_of_string level in
+          out_ref := (match !out_ref with Output ch -> OutputDebug (level, ch) | x -> x);
+          go args
+        with Failure _ ->
+          out_ref := (match !out_ref with Output ch -> OutputDebug (0, ch) | x -> x);
+          go (level :: args))
+    | ("-nodebug" :: args) ->
+        out_ref := (match !out_ref with OutputDebug (_, ch) -> Output ch | x -> x);
         go args
     | [] -> ()
     | _ -> usage () in
   go
 
- let close out = match out with Output x | OutputFlushed x -> close_out x | OutputMock x -> ()
+ let close out = match out with Output x | OutputDebug (_, x) -> close_out x | OutputMock x -> ()
 
 (*TODO: reuse check from aerial module*)
 (* check f !log_ref !out_ref !language_ref !mode_ref *)

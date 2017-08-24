@@ -11,7 +11,6 @@ open Util
 open Cell
 open Channel
 
-
 module type Formula = sig
   type f
   type memory
@@ -85,27 +84,31 @@ let create outch mode_hint formula =
 
   let mk_top_fcell a = F.mk_fcell (fun i -> a.(i)) formula in
 
+  let print_event _ ev =
+    let tail s = if s = "" then "" else String.sub s 1 (String.length s - 1) in
+    "{" ^ tail (SS.fold (fun s t -> t ^ ", " ^ s) ev "") ^ "}" in
+
   let step (ev, t') ctxt =
-     (* let _ = Printf.printf "Processing %a @ %d\n" (fun _ -> SS.iter print_string) ev t' in  *)
     let (t, i) as d = ctxt.now in
-    let outch = ctxt.output in 
+    let outch = ctxt.output in
+    let outch = output_debug 0 outch (fun _ -> Printf.sprintf "processing %a @ %d\n" print_event ev t') in
     let fa = ctxt.arr in
     let skip = ctxt.skip in
     let delta = t' - t in
     let eval = C.eval_future_cell delta in
      (* let _ = Array.iteri (fun i fc -> Printf.printf "%d-%d %a: %a\n%!" i (F.idx_of f_vec.(i)) F.print_formula f_vec.(i) C.print_cell (eval fc)) fa in  *)
     let old_history = ctxt.history in
-    let (clean_history,outch1) = List.fold_left (fun (history, outch') (d, cell) ->
-      C.maybe_output_cell outch' false d (eval (C.subst_cell_future fa cell)) add history) ([],outch) old_history in 
-    let (history, outch2) = C.maybe_output_cell outch1 skip d (eval (mk_top_fcell fa)) add clean_history in
+    let (clean_history, outch) = List.fold_left (fun (history, outch') (d, cell) ->
+      C.maybe_output_cell outch' false d (eval (C.subst_cell_future fa cell)) add history) ([], outch) old_history in 
+    let (history, outch) = C.maybe_output_cell outch skip d (eval (mk_top_fcell fa)) add clean_history in
     let d' = (t', if t = t' then i + 1 else 0) in
     let fa' = F.progress (f_vec, m) (delta, ev) fa in
-    let (history',outch3) = List.fold_left (fun (history, outch') ((d, cell) as x) ->
-      C.maybe_output_future outch' d (C.subst_cell_future fa' cell) (fun c b -> (List.cons x b,c)) history) ([],outch2) history in
-    let (skip',outch3) = C.maybe_output_future outch3 d' (mk_top_fcell fa') (fun c _ -> (false,c)) true in
+    let (history', outch) = List.fold_left (fun (history, outch') ((d, cell) as x) ->
+      C.maybe_output_future outch' d (C.subst_cell_future fa' cell) (fun c b -> (List.cons x b, c)) history) ([], outch) history in
+    let (skip', outch) = C.maybe_output_future outch d' (mk_top_fcell fa') (fun c _ -> (false, c)) true in
     (* let _ = Format.printf "%d\n%!" (List.length history') in *)
     (* let outch3 = List.fold_left (fun outch (_, cell) -> output_event (C.print_cell outch cell) "\n\n") outch3 history' in *)
-    {history = history'; now = d'; arr = fa'; skip = skip'; output = outch3} in
+    {history = history'; now = d'; arr = fa'; skip = skip'; output = outch} in
 
   {init=init; step=step}
 
