@@ -104,7 +104,7 @@ let create outch mode_hint formula =
     let outch = output_debug 10 outch (fun _ -> "prev array:\n") in
     let outch = output_debug 10 outch (fun _ ->
       fst (Array.fold_left (fun (s, i) fc ->
-        (s ^ Printf.sprintf "%d) %a: %a\n%!" (F.idx_of f_vec.(i))
+        (s ^ Printf.sprintf "%d) %a: %a\n" (F.idx_of f_vec.(i))
           formula_to_string f_vec.(i) cell_to_string (eval fc), i + 1))
       ("", 0) fa)) in
 
@@ -124,9 +124,9 @@ let create outch mode_hint formula =
       Printf.sprintf "events in history: %d\n" (List.length history)) in
 
     let outch = output_debug 20 outch (fun _ -> "history:\n") in
-    let outch = output_debug 20 outch (fun _ ->
+    let outch = if history = [] then outch else output_debug 20 outch (fun _ ->
       List.fold_left (fun s ((t, i), c) ->
-        s ^ Printf.sprintf "%d:%d %a\n%!" t i cell_to_string c)
+        s ^ Printf.sprintf "%d:%d %a\n" t i cell_to_string c)
       "" history) in
 
     {history = history; now = d'; arr = fa'; skip = skip; output = outch} in

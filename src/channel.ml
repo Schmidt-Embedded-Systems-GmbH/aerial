@@ -75,7 +75,8 @@ let insert_debug s =
 
 let output_debug k log event =
   match log with
-  | OutputDebug (l, x) when k <= l -> Printf.fprintf x "[DEBUG]: %s%!" (insert_debug (event ())); log
+  | OutputDebug (l, x) when k <= l ->
+      Printf.fprintf x "[DEBUG]: %s%!" (insert_debug (event ())); log
   | _ -> log
 
 
