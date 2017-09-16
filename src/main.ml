@@ -97,6 +97,8 @@ let process_args =
         with Failure _ ->
           out_ref := (match !out_ref with Output ch -> OutputDebug (0, ch) | x -> x);
           go (level :: args))
+    | ["-debug"] ->
+        out_ref := (match !out_ref with Output ch -> OutputDebug (0, ch) | x -> x);
     | ("-nodebug" :: args) ->
         out_ref := (match !out_ref with OutputDebug (_, ch) -> Output ch | x -> x);
         go args
