@@ -57,7 +57,7 @@ rule token = parse
   | ")"                                           { ROPEN }
   | ">"                                           { RANGLE }
   | "?"                                           { QUESTION }
-  | "."                                           { WILDCARD }
+  | "." | "⋆"                                     { WILDCARD }
   | "empty" | "{}" | "∅"                          { EMPTY }
   | "epsilon" | "ɛ​" | "λ"                         { EPSILON }
   | "+" | "|"                                     { PLUS }
