@@ -11,7 +11,6 @@
 
 open Util
 open Channel
-open Common
 open Hashcons
 
 (** BDD nodes are hashconsed to ensure unicity, whence the following two-levels type *)
