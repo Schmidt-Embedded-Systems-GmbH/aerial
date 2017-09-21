@@ -64,14 +64,8 @@ let output_event log event =
   | OutputMock x -> OutputMock(x@[Info event])
 
 let insert_debug k s =
-  let last = String.length s - 1 in
-  let butlast = last - 1 in
-  let rec go = function
-    | n when n >= 0 -> go (n - 1) ^ (match String.get s n with
-       | '\n' -> Printf.sprintf "\n[DEBUG %2d]: " k
-       | x -> String.make 1 x)
-    | _ -> "" in
-  go butlast ^ if s = "" then "" else String.sub s last 1
+  let ls = String.split_on_char '\n' s in
+  String.concat (Printf.sprintf "\n[DEBUG %2d]: " k) ls
 
 let output_debug k log event =
   match log with
