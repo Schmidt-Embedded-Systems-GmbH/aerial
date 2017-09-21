@@ -65,7 +65,13 @@ let output_event log event =
 
 let insert_debug k s =
   let ls = String.split_on_char '\n' s in
-  String.concat (Printf.sprintf "\n[DEBUG %2d]: " k) ls
+  let rls = List.rev ls in
+  let last = List.hd rls in
+  let init = List.rev (List.tl rls) in
+  if last = "" then
+    String.concat (Printf.sprintf "\n[DEBUG %2d]: " k) init ^ "\n"
+  else
+    String.concat (Printf.sprintf "\n[DEBUG %2d]: " k) ls
 
 let output_debug k log event =
   match log with
