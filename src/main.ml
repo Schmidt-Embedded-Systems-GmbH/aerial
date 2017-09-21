@@ -70,7 +70,10 @@ let process_args =
         language_ref := mtl;
         go args
     | ("-bdd" :: args) ->
-        cell_ref := (module Bdd.Cell);
+        cell_ref := (module Bdd_simple.Cell);
+        go args
+    | ("-safa" :: args) ->
+        cell_ref := (module Bdd_safa.Cell);
         go args
     | ("-nobdd" :: args) ->
         cell_ref := (module Bexp.Cell);
