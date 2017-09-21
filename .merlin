@@ -5,6 +5,7 @@ B _build/*
 PKG yojson
 PKG js_of_ocaml
 PKG js_of_ocaml.ppx
+PKG safa
 PKG qtest
 PKG qcheck
 EXT js

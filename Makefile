@@ -1,9 +1,10 @@
 EXENAME=aerial
 MODULENAME=main
 NAME=src/$(MODULENAME)
-OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -yaccflags --explain
+OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -package safa -yaccflags --explain
 OCAMLBUILDWEB=ocamlbuild -use-ocamlfind \
-           -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson -yaccflag --explain
+	       -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson \
+           -package safa -yaccflag --explain
 OCAMLFIND=ocamlfind
 OBJS=$(wildcard _build/*.cm* _build/*.a _build/*.o)
 # OBJS=$(wildcard _build/*.{cmi,cmo,cma,cmx,cmxa,a,o})
@@ -14,10 +15,10 @@ TESTBUILD=_buildtest
 TESTFOLDER=test
 TESTPATH=$(TESTBUILD)/$(TESTNAME)
 OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
-			   -no-plugin -yaccflag --explain \
+			   -no-plugin -package safa -yaccflag --explain \
 			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
-			   -no-plugin -yaccflag --explain \
+			   -no-plugin -package safa -yaccflag --explain \
 			   -pkgs bisect_ppx,qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck

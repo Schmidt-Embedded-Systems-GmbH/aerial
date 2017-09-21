@@ -24,12 +24,17 @@ let usage () = Format.eprintf
 Arguments:
 \t -mdl     \t- use Metric Dynamic Logic (default)
 \t -mtl     \t- use Metric Temporal Logic
-\t -bdd     \t- use BDDs
-\t -nobdd   \t- don't use BDDs (default)
+
+\t -bdd     \t- use a simple implementation of BDDs
+\t -safa    \t- use the safa BDD library (default)
+\t -expr    \t- don't use BDDs at all
+
 \t -flush   \t- flush output channel after every write
 \t -noflush \t- let runtime flush the output (default)
+
 \t -debug [n] \t- debug output (optional level parameter; default = 0; greater means more debug messages)
 \t -nodebug \t- no debug output (default)
+
 \t -mode
 \t\t naive  - naive
 \t\t local  - compress locally
@@ -70,9 +75,12 @@ let process_args =
         language_ref := mtl;
         go args
     | ("-bdd" :: args) ->
-        cell_ref := (module Bdd.Cell);
+        cell_ref := (module Bdd_simple.Cell);
         go args
-    | ("-nobdd" :: args) ->
+    | ("-safa" :: args) ->
+        cell_ref := (module Bdd_safa.Cell);
+        go args
+    | ("-nobdd" :: args) | ("-expr" :: args)  ->
         cell_ref := (module Bexp.Cell);
         go args
     | ("-fmla" :: fmlafile :: args) ->
