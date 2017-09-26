@@ -7,21 +7,21 @@
 (*  Dmitriy Traytel (ETH Zürich)                                   *)
 (*******************************************************************)
 
-(* Copy of Damien Pous' implementation of Bdd's but with int-keys instead of char-keys*)
+(* Copy of Damien Pous' implementation of Bdd's but monomorphised with int keys and bool leaves*)
 
 open Util
 open Channel
 open Hashcons
 
 (** BDD nodes are hashconsed to ensure unicity, whence the following two-levels type *)
-type ('a,'k) node = ('a,'k) descr hash_consed
-and ('a,'k) descr = V of 'a | N of 'k * ('a,'k) node * ('a,'k) node
+type bdd = descr hash_consed
+and descr = V of bool | N of int * bdd * bdd
 let head x = x.node
 
-type ('a,'k) mem = {
-  m: ('a,'k) descr Hashcons.t;
-  h: 'a -> int;
-  e: 'a -> 'a -> bool;
+type mem = {
+  m: descr Hashcons.t;
+  h: bool -> int;
+  e: bool -> bool -> bool;
 }
 
 let init h e = {m=Hashcons.create 57;h;e}
@@ -78,48 +78,6 @@ let memo_rec2 f =
       z
   in aux
 
-let unary mem f =
-  memo_rec1 (fun app x ->
-    match head x with
-      | V v -> constant mem (f v)
-      | N(b,l,r) -> node mem b (app l) (app r)
-  )
-
-let binary mem f =
-  memo_rec2 (fun app x y ->
-    match head x, head y with
-      | V v, V w -> constant mem (f v w)
-      | V _, N(b,l,r) -> node mem b (app x l) (app x r)
-      | N(b,l,r), V _ -> node mem b (app l y) (app r y)
-      | N(b,l,r), N(b',l',r') ->
-	match compare b b' with
-	  | 0 -> node mem b  (app l l') (app r r')
-	  | 1 -> node mem b' (app x l') (app x r')
-	  | _ -> node mem b  (app l y ) (app r y )
-  )
-
-let hide mem a f =
-  memo_rec1 (fun hide x ->
-    match head x with
-      | V v -> x
-      | N(b,l,r) -> if a=b then f l r else node mem b (hide l) (hide r)
-  )
-
-let partial_apply mem f =
-  memo_rec1 (fun pa x ->
-    match head x with
-      | V v -> x
-      | N(b,l,r) ->
-        match f b with
-	  | Some false -> pa l
-	  | Some true -> pa r
-	  | None -> node mem b (pa l) (pa r)
-  )
-
-type key = int
-
-type formula = (bool,key) node
-
 let m = init Hashtbl.hash (=)
 
 let bot = constant m false
@@ -127,11 +85,12 @@ let top = constant m true
 let var b = node m b bot top
 let rav b = node m b top bot
 
-let neg = unary m not
-let iff = binary m (=)
-let xor = binary m (<>)
+let neg = memo_rec1 (fun neg x ->
+  match head x with
+    | V v -> constant m (not v)
+    | N(b,l,r) -> node m b (neg l) (neg r)
+)
 
-(* let dsj = binary (||) *)
 let dsj = memo_rec2 (fun dsj x y ->
   if x==y then x else
   match head x, head y with
@@ -144,7 +103,6 @@ let dsj = memo_rec2 (fun dsj x y ->
 	| _ -> node m b  (dsj l y ) (dsj r y )
 )
 
-(* let cnj = binary (&&) *)
 let cnj = memo_rec2 (fun cnj x y ->
   if x==y then x else
   match head x, head y with
@@ -159,32 +117,16 @@ let cnj = memo_rec2 (fun cnj x y ->
 
 let ite b t e = dsj (cnj b t) (cnj (neg b) e)
 
-let rec witness n =
-  match head n with
-    | V _ -> []
-    | N(a,{node=V false},r) -> (a,true)::witness r
-    | N(a,l,_) -> (a,false)::witness l
-
-let rec string_of_formula i x = match head x with
+let rec string_of_bdd i x = match head x with
   | V false -> Printf.sprintf "0"
   | V true -> Printf.sprintf "1"
   | N(a,{node=V false},{node=V true}) -> Printf.sprintf "%d" a
   | N(a,{node=V true},{node=V false}) -> Printf.sprintf "!%d" a
-  | N(a,{node=V true},r) -> Printf.sprintf (paren i 0 "!%d+%a") a (fun _ -> string_of_formula 0) r
-  | N(a,l,{node=V true}) -> Printf.sprintf (paren i 0 "%d+%a") a (fun _ -> string_of_formula 0) l
-  | N(a,{node=V false},r) -> Printf.sprintf (paren i 1 "%d%a") a (fun _ -> string_of_formula 1) r
-  | N(a,l,{node=V false}) -> Printf.sprintf (paren i 1 "!%d%a") a (fun _ -> string_of_formula 1) l
-  | N(a,l,r) -> Printf.sprintf (paren i 0 "%d%a+!%d%a") a (fun _ -> string_of_formula 1) r a (fun _ -> string_of_formula 1) l
-
-let walk g =
-  let t = ref Hmap.empty in
-  let rec walk x =
-    try Hmap.find x !t
-    with Not_found -> t := Hmap.add x () !t; g walk x
-  in walk
-
-let unary m f = unary m f
-let binary m f = binary m f
+  | N(a,{node=V true},r) -> Printf.sprintf (paren i 0 "!%d+%a") a (fun _ -> string_of_bdd 0) r
+  | N(a,l,{node=V true}) -> Printf.sprintf (paren i 0 "%d+%a") a (fun _ -> string_of_bdd 0) l
+  | N(a,{node=V false},r) -> Printf.sprintf (paren i 1 "%d%a") a (fun _ -> string_of_bdd 1) r
+  | N(a,l,{node=V false}) -> Printf.sprintf (paren i 1 "!%d%a") a (fun _ -> string_of_bdd 1) l
+  | N(a,l,r) -> Printf.sprintf (paren i 0 "%d%a+!%d%a") a (fun _ -> string_of_bdd 1) r a (fun _ -> string_of_bdd 1) l
 
 module Cell : Cell.Cell = struct
 
@@ -197,10 +139,10 @@ let maybe_output case_cell fmt skip d cell f =
       in fun x -> (x, fmt))
     (fun x -> f (d, cell) fmt x) cell
 
-type cell = formula
+type cell = bdd
 type future_cell = Now of cell | Later of (timestamp -> cell)
 
-let cell_to_string = string_of_formula 0
+let cell_to_string = string_of_bdd 0
 
 let print_cell out c = output_event out (cell_to_string c)
 
