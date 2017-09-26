@@ -26,8 +26,8 @@ Arguments:
 \t -mtl     \t- use Metric Temporal Logic
 
 \t -bdd     \t- use a simple implementation of BDDs
-\t -safa    \t- use the safa BDD library (default)
-\t -expr    \t- don't use BDDs at all
+\t -safa    \t- use the safa BDD library
+\t -expr    \t- don't use BDDs at all (default)
 
 \t -flush   \t- flush output channel after every write
 \t -noflush \t- let runtime flush the output (default)
