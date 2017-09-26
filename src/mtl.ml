@@ -72,16 +72,20 @@ let disj f g =
   | _ -> Disj (f, lift (maxidx_of f + 1) g)
 let rec neg f =
   match f with
-  | Disj (f, g) -> conj (neg f) (neg g)
-  | Conj (f, g) -> disj (neg f) (neg g)
+  | Disj (f, g) -> Conj (neg f, neg g)
+  | Conj (f, g) -> Disj (neg f, neg g)
   | Neg f -> f
   | _ -> Neg f
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
 let prev i f = Prev (maxidx_of f + 1, i, f)
 let next i f = Next (maxidx_of f + 1, i, f)
-let since i f g = let n = maxidx_of f + 1 in Since (maxidx_of g + n + right_I i + 1, i, f, lift n g)
-let until i f g = let n = maxidx_of f + 1 in Until (maxidx_of g + n + right_I i + 1, i, f, lift n g)
+
+let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
+let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
+
+let since i f g = let n = maxidx_of f + 1 in since_lifted i f (lift n g)
+let until i f g = let n = maxidx_of f + 1 in until_lifted i f (lift n g)
 let release i f g = neg (until i (neg f) (neg g))
 let weak_until i f g = release i g (disj f g)
 let trigger i f g = neg (since i (neg f) (neg g))
@@ -122,9 +126,6 @@ let print_formula = print_formula
 let idx_of = function
   | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
-
-let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
-let until_lifted i f g = Until (maxidx_of g + right_I i + 1, i, f, g)
 
 let rec sub = function
   | Neg f -> sub f

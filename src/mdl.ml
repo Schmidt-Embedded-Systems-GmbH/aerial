@@ -107,8 +107,8 @@ let disj f g =
   | Bool true, _ | _, Bool true -> bool true
   | _ -> Disj (f, lift (maxidx_of f + 1) g)
 let rec neg = function
-  | Disj (f, g) -> conj (neg f) (neg g)
-  | Conj (f, g) -> disj (neg f) (neg g)
+  | Disj (f, g) -> Conj (neg f, neg g)
+  | Conj (f, g) -> Disj (neg f, neg g)
   | Neg f -> f
   | f -> Neg f
 let wild = Wild
