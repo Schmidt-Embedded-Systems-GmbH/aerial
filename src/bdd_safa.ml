@@ -98,19 +98,6 @@ let binary mem f =
 	  | _ -> node mem b  (app l y ) (app r y )
   )
 
-let times mem z =
-  memo_rec2 (fun times f x ->
-    match head f, head x with
-      | V true, _ -> x
-      | V false, _ -> z
-      | N(b,l,r), V _ -> node mem b (times l x) (times r x)
-      | N(b,l,r), N(b',l',r') ->
-	match compare b b' with
-	  | 0 -> node mem b  (times l l') (times r r')
-	  | 1 -> node mem b' (times f l') (times f r')
-	  | _ -> node mem b  (times l x ) (times r x )
-  )
-
 let hide mem a f =
   memo_rec1 (fun hide x ->
     match head x with
@@ -128,86 +115,6 @@ let partial_apply mem f =
 	  | Some true -> pa r
 	  | None -> node mem b (pa l) (pa r)
   )
-
-type ('a,'k) unifier =
-    (('k * bool) list -> 'a -> 'a -> unit) ->
-    ('a,'k) node -> ('a,'k) node -> unit
-
-
-module Hset2 = struct
-  let empty() =
-    let t = ref Hmap.empty in
-    on_clean (fun () -> t := Hmap.empty);
-    t
-  let mem t x y =
-    try Hset.mem y !(Hmap.find x !t)
-    with Not_found -> false
-  let add t x y =
-    try let tx = Hmap.find x !t in
-	if Hset.mem y !tx then false
-	else (tx := Hset.add y !tx; true)
-    with Not_found ->
-      let tx = ref (Hset.singleton y) in
-      t := Hmap.add x tx !t;
-      true
-end
-
-let unify_calls = Stats.counter "unify calls"
-let unify_naive trace =
-  let m = Hset2.empty() in
-  fun f ->
-    let rec app at x y =
-      let app b c x y = app ((b,c)::at) x y in
-      if x!=y && Hset2.add m x y then (
-	Stats.incr unify_calls;
-	if trace then Trace.line x.tag y.tag;
-	match head x, head y with
-	  | V v, V w -> f at v w
-	  | V _, N(b,l,r) -> app b false x l; app b true x r
-	  | N(b,l,r), V _ -> app b false l y; app b true r y
-	  | N(b,l,r), N(c,l',r') ->
-	    match compare b c with
-	      | 0 -> app b false l l'; app b true r r'
-	      | 1 -> app c false x l'; app c true x r'
-	      | _ -> app b false l y ; app b true r y
-      )
-    in fun x y -> if x!=y && not (Hset2.mem m x y) then app [] x y
-
-let unify_dsf trace =
-  let m = ref Hmap.empty in
-  on_clean (fun () -> m := Hmap.empty);
-  let link x y = m := Hmap.add x y !m in
-  let get x = try Some (Hmap.find x !m) with Not_found -> None in
-  let rec repr x =
-    match get x with
-      | None -> x
-      | Some y -> match get y with
-	  | None -> y
-	  | Some z -> link x z; repr z
-  in
-  let link x y =
-    link x y;
-    if trace then Trace.line x.tag y.tag
-  in
-  let rec unify at f x y =
-    let unify b c x y = unify ((b,c)::at) f x y in
-    let x = repr x in
-    let y = repr y in
-    if x!=y then (
-      Stats.incr unify_calls;
-      match head x, head y with
-	| V a, V b -> link x y; f at a b
-	| N(b,l,r), V _ -> link x y; unify b false l y; unify b true r y
-	| V _, N(b,l,r) -> link y x; unify b false x l; unify b true x r
-	| N(b,l,r), N(c,l',r') ->
-	  match compare b c with
-	    | 0 -> link x y; unify b false l l'; unify b true r r'
-	    | 1 -> link y x; unify c false x l'; unify c true x r'
-	    | _ -> link x y; unify b false l y ; unify b true r y )
-  in fun f x y ->
-    let x = repr x in
-    let y = repr y in
-    if x!=y then unify [] f x y
 
 type key = int
 
