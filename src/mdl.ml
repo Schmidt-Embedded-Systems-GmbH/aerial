@@ -33,8 +33,8 @@ let rec formula_to_string l = function
   | Conj (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> formula_to_string 2) f (fun x -> formula_to_string 2) g
   | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 1) g
   | Neg f -> Printf.sprintf "¬%a" (fun x -> formula_to_string 3) f
-  | MatchF (_, _, i, Seq (r, Test f)) -> Printf.sprintf (paren l 0 "<%a> %a %a") (fun x -> regex_to_string 1) r (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
-  | MatchP (_, _, i, Seq (Test f, r)) -> Printf.sprintf (paren l 0 "%a %a <%a>")  (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
+  | MatchF (_, _, i, Seq (r, Test f)) -> Printf.sprintf (paren l 0 "<%a> %a %a") (fun x -> regex_to_string 0) r (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | MatchP (_, _, i, Seq (Test f, r)) -> Printf.sprintf (paren l 0 "%a %a <%a>")  (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> regex_to_string 0) r
   | MatchF (_, _, i, r) -> Printf.sprintf (paren l 0 "▷ %a %a") (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
   | MatchP (_, _, i, r) -> Printf.sprintf (paren l 0 "◁ %a %a") (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
 and regex_to_string l = function
