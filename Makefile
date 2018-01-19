@@ -1,8 +1,8 @@
 EXENAME=aerial
 MODULENAME=main
 NAME=src/$(MODULENAME)
-OCAMLBUILD=ocamlbuild -use-ocamlfind -no-plugin -package safa -yaccflags --explain
-OCAMLBUILDWEB=ocamlbuild -use-ocamlfind \
+OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir -no-plugin -package safa -yaccflags --explain
+OCAMLBUILDWEB=ocamlbuild -use-ocamlfind -use-menhir \
 	       -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson \
            -package safa -yaccflag --explain
 OCAMLFIND=ocamlfind
@@ -14,10 +14,10 @@ TESTNAME=qtest
 TESTBUILD=_buildtest
 TESTFOLDER=test
 TESTPATH=$(TESTBUILD)/$(TESTNAME)
-OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
+OCAMLBUILDTEST=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir  \
 			   -no-plugin -package safa -yaccflag --explain \
 			   -pkgs qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
-OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind  \
+OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir  \
 			   -no-plugin -package safa -yaccflag --explain \
 			   -pkgs bisect_ppx,qcheck -Is $(SOURCEFOLDER)/,$(TESTFOLDER)/
 

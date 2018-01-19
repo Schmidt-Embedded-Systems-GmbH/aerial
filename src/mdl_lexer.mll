@@ -56,6 +56,8 @@ rule token = parse
   | "]"                                           { RCLOSED }
   | ")"                                           { ROPEN }
   | ">"                                           { RANGLE }
+  | (*"~>" |*) "▷"                                      { FORWARD }
+  | (*"<~" |*) "◁"                                 { BACKWARD }
   | "?"                                           { QUESTION }
   | "." | "⋆"                                     { WILDCARD }
   | "empty" | "{}" | "∅"                          { EMPTY }

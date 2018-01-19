@@ -17,8 +17,8 @@ type formula =
 | Conj of formula * formula
 | Disj of formula * formula
 | Neg of formula
-| PossiblyF of int * int * interval * regex * formula
-| PossiblyP of int * int * interval * formula * regex
+| MatchF of int * int * interval * regex
+| MatchP of int * int * interval * regex
 | Bool of bool
 and regex =
 | Wild
@@ -31,18 +31,20 @@ let rec formula_to_string l = function
   | P (_, x) -> Printf.sprintf "%s" x
   | Bool b -> Printf.sprintf (if b then "⊤" else "⊥")
   | Conj (f, g) -> Printf.sprintf (paren l 2 "%a ∧ %a") (fun x -> formula_to_string 2) f (fun x -> formula_to_string 2) g
-  | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 2) g
+  | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 1) g
   | Neg f -> Printf.sprintf "¬%a" (fun x -> formula_to_string 3) f
-  | PossiblyF (_, _, i, r, f) -> Printf.sprintf (paren l 0 "<%a> %a %a") (fun x -> regex_to_string 0) r (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
-  | PossiblyP (_, _, i, f, r) -> Printf.sprintf (paren l 0 "%a %a <%a>") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> regex_to_string 0) r
+  | MatchF (_, _, i, Seq (r, Test f)) -> Printf.sprintf (paren l 0 "<%a> %a %a") (fun x -> regex_to_string 1) r (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | MatchP (_, _, i, Seq (Test f, r)) -> Printf.sprintf (paren l 0 "%a %a <%a>")  (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
+  | MatchF (_, _, i, r) -> Printf.sprintf (paren l 0 "▷ %a %a") (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
+  | MatchP (_, _, i, r) -> Printf.sprintf (paren l 0 "◁ %a %a") (fun x -> interval_to_string) i (fun x -> regex_to_string 1) r
 and regex_to_string l = function
-  | Seq (Test f, Wild) -> Printf.sprintf "%a" (fun x -> formula_to_string 0) f
-  | Seq (Wild, Test f) -> Printf.sprintf "%a" (fun x -> formula_to_string 0) f
+  | Seq (Test f, Wild) -> Printf.sprintf "%a" (fun x -> formula_to_string l) f
+  | Seq (Wild, Test f) -> Printf.sprintf "%a" (fun x -> formula_to_string l) f
   | Wild -> Printf.sprintf "."
   | Test f -> Printf.sprintf "%a?" (fun x -> formula_to_string 3) f
   | Alt (r, s) -> Printf.sprintf (paren l 1 "%a + %a") (fun x -> regex_to_string 1) r (fun x -> regex_to_string 1) s
   | Seq (r, s) -> Printf.sprintf (paren l 2 "%a %a") (fun x -> regex_to_string 2) r (fun x -> regex_to_string 2) s
-  | Star (r) -> Printf.sprintf  "%a*" (fun x -> regex_to_string 3) r
+  | Star (r) -> Printf.sprintf "%a*" (fun x -> regex_to_string 3) r
 let formula_to_string = formula_to_string 0
 
 
@@ -70,7 +72,7 @@ let rec maxidx_of = function
   | P (i, x) -> i
   | Conj (f, g) | Disj (f, g) -> max (maxidx_of f) (maxidx_of g)
   | Neg f -> maxidx_of f
-  | PossiblyF (j, _, _, _, _) | PossiblyP (j, _, _, _, _) -> j
+  | MatchF (j, _, _, _) | MatchP (j, _, _, _) -> j
   | Bool _ -> -1
 
 let rec maxidx_of_re = function
@@ -84,8 +86,8 @@ let rec lift n = function
   | Conj (f, g) -> Conj (lift n f, lift n g)
   | Disj (f, g) -> Disj (lift n f, lift n g)
   | Neg f -> Neg (lift n f)
-  | PossiblyF (j, ii, i, r, f) -> PossiblyF (j + n, ii, i, lift_re n r, lift n f)
-  | PossiblyP (j, ii, i, f, r) -> PossiblyP (j + n, ii, i, lift n f, lift_re n r)
+  | MatchF (j, ii, i, r) -> MatchF (j + n, ii, i, lift_re n r)
+  | MatchP (j, ii, i, r) -> MatchP (j + n, ii, i, lift_re n r)
   | Bool b -> Bool b
 and lift_re n = function
   | Wild -> Wild
@@ -116,10 +118,12 @@ let test f = Test f
 let empty = test (bool false)
 let epsilon = test (bool true)
 let alt f g = Alt (f, lift_re (maxidx_of_re f + 1) g)
-let seq f g =
+let rec seq f g =
   match f, g with
   | Test (Bool true), g | g, Test (Bool true) -> g
   | Test (Bool false), _ | _, Test (Bool false) -> Test (Bool false)
+  | (Test _ as t), Alt (r, s) -> alt (seq t r) (seq t s) (* FIXME wanted? / more general *)
+  | Alt (r, s), (Test _ as t) -> alt (seq r t) (seq s t) (* FIXME wanted? / more general *)
   | _ -> Seq (f, lift_re (maxidx_of_re f + 1) g)
 let seq_lifted f g =
   match f, g with
@@ -148,16 +152,12 @@ let rec compare f g = match f,g with
   | (Neg f, Neg g) -> compare f g
   | (Neg _, _) -> 1
   | (_, Neg _) -> -1
-  | (PossiblyF (_, _, i, r, f), PossiblyF (_, _, i', r', f')) ->
-      let ci = Pervasives.compare i i' in if ci = 0 then
-        (let cr = compare_re r r' in if cr = 0 then compare f f' else cr)
-      else ci
-  | (PossiblyF _, _) -> 1
-  | (_, PossiblyF _) -> -1
-  | (PossiblyP (_, _, i, f, r), PossiblyP (_, _, i', f', r')) ->
-      let ci = Pervasives.compare i i' in if ci = 0 then
-        (let cf = compare f f' in if cf = 0 then compare_re r r' else cf)
-      else ci
+  | (MatchF (_, _, i, r), MatchF (_, _, i', r')) ->
+      let ci = Pervasives.compare i i' in if ci = 0 then compare_re r r' else ci
+  | (MatchF _, _) -> 1
+  | (_, MatchF _) -> -1
+  | (MatchP (_, _, i, r), MatchP (_, _, i', r')) ->
+      let ci = Pervasives.compare i i' in if ci = 0 then compare_re r r' else ci
 and compare_re r s = match r,s with
   | (Wild, Wild) -> 0
   | (Wild, _) -> 1
@@ -218,12 +218,14 @@ let nders r = RES.cardinal (ders_overapprox r)
 
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
-let possiblyF r i f = RES.fold (fun s -> let n = maxidx_of_re s + 1 in
-    disj (PossiblyF (maxidx_of f + n + (right_I i + 1) * nders s, right_I i + 1, i, s, lift n f))) (split r)
-  (bool false)
-let possiblyP f i r = RES.fold (fun s -> let n = maxidx_of f + 1 in
-    disj (PossiblyP (maxidx_of_re s + n + (right_I i + 1) * nders (rev_re s), right_I i + 1, i, f, lift_re n s))) (split r)
-  (bool false)
+let matchF r i = RES.fold (fun s -> let n = maxidx_of_re s in
+    disj (MatchF (n + (right_I i + 1) * nders s, right_I i + 1, i, s))) (split r)
+    (bool false)
+let possiblyF r i f = matchF (seq r (test f)) i
+let matchP r i = RES.fold (fun s -> let n = maxidx_of_re s in
+    disj (MatchP (n + (right_I i + 1) * nders (rev_re s), right_I i + 1, i, s))) (split r)
+    (bool false)
+let possiblyP f i r = matchP (seq (test f) r) i
 let necessarilyF r i f = neg (possiblyF r i (neg f))
 let necessarilyP f i r = neg (possiblyP (neg f) i r)
 let next i f = possiblyF (baseF (bool true)) i f
@@ -249,10 +251,10 @@ open C
 let rec bounded_future = function
   | Bool _ -> true
   | P _ -> true
-  | PossiblyP (_, _, _, f, r) -> bounded_future f && bounded_future_re r
+  | MatchP (_, _, _, r) -> bounded_future_re r
   | Conj (f, g) | Disj (f, g) -> bounded_future f && bounded_future g
-  | PossiblyF (_, _, i, r, f) ->
-      case_I (fun _ -> true) (fun _ -> false) i && bounded_future_re r && bounded_future f
+  | MatchF (_, _, i, r) ->
+      case_I (fun _ -> true) (fun _ -> false) i && bounded_future_re r
   | Neg f -> bounded_future f
 and bounded_future_re = function
   | Wild -> true
@@ -263,7 +265,7 @@ and bounded_future_re = function
 let print_formula = print_formula
 
 let idx_of = function
-  | P (j, _) | PossiblyF (j, _, _, _, _) | PossiblyP (j, _, _, _, _) -> j
+  | P (j, _) | MatchF (j, _, _, _) | MatchP (j, _, _, _) -> j
   | _ -> failwith "not an indexed subformula"
 
 let mk cnj dsj neg bo idx =
@@ -281,8 +283,7 @@ let rec sub = function
   | Neg f -> sub f
   | Conj (f, g) -> sub g @ sub f
   | Disj (f, g) -> sub g @ sub f
-  | PossiblyF (j, ii, i, r, f) -> PossiblyF (j, ii, i, r, f) :: sub f @ sub_re r
-  | PossiblyP (j, ii, i, f, r) -> PossiblyP (j, ii, i, f, r) :: sub_re r @ sub f
+  | (MatchF (_, _, _, r) as f) | (MatchP (_, _, _, r) as f) -> f :: sub_re r
   | P _ as f -> [f]
   | _ -> []
 and sub_re = function
@@ -295,16 +296,16 @@ let ders_overapprox x = RES.elements (ders_overapprox x)
 let rev_ders_overapprox x = List.map rev_re (ders_overapprox (rev_re x))
 
 let aux = function
-  | PossiblyF (j,ii,i,r,f) ->
+  | MatchF (j,ii,i,r) ->
       let ders = ders_overapprox r in
       let m = right_I i in
       List.concat (List.mapi (fun l s ->
-        List.map (fun n -> PossiblyF (j - n - l * (m + 1), ii, subtract_I n i, s, f)) (0 -- m)) ders)
-  | PossiblyP (j,ii,i,f,r) ->
+        List.map (fun n -> MatchF (j - n - l * (m + 1), ii, subtract_I n i, s)) (0 -- m)) ders)
+  | MatchP (j,ii,i,r) ->
       let ders = rev_ders_overapprox r in
       let m = right_I i in
       List.concat (List.mapi (fun l s ->
-        List.map (fun n -> PossiblyP (j - n - l * (m + 1), ii, subtract_I n i, f, s)) (0 -- m)) ders)
+        List.map (fun n -> MatchP (j - n - l * (m + 1), ii, subtract_I n i, s)) (0 -- m)) ders)
   | f -> [f]
 
 let ssub f = List.rev (List.concat (List.map (fun x -> aux x) (sub f)))
@@ -340,42 +341,42 @@ let derP curr finish =
 
 let init f =
   let f_vec = Array.of_list (ssub f) in
-  (*let _ = Array.iteri (fun i g -> Printf.printf "%d-%d:: %a\n%!" i (idx_of g) print_formula g) f_vec in*)
+  (*let _ = Array.iteri (fun i g -> Printf.printf "%d-%d:: %s\n%!" i (idx_of g) (formula_to_string g)) f_vec in*)
   let n = Array.length f_vec in
   (*local search more efficient, than just traversing the whole array*)
   let rec find offset = function
-    | PossiblyF (j, ii, i, r, f) as g ->
+    | MatchF (j, ii, i, r) as g ->
       let l = j - offset * ii in
       let u = j + offset * ii in
-      if l > 0 && compare f_vec.(l) (PossiblyF (l, ii, i, r, f)) = 0 then l
-      else if l < u && u < n && compare f_vec.(u) (PossiblyF (u, ii, i, r, f)) = 0 then u
+      if l > 0 && compare f_vec.(l) (MatchF (l, ii, i, r)) = 0 then l
+      else if l < u && u < n && compare f_vec.(u) (MatchF (u, ii, i, r)) = 0 then u
       else if l < 0 && u > n then failwith "find: out of bounds (F)"
       else find (offset + 1) g
-    | PossiblyP (j, ii, i, f, r) as g ->
+    | MatchP (j, ii, i, r) as g ->
       let l = j - offset * ii in
       let u = j + offset * ii in
-      if l >= 0 && compare f_vec.(l) (PossiblyP (l, ii, i, f, r)) = 0 then l
-      else if u > l && u < n && compare f_vec.(u) (PossiblyP (u, ii, i, f, r)) = 0 then u
-      else if l < 0 && u >= n then failwith "find: out of bounds (P)"
+      if l >= 0 && compare f_vec.(l) (MatchP (l, ii, i, r)) = 0 then l
+      else if u > l && u < n && compare f_vec.(u) (MatchP (u, ii, i, r)) = 0 then u
+      else if l < 0 && u > n then failwith "find: out of bounds (P)"
       else find (offset + 1) g
     | _ -> failwith "find: not a temporal subformula" in
   let find = find 0 in
   let rec reindex = function
-    | PossiblyF (j, ii, i, r, f) as g -> PossiblyF (find g, ii, i, r, f)
-    | PossiblyP (j, ii, i, f, r) as g -> PossiblyP (find g, ii, i, f, r)
+    | MatchF (j, ii, i, r) as g -> MatchF (find g, ii, i, r)
+    | MatchP (j, ii, i, r) as g -> MatchP (find g, ii, i, r)
     | Conj (f, g) -> Conj (reindex f, reindex g)
     | Disj (f, g) -> Disj (reindex f, reindex g)
     | Neg f -> Neg (reindex f)
     | g -> g in
   let v = cvar true in
   let mem = function
-    | PossiblyF (j, ii, i, r, f) ->
+    | MatchF (j, ii, i, r) ->
         derF (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
-          let k = find (PossiblyF (j, ii, i, s, f)) in
+          let k = find (MatchF (j, ii, i, s)) in
           Later (fun delta -> v (k - min delta (right_I i)))) r
-    | PossiblyP (j, ii, i, f, r) ->
+    | MatchP (j, ii, i, r) ->
         derP (fun h -> Now (mk_cell (fun i -> v (- i - 1)) h)) (fun s ->
-          let k = find (PossiblyP (j, ii, i, f, s)) in
+          let k = find (MatchP (j, ii, i, s)) in
           Later (fun delta -> v (k - min delta (right_I i)))) r
     | _ -> Later (fun _ -> cbool true) in
   (* let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in *)
@@ -393,12 +394,12 @@ let progress (f_vec, m) (delta, ev) a =
   for i = 0 to n - 1 do
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> fcbool (SS.mem x ev)
-    | PossiblyF (j, _, i, r, f) -> fcdisj
-        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else fcbool false)
+    | MatchF (j, _, i, r) -> fcdisj
+        (if mem_I 0 i then fnullable curr r else fcbool false)
         (fcconj (Later (fun delta' -> cbool (case_I (fun i -> delta' <= right_BI i) (fun _ -> true) i)))
           (getF m.(j)))
-    | PossiblyP (j, _, i, f, r) -> fcdisj
-        (if mem_I 0 i then fcconj (fnullable curr r) (curr f) else fcbool false)
+    | MatchP (j, _, i, r) -> fcdisj
+        (if mem_I 0 i then fnullable curr r else fcbool false)
         (if case_I (fun i -> delta > right_BI i) (fun _ -> false) i
           then fcbool false
           else getP (eval_future_cell delta m.(j)))

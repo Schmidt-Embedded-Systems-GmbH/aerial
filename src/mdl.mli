@@ -15,8 +15,8 @@ type formula = private
 | Conj of formula * formula
 | Disj of formula * formula
 | Neg of formula
-| PossiblyF of int * int * interval * regex * formula
-| PossiblyP of int * int * interval * formula * regex
+| MatchF of int * int * interval * regex
+| MatchP of int * int * interval * regex
 | Bool of bool
 and regex =
 | Wild
@@ -31,6 +31,8 @@ val disj: formula -> formula -> formula
 val imp: formula -> formula -> formula
 val iff: formula -> formula -> formula
 val neg: formula -> formula
+val matchF: regex -> interval -> formula
+val matchP: regex -> interval -> formula
 val possiblyF: regex -> interval -> formula -> formula
 val possiblyP: formula -> interval -> regex -> formula
 val necessarilyF: regex -> interval -> formula -> formula

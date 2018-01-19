@@ -90,7 +90,7 @@ module MDL : Language = struct
       | Bool b -> Printf.sprintf (if b then "p || !p" else "p && !p")
       | Conj (f, g) -> Printf.sprintf (paren l 2 "%a & %a") (fun x -> formula_to_montre_string 2) f (fun x -> formula_to_montre_string 2) g
       | Disj (f, g) -> Printf.sprintf (paren l 1 "%a | %a") (fun x -> formula_to_montre_string 1) f (fun x -> formula_to_montre_string 1) g
-      | PossiblyF (_, _, i, r, f) -> Printf.sprintf (paren l 0 "(%a ; %a) %% %a") (fun x -> formula_to_montre_string 4) f (fun x -> regex_to_montre_string 4) r (fun x -> interval_to_string) (multiply_I 100 i)
+      | MatchF (_, _, i, r) -> Printf.sprintf (paren l 0 "(%a) %% %a") (fun x -> regex_to_montre_string 4) r (fun x -> interval_to_string) (multiply_I 100 i)
       | _ as x -> failwith "not supported " ^ formula_to_string x)
     and regex_to_montre_string l = Mdl.(function
       | Seq (Test f, Wild) -> formula_to_montre_string 0 f

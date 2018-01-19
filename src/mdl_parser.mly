@@ -14,7 +14,7 @@ open Mdl
 
 %token <string> ATOM
 %token <Util.interval> INTERVAL
-%token LOPEN LCLOSED ROPEN RCLOSED LANGLE RANGLE
+%token LOPEN LCLOSED ROPEN RCLOSED LANGLE RANGLE FORWARD BACKWARD
 %token FALSE TRUE EMPTY EPSILON NEG CONJ DISJ PLUS IMP IFF EOF
 %token CONCAT
 %token WILDCARD QUESTION STAR BASE
@@ -22,13 +22,13 @@ open Mdl
 %token SINCE UNTIL WUNTIL RELEASE TRIGGER
 %token NEXT PREV ALWAYS EVENTUALLY HISTORICALLY ONCE
 
-%nonassoc INTERVAL
 %nonassoc TRUE FALSE EMPTY EPSILON WILDCARD
 %right IFF
 %right IMP
 %nonassoc MODALITY
+%nonassoc BACKWARD FORWARD
 %nonassoc PREV NEXT ALWAYS EVENTUALLY ONCE HISTORICALLY
-%nonassoc SINCE UNTIL WUNTIL RELEASE TRIGGER
+%left SINCE UNTIL WUNTIL RELEASE TRIGGER
 %left DISJ
 %left CONJ
 %left PLUS
@@ -36,7 +36,8 @@ open Mdl
 %nonassoc NEG
 %nonassoc STAR
 %nonassoc LOPEN
-%nonassoc BASE
+%nonassoc BASE QUESTION
+%nonassoc INTERVAL
 %nonassoc LANGLE LCLOSED ROPEN
 %nonassoc ATOM
 
@@ -46,67 +47,71 @@ open Mdl
 %%
 
 formula:
-| e EOF { $1 }
+| f=f EOF { f }
 
-e:
-| LOPEN e ROPEN                 { $2 }
-| TRUE                          { bool true }
-| FALSE                         { bool false }
-| e CONJ e                      { conj $1 $3 }
-| e DISJ e                      { disj $1 $3 }
-| e IMP e                       { imp $1 $3 }
-| e IFF e                       { iff $1 $3 }
-| NEG e                         { neg $2 }
-| ATOM                          { p $1 }
-| LANGLE reF RANGLE INTERVAL e   { possiblyF $2 $4 $5 }  %prec MODALITY
-| LANGLE reF RANGLE e            { possiblyF $2 full $4 } %prec MODALITY
-| LCLOSED reF RCLOSED INTERVAL e { necessarilyF $2 $4 $5 } %prec MODALITY
-| LCLOSED reF RCLOSED e          { necessarilyF $2 full $4 } %prec MODALITY
-| e INTERVAL LANGLE reP RANGLE   { possiblyP $1 $2 $4 }
-| e LANGLE reP RANGLE            { possiblyP $1 full $3 }
-| e INTERVAL LCLOSED reP RCLOSED { necessarilyP $1 $2 $4 }
-| e LCLOSED reP RCLOSED          { necessarilyP $1 full $3 }
-| e SINCE INTERVAL e            { since $3 $1 $4 }
-| e SINCE e                     { since full $1 $3 }
-| e TRIGGER INTERVAL e          { trigger $3 $1 $4 }
-| e TRIGGER e                   { trigger full $1 $3 }
-| e UNTIL INTERVAL e            { until $3 $1 $4 }
-| e UNTIL e                     { until full $1 $3 }
-| e WUNTIL INTERVAL e           { weak_until $3 $1 $4 }
-| e WUNTIL e                    { weak_until full $1 $3 }
-| e RELEASE INTERVAL e          { release $3 $1 $4 }
-| e RELEASE e                   { release full $1 $3 }
-| NEXT INTERVAL e               { next $2 $3 }
-| NEXT e                        { next full $2 }
-| PREV INTERVAL e               { prev $2 $3 }
-| PREV e                        { prev full $2 }
-| ONCE INTERVAL e               { once $2 $3 }
-| ONCE e                        { once full $2 }
-| HISTORICALLY INTERVAL e       { historically $2 $3 }
-| HISTORICALLY e                { historically full $2 }
-| ALWAYS INTERVAL e             { always $2 $3 }
-| ALWAYS e                      { always full $2 }
-| EVENTUALLY INTERVAL e         { eventually $2 $3 }
-| EVENTUALLY e                  { eventually full $2 }
+f:
+| LOPEN f=f ROPEN                       { f }
+| TRUE                                  { bool true }
+| FALSE                                 { bool false }
+| f=f CONJ g=f                          { conj f g }
+| f=f DISJ g=f                          { disj f g }
+| f=f IMP g=f                           { imp f g }
+| f=f IFF g=f                           { iff f g }
+| NEG f=f                               { neg f }
+| a=ATOM                                { p a }
+| LANGLE r=reF RANGLE i=INTERVAL f=f    { possiblyF r i f }  %prec MODALITY
+| LANGLE r=reF RANGLE f=f               { possiblyF r full f } %prec MODALITY
+| LCLOSED r=reF RCLOSED i=INTERVAL f=f  { necessarilyF r i f } %prec MODALITY
+| LCLOSED r=reF RCLOSED f=f             { necessarilyF r full f } %prec MODALITY
+| f=f i=INTERVAL LANGLE r=reP RANGLE    { possiblyP f i r }
+| f=f LANGLE r=reP RANGLE               { possiblyP f full r }
+| f=f i=INTERVAL LCLOSED r=reP RCLOSED  { necessarilyP f i r }
+| f=f LCLOSED r=reP RCLOSED             { necessarilyP f full r }
+| f=f SINCE i=INTERVAL g=f              { since i f g }
+| f=f SINCE g=f                         { since full f g }
+| f=f TRIGGER i=INTERVAL g=f            { trigger i f g }
+| f=f TRIGGER g=f                       { trigger full f g }
+| f=f UNTIL i=INTERVAL g=f              { until i f g }
+| f=f UNTIL g=f                         { until full f g }
+| f=f WUNTIL i=INTERVAL g=f             { weak_until i f g }
+| f=f WUNTIL g=f                        { weak_until full f g }
+| f=f RELEASE i=INTERVAL g=f            { release i f g }
+| f=f RELEASE g=f                       { release full f g }
+| FORWARD i=INTERVAL r=reF              { matchF r i } %prec FORWARD
+| FORWARD r=reF                         { matchF r full }
+| BACKWARD i=INTERVAL r=reP             { matchP r i } %prec BACKWARD
+| BACKWARD r=reP                        { matchP r full }
+| NEXT i=INTERVAL f=f                   { next i f }
+| NEXT f=f                              { next full f }
+| PREV i=INTERVAL f=f                   { prev i f }
+| PREV f=f                              { prev full f }
+| ONCE i=INTERVAL f=f                   { once i f }
+| ONCE f=f                              { once full f }
+| HISTORICALLY i=INTERVAL f=f           { historically i f }
+| HISTORICALLY f=f                      { historically full f }
+| ALWAYS i=INTERVAL f=f                 { always i f }
+| ALWAYS f=f                            { always full f }
+| EVENTUALLY i=INTERVAL f=f             { eventually i f }
+| EVENTUALLY f=f                        { eventually full f }
 
 reF:
-| LOPEN reF ROPEN         { $2 }
-| EMPTY                   { empty }
-| EPSILON                 { epsilon }
-| WILDCARD                { wild }
-| e                       { baseF $1 } %prec BASE
-| e QUESTION              { test $1 }
-| reF PLUS reF            { alt $1 $3 }
-| reF reF                 { seq $1 $2 } %prec CONCAT
-| reF STAR                { star $1 }
+| LOPEN r=reF ROPEN     { r }
+| EMPTY                 { empty }
+| EPSILON               { epsilon }
+| WILDCARD              { wild }
+| f=f                   { baseF f } %prec BASE
+| f=f QUESTION          { test f }
+| r=reF PLUS s=reF      { alt r s }
+| r=reF s=reF           { seq r s } %prec CONCAT
+| r=reF STAR            { star r }
 
 reP:
-| LOPEN reP ROPEN         { $2 }
-| EMPTY                   { empty }
-| EPSILON                 { epsilon }
-| WILDCARD                { wild }
-| e                       { baseP $1 } %prec BASE
-| e QUESTION              { test $1 }
-| reP PLUS reP            { alt $1 $3 }
-| reP reP                 { seq $1 $2 } %prec CONCAT
-| reP STAR                { star $1 }
+| LOPEN r=reP ROPEN     { r }
+| EMPTY                 { empty }
+| EPSILON               { epsilon }
+| WILDCARD              { wild }
+| f=f                   { baseP f } %prec BASE
+| f=f QUESTION          { test f }
+| r=reP PLUS s=reP      { alt r s }
+| r=reP s=reP           { seq r s } %prec CONCAT
+| r=reP STAR            { star r }
