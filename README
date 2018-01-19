@@ -18,13 +18,13 @@ Aerial depends on a recent (>= 4.04.0) version of the OCaml compiler.
 (An outdated PolyML implementation of Aerial referenced in the above
 paper can be found in this repository under the tag 'poly'.)
 
-To install ocaml and some additional libraries use opam - ocaml's 
+To install ocaml and some additional libraries use opam - ocaml's
 package manager. For example:
 
     apt-get install opam
     opam switch 4.04.1
     eval $(opam config env)
-    opam install safa
+    opam install safa menhir
 
 then compile Aerial with
 
@@ -42,15 +42,15 @@ provides some additional hints about the tool's user interface.
 
 This repository also contains the bash scripts used to generate log files and
 run the experiments reported on in the above paper (directory experiments).
-The shell scripts assume the "aerial", "monpoly" and "montre" binary 
-files to be available in the PATH, a working installation of GNU Parallel and 
+The shell scripts assume the "aerial", "monpoly" and "montre" binary
+files to be available in the PATH, a working installation of GNU Parallel and
 coreutils package for macOS. Scripts are tested on macOS 10.12.4 and Ubuntu 16.04.
 
-A pre-configured environment for running the experiments can be found on the official 
+A pre-configured environment for running the experiments can be found on the official
 tool website: http://www.infsec.ethz.ch/research/software/aerial.html
 
 Alternatively, if Docker is available run:
 
     docker run -it krledmno1/aerial
-    
+
 to pull and run a Docker container with Aerial installed.

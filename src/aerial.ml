@@ -27,7 +27,7 @@ module Mtl(C : Cell.Cell) : Language = struct
   module Monitor = Mtl.Monitor_MTL(C)
 end
 
-let cell_ref = ref (module Bexp.Cell : Cell.Cell)
+let cell_ref = ref (module Bdd_safa.Cell : Cell.Cell)
 let mtl () =
   let (module C) = !cell_ref in
   (module Mtl(C) : Language)
