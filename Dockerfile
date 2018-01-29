@@ -6,6 +6,8 @@ RUN opam init
 RUN opam update
 RUN opam switch 4.04.1
 RUN opam install ocamlfind
+RUN opam install menhir
+RUN opam install safa
 
 ENV WDIR /home/root/aerial
 RUN mkdir -p ${WDIR}
