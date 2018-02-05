@@ -95,6 +95,9 @@ web:
 run: standalone
 	./aerial.native $(CMD)
 
+docker-run: 
+	docker run --name aerial -it krledmno1/aerial
+
 docker:
 	docker build -t $(IMAGE) .
 
