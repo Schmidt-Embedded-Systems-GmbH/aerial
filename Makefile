@@ -3,7 +3,7 @@ MODULENAME=main
 NAME=src/$(MODULENAME)
 OCAMLBUILD=ocamlbuild -use-ocamlfind -use-menhir -no-plugin -package safa -yaccflags --explain
 OCAMLBUILDWEB=ocamlbuild -use-ocamlfind -use-menhir \
-	       -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson \
+	       -plugin-tags "package(js_of_ocaml.ocamlbuild)" -package yojson -package lwt \
            -package safa -yaccflag --explain
 OCAMLFIND=ocamlfind
 OBJS=$(wildcard _build/*.cm* _build/*.a _build/*.o)

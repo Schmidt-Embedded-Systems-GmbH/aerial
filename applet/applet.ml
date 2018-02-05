@@ -34,7 +34,7 @@ let onload _ =
 
   let title = Html.createH1 d in
   title##.innerHTML := Js.string "Aerial <font size=3>Almost Event-Rate Independent Monitoring of Metric Temporal Properties</font>";
-  
+
   let formulaDiv = Html.createDiv d in
   let ed_name = "*edited*" in
   let ex_names = List.map fst examples in
@@ -51,7 +51,7 @@ let onload _ =
     (ed_name :: ex_names);
   Dom.appendChild formulaDiv select;
   append_text formulaDiv ", edit, or load formula file ";
-  
+
   let formulain = Html.createInput ?_type:(Some (Js.string "file")) d in
   Dom.appendChild formulaDiv formulain;
 
@@ -98,7 +98,7 @@ let onload _ =
   append_hover formulaDiv "S" "SINCE";
   append_hover formulaDiv "T" "TRIGGER";
   append_hover formulaDiv "∞" "INFINITY";
- 
+
   (*let tab = Html.createTable d in
   let tr1 = Html.createTr d in
   let tdl1 = Html.createTd d in
@@ -112,7 +112,7 @@ let onload _ =
   let tdl5 = Html.createTd d in
   let tr6 = Html.createTr d in
   let tdl6 = Html.createTd d in*)
-  
+
   (*tdl1##.vAlign := Js.string "top";
   tdr1##.vAlign := Js.string "top";
   tdl2##.vAlign := Js.string "top";
@@ -121,7 +121,7 @@ let onload _ =
   tdl4##.vAlign := Js.string "top";
   tdl5##.vAlign := Js.string "top";
   tdl6##.vAlign := Js.string "top";*)
-  
+
   (*let logtext = Html.createB d in
   logtext##.innerHTML := Js.string "Log ";
   let login = Html.createInput ?_type:(Some (Js.string "file")) d in
@@ -187,10 +187,10 @@ let onload _ =
   let warn = color_frame "2px yellow solid" false in
   let ok = color_frame "2px green solid" false in
 
-  (*let visibility_res vis = 
+  (*let visibility_res vis =
     resframe##.style##.display := Js.string vis;
     restext##.style##.display := Js.string vis in
-  
+
   let hide_res () = visibility_res "none" in
   let show_res () = visibility_res "inline" in*)
 
@@ -235,7 +235,7 @@ let onload _ =
        with e ->
 	 error logframe; hide_res ()
     in*)
-  
+
   let check_formula () =
     (try
       reset_errs ();
@@ -268,7 +268,7 @@ let onload _ =
   let default = List.nth ex_names 0 in
   select##.value := Js.string default;
   load_ex default;
-  
+
   Js._false
 
 let _ = Html.window##.onload := Html.handler onload
