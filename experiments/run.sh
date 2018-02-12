@@ -1,7 +1,7 @@
 source ./functions.sh
 
-
-TIMEOUT="$TIMEOUT 100s"
+TTO=$(bc -l <<< "scale=3; ${TO}/1000")
+TIMEOUT="$TIMEOUT ${TTO}s"
 AERIAL=$(which aerial)
 MONPOLY=$(which monpoly)
 MONTRE=$(which montre)
@@ -61,9 +61,8 @@ case "$tool" in
 esac
 
 #check for disqualification
-./disq.sh $test $modestr $rate $form
-rc=$?
-if [[ $rc -ne 0 ]] ; then
+rc=$(./disq.sh $test $modestr $rate $form)
+if [[ "$rc" = "" ]] ; then
     echo "$modestr, $rate, $form, $i, disq, disq"
     exit -1
 fi
@@ -74,8 +73,9 @@ index=$((index*MAXIDX))
 index=$((index+iform))
 
 #run the tools
+# tmpfile="tmp/TO${modestr}_${rate}_${form}.tmp"
 params="$modestr, $rate, $form, $index"
-run "$CMD" "$params"
+run "$CMD" "$params" "$rc"
 
 #DEBUG
 #echo "$CMD"

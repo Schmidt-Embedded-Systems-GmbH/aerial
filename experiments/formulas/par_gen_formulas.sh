@@ -76,9 +76,9 @@ function gen_interval {
             mpf='p () UNTIL [0, '${i}'] (q () SINCE ['${d}', '${i}'] r ())'
             mof='(p*;(r;q*)%('${drate}','${irate}'))%(0,'${irate}')'
 
-            echo $aef  > interval/r${i}_${idx}.formula;
-            echo $mpf  > interval/monpoly_r${i}_${idx}.formula;
-            echo $mof  > interval/montre_r${i}_${IRATES}_${idx}.formula;
+            echo $aef  > interval/f${i}_${idx}.formula;
+            echo $mpf  > interval/monpoly_f${i}_${idx}.formula;
+            echo $mof  > interval/montre_f${i}_${IRATES}_${idx}.formula;
         done
 
     done

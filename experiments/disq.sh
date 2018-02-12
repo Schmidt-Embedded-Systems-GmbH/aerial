@@ -26,53 +26,80 @@ function find_prev {
 #      - otherwise proceed
 #  3. after running the tool+formula, if it times out, write a line in the file for the current rate ($tmpfile)
 
-#path to the current timeout counting file
-tmpfile="tmp/TO${mode}_${rate}_${form}.tmp"
-#path to the previous timeout counting file
 
 if [[ "$test" = "rate" ]];
 then 
-    prev=$(find_prev $rate $RATES)
+    prev=$(find_prev $rate "$RATES")
+    threshold=$((RIDX*RFIDX))
+
+    #path to the current timeout counting file
+    tmpfile="tmp/TO${mode}_${rate}_${form}.tmp"
+    #path to the previous timeout counting file
+    prevtmpfile="tmp/TO${mode}_${prev}_${form}.tmp"
+
+    #path to the current STOP file
+    stopfile="tmp/STOP${mode}_${rate}_${form}.tmp"
+    #path to the previous STOP file
+    prevstopfile="tmp/STOP${mode}_${prev}_${form}.tmp"
+
 
 elif [[ "$test" = "formula" ]];
 then 
-    prev=$(find_prev $form $FORMS)
+    prev=$(find_prev $form "$FORMS")
+    threshold=$((FIDX*FFIDX))
+
+    #path to the current timeout counting file
+    tmpfile="tmp/TO${mode}_${form}_${rate}.tmp"
+    #path to the previous timeout counting file
+    prevtmpfile="tmp/TO${mode}_${prev}_${rate}.tmp"
+
+    #path to the current STOP file
+    stopfile="tmp/STOP${mode}_${form}_${rate}.tmp"
+    #path to the previous STOP file
+    prevstopfile="tmp/STOP${mode}_${prev}_${rate}.tmp"
+    
 
 elif [[ "$test" = "interval" ]];
 then 
-    prev=$(find_prev $form $FORMS)
+    #TODO: think about the interval
+    prev=$(find_prev $form "$FORMS")
+    threshold=$((IIDX*IFIDX))
+
+    #path to the current timeout counting file
+    tmpfile="tmp/TO${mode}_${form}_${rate}.tmp"
+    #path to the previous timeout counting file
+    prevtmpfile="tmp/TO${mode}_${prev}_${rate}.tmp"
+
+    #path to the current STOP file
+    stopfile="tmp/STOP${mode}_${form}_${rate}.tmp"
+    #path to the previous STOP file
+    prevstopfile="tmp/STOP${mode}_${prev}_${rate}.tmp"
 
 else
     #no disq scheme
     exit 0
-
 fi
 
-prevtmpfile="tmp/TO${mode}_${prev}_${form}.tmp"
 
-
-#path to the current stop file
-stopfile="tmp/STOP${mode}_${rate}_${form}.tmp"
-#path to the previous stop file
-prevstopfile="tmp/STOP${mode}_${prevrate}_${form}.tmp"
 
 # step 1
 if [ -f $prevstopfile ]
 then
-touch $stopfile
-exit -1
+    touch $stopfile
+    exit -1
 fi
 
 #step 2
 if [ -f $prevtmpfile ]
 then
   tos=$(wc -l $prevtmpfile | $AWK '{$1=$1;print}' | cut -d " " -f1)
-  
-  if [ "$tos" -eq "$MAXIDX" ]
+
+  if [ "$tos" -eq "$threshold" ]
   then 
-  touch $prevstopfile
-  touch $stopfile
-  exit -1
+    touch $prevstopfile
+    touch $stopfile
+    exit -1
   fi
 fi
 
+echo $tmpfile

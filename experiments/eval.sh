@@ -24,13 +24,13 @@ mv results-* $backup
 #Type of experiment: "rate" or "formula" or "interval"
 if [ ! -z "$1" ]
 then
-TEST=$1
+    TEST=$1
 fi
 
 #Logs: "custom" or "monpoly" or "random" or "constant"
 if [ ! -z "$2" ]
 then
-LOGS=$2
+    LOGS=$2
 fi
 
 echo "Running evaluation"
@@ -69,7 +69,7 @@ for t in $TEST; do
 
         echo "Tool, Rate, Formula, IDX, Space, Time" > results-${t}-${l}.csv
 
-        parallel -P 24 ./run.sh ::: `eval echo $TOOLS` ::: `eval echo $f` ::: `eval echo {1..$fidx}` ::: `eval echo $l` ::: `eval echo {1..$idx}` ::: `eval echo $rates` ::: `eval echo $t` >> results-${t}-${l}.csv 2> /dev/null
+        parallel -P 24 ./run.sh ::: `eval echo $TOOLS` ::: `eval echo $f` ::: `eval echo {1..$fidx}` ::: `eval echo $l` ::: `eval echo {1..$idx}` ::: `eval echo $rates` ::: `eval echo $t` ::: `eval echo $LANG` ::: `eval echo $MODS` ::: `eval echo $REPS`  >> results-${t}-${l}.csv 2> /dev/null
 
         ./process_results.sh ${t} ${l} > results-${t}-${l}-final.csv
 

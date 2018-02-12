@@ -4,6 +4,7 @@ source ./params.cfg
 
 system=`uname`
 
+
 if [ "$system" == "Linux" ]
 then
   DATE="date"
@@ -23,11 +24,14 @@ function run {
     local cmd="$1"
     #params to print
     local params="$2"
+    #tmp file for timeouts
+    local tmpfile="$3"
 
     #run the command, parse results...
     local ts=$($DATE +%s%N)
     local result=$(eval "$TIME $TIMEOUT $cmd")
     local time=$((($($DATE +%s%N) - $ts)/1000000)) 
+
 
     #DEBUG
     #echo $result
