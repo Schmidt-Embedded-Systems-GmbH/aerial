@@ -6,9 +6,11 @@ compile with:
   ocamlbuild -pkgs qcheck src/generator.native
 *)
 
-let language_ref = ref mtl
+let language_ref = ref mdl
 
 let size_ref = ref None
+
+let rate_ref = ref None
 
 let num_ref = ref None
 
@@ -46,6 +48,34 @@ let process_args =
     | ("-atoms" :: atoms :: args) ->
         atoms_ref := String.split_on_char ',' atoms;
         go args
+    | ("-rate" :: rate :: args) ->
+        rate_ref := Some ([int_of_string rate]);
+        rates args
+    | [] -> ()
+    | _ -> usage ()
+  and rates = function 
+    | ("-mdl" :: args) ->
+        language_ref := mdl;
+        go args
+    | ("-mtl" :: args) ->
+        language_ref := mtl;
+        go args
+    | ("-size" :: size :: args) ->
+        size_ref := Some (int_of_string size);
+        go args
+    
+    | ("-num" :: num :: args) ->
+        num_ref := Some (int_of_string num);
+        go args
+    | ("-atoms" :: atoms :: args) ->
+        atoms_ref := String.split_on_char ',' atoms;
+        go args 
+    | (rate :: args) ->
+        let newrate = match !rate_ref with 
+        | None -> [int_of_string rate]
+        | Some x -> int_of_string rate::x
+        in rate_ref := Some(newrate);
+        rates args
     | [] -> ()
     | _ -> usage () in
   go
@@ -64,5 +94,8 @@ let _ =
     let num = match !num_ref with
       | None -> 1
       | Some x -> x in
-    print_list (List.map L.formula_to_string (Gen.generate ~n:num (L.generate !atoms_ref size)))
+    let rates = match !rate_ref with
+      | None -> [1]
+      | Some x -> x in
+    print_list (List.map (L.formula_to_string (List.rev rates)) (Gen.generate ~n:num (L.generate !atoms_ref size)))
 

@@ -23,7 +23,7 @@ OCAMLBUILDCOVERAGE=ocamlbuild -cflags -warn-error,+26 -use-ocamlfind -use-menhir
 
 OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator_main
-GENMONPOLY=experiments/gen_log
+GENMONPOLY=experiments/logs/gen_log
 
 IMAGE=krledmno1/aerial
 
@@ -60,12 +60,12 @@ test: test-clean test-generate test-compile
 
 generate:
 	$(OCAMLBUILDGEN) $(GENNAME).native
-	cp generator_main.native experiments/
+	cp generator_main.native experiments/formulas
 	cp generator_main.native integration/
 
 generate-monpoly:
 	$(OCAMLBUILD) $(GENMONPOLY).native
-	cp gen_log.native experiments/
+	mv gen_log.native experiments/logs
 
 lib:
 	$(OCAMLBUILD) $(NAME).cmxa

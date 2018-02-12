@@ -1,7 +1,5 @@
 glob
 
-experiments/logs
-experiments/formulas
 experiments/results
 experiments/montre
 _build
