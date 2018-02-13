@@ -10,7 +10,7 @@ mkdir -p $logs
     then
         parallel -P 24 ./gen_logs_${logs}.sh  ::: `eval echo $RATES` ::: {1..4} ::: `eval echo {1..$MAXIDX}` 2> /dev/null
     else
-        parallel -P 24 ./gen_logs_${logs}.sh  ::: `eval echo $RATES` ::: "" ::: `eval echo {1..$MAXIDX}` 2> /dev/null
+        parallel -P 24 ./gen_logs_${logs}.sh  ::: `eval echo $RATES` ::: "1" ::: `eval echo {1..$MAXIDX}` 2> /dev/null
     fi 
 }
 

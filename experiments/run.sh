@@ -40,7 +40,7 @@ fi
 #remove formula specific trace parameter 
 if [[ "$logdir" == "constant" || "$logdir" == "random" ]]
 then
-  trace=""
+  trace="1"
 fi
 
 #prepare to run different tools
