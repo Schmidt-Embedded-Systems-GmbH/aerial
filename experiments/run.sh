@@ -7,12 +7,12 @@ MONPOLY=$(which monpoly)
 MONTRE=$(which montre)
 
 tool=$1   #Tool name
-form=$2   #Formula index 
-trace=$2  #formula specific trace (makes sense only for custom and monpoly logs)
-iform=$3  #formula index
-logdir=$4 #type of log (custom, random, constant, monpoly)
-i=$5      #trace index
-rate=$6   #event rate of the trace
+logdir=$2 #type of log (custom, random, constant, monpoly)
+rate=$3   #event rate of the trace
+form=$4   #Formula index 
+trace=$4  #formula specific trace (makes sense only for custom and monpoly logs)
+iform=$5  #formula index
+i=$6      #trace index
 test=$7   #type of experiment (rate, formula, interval)
 
 #optional aerial params
@@ -75,6 +75,10 @@ index=$((index+iform))
 #run the tools
 # tmpfile="tmp/TO${modestr}_${rate}_${form}.tmp"
 params="$modestr, $rate, $form, $index"
+
+#DEBUG
+#echo "$params Started..."
+
 run "$CMD" "$params" "$rc"
 
 #DEBUG

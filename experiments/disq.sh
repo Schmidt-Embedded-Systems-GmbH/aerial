@@ -88,11 +88,16 @@ then
     touch $stopfile
     exit -1
 fi
+    #DEBUG
+    #(>&2 echo "disq: " $prevtmpfile)
 
 #step 2
 if [ -f $prevtmpfile ]
 then
   tos=$(wc -l $prevtmpfile | $AWK '{$1=$1;print}' | cut -d " " -f1)
+
+    #DEBUG
+    #(>&2 echo "disq: " $tos)
 
   if [ "$tos" -eq "$threshold" ]
   then 
