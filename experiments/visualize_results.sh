@@ -30,6 +30,4 @@ latexmk -shell-escape -pdf rates-lang-$now.tex
 sed "s/MODS/aerial-mtl-global-expr, monpoly, montre/g;s/PATH/$path/g" ./rates.tex > rates-tools-$now.tex
 latexmk -shell-escape -pdf rates-tools-$now.tex
 
-ls rates-* |  egrep -v "\.tex$" |  grep -v "pdf$" | xargs rm
-
-#open rates-${now}.pdf
+ls rates-* |  grep -v "pdf$" | xargs rm

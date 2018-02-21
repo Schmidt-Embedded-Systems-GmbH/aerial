@@ -1,5 +1,7 @@
 glob
 
+experiments/rates-*
+experiments/run-*
 experiments/figures
 experiments/results
 experiments/montre
