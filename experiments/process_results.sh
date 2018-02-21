@@ -7,7 +7,7 @@ l=$2
 
 
 #average and std
-cat results-${t}-${l}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | gawk -F "," '
+cat results-${t}-${l}.csv | grep -v Time | grep -v disq | sed "s/(timeout)//g" | $AWK -F "," '
 {
 n[$1][$2][$3]++;
 dm[$1][$2][$3]=$5/1024/1024-m[$1][$2][$3];
@@ -28,6 +28,10 @@ for(i in t){
 }' >> results-${t}-${l}-avg.csv
 
 echo "Tool, Rate, Formula, Space, Sdev, Time, Tdev" 
-cat results-${t}-${l}-avg.csv | sort -n -k 2 -t "," 
+if [ ${t} = "rate" ]; then
+	cat results-${t}-${l}-avg.csv | sort -n -k 2 -t "," 
+else
+	cat results-${t}-${l}-avg.csv | sort -n -k 3 -t "," 
+fi
 
 rm results-${t}-${l}-avg.csv
