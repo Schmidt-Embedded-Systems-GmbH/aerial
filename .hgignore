@@ -1,5 +1,6 @@
 glob
 
+experiments/figures
 experiments/results
 experiments/montre
 _build

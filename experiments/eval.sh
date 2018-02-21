@@ -69,7 +69,21 @@ for t in $TEST; do
 
         echo "Tool, Rate, Formula, IDX, Space, Time" > results-${t}-${l}.csv
 
-        parallel -P 24 ./run.sh ::: `eval echo $TOOLS` ::: `eval echo $l` ::: `eval echo $rates` ::: `eval echo $f` ::: `eval echo {1..$fidx}` ::: `eval echo {1..$idx}` :::  `eval echo $t` ::: `eval echo $LANG` ::: `eval echo $MODS` ::: `eval echo $REPS`  >> results-${t}-${l}.csv 2> /dev/null
+        for tool in $TOOLS; do
+
+        if [ "$tool" == "aerial" ]; then
+
+            parallel -P 24 ./run.sh ::: `eval echo $tool` ::: `eval echo $l` ::: `eval echo $rates` ::: `eval echo $f` ::: `eval echo {1..$fidx}` ::: `eval echo {1..$idx}` :::  `eval echo $t` ::: `eval echo $LANG` ::: `eval echo $MODS` ::: `eval echo $REPS`  >> results-${t}-${l}.csv 2> /dev/null
+
+        else
+
+            parallel -P 24 ./run.sh ::: `eval echo $tool` ::: `eval echo $l` ::: `eval echo $rates` ::: `eval echo $f` ::: `eval echo {1..$fidx}` ::: `eval echo {1..$idx}` :::  `eval echo $t`  >> results-${t}-${l}.csv 2> /dev/null
+            
+        fi
+
+        done
+
+
 
         ./process_results.sh ${t} ${l} > results-${t}-${l}-final.csv
 

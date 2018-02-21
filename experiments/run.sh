@@ -46,7 +46,7 @@ fi
 #prepare to run different tools
 case "$tool" in
   AERIAL|Aerial|aerial ) 
-    modestr="${tool}_${lang}_${mode}_${repr}"
+    modestr="${tool}-${lang}-${mode}-${repr}"
     CMD="$AERIAL -$lang -mode $mode -$repr -fmla formulas/${test}/f${form}_${iform}.formula -log logs/${logdir}/tr${trace}_${i}_${rate}.log -out /dev/null 2>&1"
   ;;
   MONPOLY|Monpoly|monpoly )
