@@ -129,9 +129,9 @@ let rec string_of_bdd i x = match head x with
   | N(a,l,r) -> Printf.sprintf (paren i 0 "%d%a+!%d%a") a (fun _ -> string_of_bdd 1) r a (fun _ -> string_of_bdd 1) l
 
 module Cell : Cell.Cell = struct
-
+(*
 let m = init Hashtbl.hash (=)
-
+*)
 let maybe_output case_cell fmt skip d cell f =
   case_cell
     (fun b ->
