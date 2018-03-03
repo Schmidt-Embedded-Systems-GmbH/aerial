@@ -65,7 +65,8 @@ let mtl = (module MTL : Language)
 module MDL : Language = struct
   type formula = Mdl.formula
   let generate atoms n = Gen.map fst (Gen.fix (fun go -> function
-      | 0 -> Gen.pair (Gen.oneofl (List.map Mdl.p atoms)) (Gen.oneofl (List.map (fun x -> Mdl.baseF (Mdl.p x)) atoms))
+      | 0 -> Gen.pair (Gen.oneofl (List.flatten (List.map (fun x -> [Mdl.p x; Mdl.neg (Mdl.p x)]) atoms))) 
+                      (Gen.oneofl (List.flatten (List.map (fun x -> [Mdl.baseF (Mdl.p x);Mdl.baseF (Mdl.neg (Mdl.p x))]) atoms)))
       | n ->
         let interval_gen = interval_gen 50 25 in
         let gof m = Gen.map fst (go m) in
@@ -74,7 +75,7 @@ module MDL : Language = struct
           Gen.pair
             (Gen.frequency
               [
-                0, Gen.map Mdl.neg   (gof (n-1));
+                (* 0, Gen.map Mdl.neg   (gof (n-1)); *)
                 1, Gen.map2 Mdl.conj  (gof m) (gof (n - 1 - m));
                 1, Gen.map2 Mdl.disj  (gof m) (gof (n - 1 - m));
                 1, Gen.map3 Mdl.possiblyF (gor m) interval_gen (gof (n - 1 - m));
@@ -93,7 +94,7 @@ module MDL : Language = struct
       | P (_, x) -> Printf.sprintf "%s" x
       | Neg(x) -> Printf.sprintf "! %a" (fun x -> formula_to_montre_string rt 0) x
       | Bool b -> Printf.sprintf (if b then "p || !p" else "p && !p")
-      | Conj (f, g) -> Printf.sprintf (paren l 2 "%a & %a") (fun x -> formula_to_montre_string rt 2) f (fun x -> formula_to_montre_string rt 2) g
+      | Conj (f, g) -> Printf.sprintf (paren l 2 "(%a ; (p || !p)*) & (%a ; (p || !p)*)") (fun x -> formula_to_montre_string rt 2) f (fun x -> formula_to_montre_string rt 2) g
       | Disj (f, g) -> Printf.sprintf (paren l 1 "%a | %a") (fun x -> formula_to_montre_string rt 1) f (fun x -> formula_to_montre_string rt 1) g
       | MatchF (_, _, i, r) -> Printf.sprintf (paren l 0 "(%a) %% %a") (fun x -> regex_to_montre_string rt 4) r (fun x -> interval_to_string) (multiply_I rt i)
       | _ as x -> failwith "not supported " ^ formula_to_string x)
