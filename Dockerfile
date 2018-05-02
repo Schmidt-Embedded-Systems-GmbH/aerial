@@ -1,4 +1,4 @@
-FROM ocaml/opam:ubuntu-12.04_ocaml-4.04.1
+FROM ocaml/opam:ubuntu-14.04_ocaml-4.04.1
 
 RUN opam install \
     ocamlfind \ 
