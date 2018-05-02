@@ -24,7 +24,7 @@ package manager. For example:
     apt-get install opam
     opam switch 4.04.1
     eval $(opam config env)
-    opam install safa menhir
+    opam install ocamlfind safa menhir
 
 then compile Aerial with
 
