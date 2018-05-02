@@ -1,5 +1,6 @@
 glob
 
+experiments/plots
 experiments/intervals-*
 experiments/formulas-*
 experiments/rates-*
@@ -30,3 +31,4 @@ integration/*.csv
 *.cb2
 *.formula
 *.native
+.vscode

@@ -1,3 +1,15 @@
 archive.7z
-_build
-_buildtest
+**/_build
+**/_buildtest
+**/.git
+**/.hg
+**/.hgignore
+**/.hgtags
+**/.vscode
+**/.merlin
+**/.native
+**/.DS_Store
+experiments/figures
+experiments/results
+experiments/plots
+integration
