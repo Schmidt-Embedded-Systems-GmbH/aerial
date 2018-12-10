@@ -1,6 +1,9 @@
 #!/bin/bash
+source ./params.cfg
+
 
 system=`uname`
+
 
 if [ "$system" == "Linux" ]
 then
@@ -15,77 +18,23 @@ else
   TIME="/usr/bin/time -l"
 fi
 
-function print_mode {
-#mode can be 0 -> aerial MTL naive,
-#            1 -> aerial MTL local,
-#            2 -> aerial MTL global,
-#            3 -> aerial MDL naive,
-#            4 -> aerial MDL local,
-#            5 -> aerial MDL global,
-#            6 -> monpoly,
-#            7 -> montre
-#            8 -> aerial MTL bdd 
-#            9 -> aerial MDL bdd 
-   if [ "$1" -eq "0" ]
-   then
-     echo "Aerial MTL (naive)"
-   elif [ "$1" -eq "1" ]
-   then
-     echo "Aerial MTL (local)"
-   elif [ "$1" -eq "2" ]
-   then
-     echo "Aerial MTL (global)"
-   elif [ "$1" -eq "3" ]
-   then
-     echo "Aerial MDL (naive)"
-   elif [ "$1" -eq "4" ]
-   then
-     echo "Aerial MDL (local)"
-   elif [ "$1" -eq "5" ]
-   then
-     echo "Aerial MDL (global)"
-   elif [ "$1" -eq "6" ]
-   then
-     echo "Monpoly"
-   elif [ "$1" -eq "7" ]
-   then
-     echo "Montre"
-   elif [ "$1" -eq "8" ]
-   then
-     echo "Aerial MTL BDD (local)"
-   elif [ "$1" -eq "9" ]
-   then
-     echo "Aerial MDL BDD (local)"  
-   else
-     echo "???"
-   fi
-}
-
-
-function read_mode {
-
-  while read  p || [[ -n "$p" ]]; do
-  local m=$(print_mode $p)
-  echo "${m}, " 
-  done < ./mods
-
-}
-
-function format_mode {
-  local line=$(read_mode)
-  echo $line | sed 's/\(.*\),/\1 /' | sed 's/[[:space:]]\+$//'
-}
 
 function run {
     #command to run
     local cmd="$1"
     #params to print
     local params="$2"
+    #tmp file for timeouts
+    local tmpfile="$3"
 
     #run the command, parse results...
     local ts=$($DATE +%s%N)
     local result=$(eval "$TIME $TIMEOUT $cmd")
     local time=$((($($DATE +%s%N) - $ts)/1000000)) 
+
+
+    #DEBUG
+    #echo $result
 
     if [ "$system" == "Linux" ]
     then
@@ -96,7 +45,7 @@ function run {
     fi
 
     # step 3 (see below)
-    if [ "$time" -gt "100000" ]
+    if [ "$time" -gt "$TO" ]
     then
       local time="${time} (timeout)"
       echo "timeout" >> $tmpfile

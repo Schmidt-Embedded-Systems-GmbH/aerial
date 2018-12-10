@@ -2,7 +2,7 @@
 
 RATE=$1
 VAR=10
-MAXTS=100
+MAXTS=$2
 A=1000
 if [ "$RATE" -le "1000" ]
 then
@@ -24,17 +24,14 @@ function gen {
   local ts=$1
   local a=$(( $RANDOM % ($A + $B) ))
   local b=$(( $RANDOM % ($A + $B) ))
-  if [[ "$a" -lt "$A" && "$b" -lt "$B" ]]
+  if [[ "$a" -lt "900"  ]]
+  then
+    echo "@$ts p () "
+  elif [[ "$b" -lt "1000" ]]
   then
     echo "@$ts p () q ()"
-  elif [[ "$a" -lt "$A" ]]
-  then
-    echo "@$ts p ()"
-  elif [[ "$b" -lt "$B" ]]
-  then
-    echo "@$ts q ()"
   else
-    echo "@$ts"
+    echo "@$ts p () q () r ()"
   fi
 }
 

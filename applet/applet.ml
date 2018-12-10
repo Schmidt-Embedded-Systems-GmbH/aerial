@@ -240,7 +240,7 @@ let onload _ =
     (try
       reset_errs ();
       Sys_js.set_channel_flusher stderr (append_err formulaframe);
-      formula := Some (Parser.formula Lexer.token (Lexing.from_string (Js.to_string (formulaframe##.value))));
+      formula := Some (Mtl_parser.formula Mtl_lexer.token (Lexing.from_string (Js.to_string (formulaframe##.value))));
       ok formulaframe;
       (*deactivate logframe;
       hide_res ();*)

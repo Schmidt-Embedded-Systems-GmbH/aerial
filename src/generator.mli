@@ -11,7 +11,7 @@ open Channel
 module type Language = sig
   type formula
   val generate: string list -> int -> formula QCheck.Gen.t
-  val formula_to_string: formula -> string
+  val formula_to_string: int list -> formula -> string
   val to_string: formula -> string
 end
 

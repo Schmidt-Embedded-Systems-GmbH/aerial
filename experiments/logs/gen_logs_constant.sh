@@ -1,8 +1,14 @@
+#!/bin/bash
+source ../params.cfg
+
 rate=$1
 form=$2
 i=$3
-MAXTS=100
 
+if [ ! -z "$4" ]
+then
+MAXTS=$4
+fi
 
 function get_events {
     # get constants 1 -> ""
@@ -39,12 +45,14 @@ function get_events {
    fi
 }
 
-logdir="logs/constant"
-mkdir -p $logdir
+mkdir -p constant
 
 const=$(get_events $i)
 
-for ts in `seq 1 $MAXTS`; do for j in `seq 1 $rate`; do echo "@$ts $const"; done; done > $logdir/tr${form}_${i}_${rate}.log
+for ts in `seq 1 $MAXTS`; do for j in `seq 1 $rate`; do echo "@$ts $const"; done; done > constant/tr${form}_${i}_${rate}.log
+echo "generated log ${i} for formula ${form} with rate ${rate} using the constrant generator";
+
 
 #converting to montre format
-./convert_logs.sh $logdir/tr${form}_${i}_${rate}.log $rate > $logdir/montre_tr${form}_${i}_${rate}.log
+./convert_logs.sh constant/tr${form}_${i}_${rate}.log $rate > constant/montre_tr${form}_${i}_${rate}.log
+

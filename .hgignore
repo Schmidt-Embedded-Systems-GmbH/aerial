@@ -1,7 +1,11 @@
 glob
 
-experiments/logs
-experiments/formulas
+experiments/plots
+experiments/intervals-*
+experiments/formulas-*
+experiments/rates-*
+experiments/run-*
+experiments/figures
 experiments/results
 experiments/montre
 _build
@@ -27,3 +31,4 @@ integration/*.csv
 *.cb2
 *.formula
 *.native
+.vscode

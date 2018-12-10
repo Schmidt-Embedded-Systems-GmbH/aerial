@@ -2,7 +2,7 @@
 
 RATE=$1
 VAR=100
-MAXTS=100
+MAXTS=$2
 A=1000
 if [ "$RATE" -le "1000" ]
 then

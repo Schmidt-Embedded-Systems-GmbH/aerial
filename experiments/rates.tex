@@ -3,19 +3,19 @@
 
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-\pgfplotsset{compat=1.13}
+\pgfplotsset{compat=1.15}
 \pgfplotsset{filter discard warning=false} 
 \pgfdeclarelayer{edgelayer}
 \pgfdeclarelayer{nodelayer}
 \usepgfplotslibrary{fillbetween}
 
 \usepackage{tikz}
-\usepackage{tkz-euclide}	
+\usepackage{tkz-euclide}    
 \usetikzlibrary{decorations.markings,fit,shapes.misc}
 \usetikzlibrary{arrows, shapes.geometric,snakes}
 \usetikzlibrary{patterns,snakes}
-%\usepgfplotslibrary{external}
-%\tikzexternalize[prefix=figures/]
+\usepgfplotslibrary{external}
+\tikzexternalize[prefix=figures/]
 
 \pgfplotsset{
     discard if/.style 2 args={
@@ -40,8 +40,8 @@
 }
 
 
-\newcommand{\plotHeight}{18cm}
-\newcommand{\plotWidth}{18cm}
+\newcommand{\plotHeight}{10cm}
+\newcommand{\plotWidth}{10cm}
 \newcommand{\csvfile}{""}
 %results-${logs}-final.csv
 %results-custom-final.csv
@@ -54,7 +54,7 @@
 
 \begin{document}
 
-\foreach\c in{./results-monpoly-final.csv, ./results-custom-final.csv, ./results-constant-final.csv, ./results-random-final.csv}{
+\foreach\c in{PATH/results-rate-random-final.csv, PATH/results-rate-constant-final.csv, PATH/results-rate-custom-final.csv, PATH/results-rate-monpoly-final.csv}{
 \renewcommand{\csvfile}{\c}
 
 \IfFileExists{\c}{
@@ -62,7 +62,8 @@
 \section{\c}
 
 \foreach\f in{1,2,3,4}{
-\begin{figure}[b]
+    \center{Formula \f}
+\begin{tabular}{c c}
 
 \begin{tikzpicture}[scale=0.65]
     \begin{axis}[
@@ -87,15 +88,7 @@
 
 \legend{MODS}
     \end{axis}
-\end{tikzpicture}
-
-\caption{Formula \f}
-\end{figure}
-}
-
-
-\foreach\f in{1,2,3,4}{
-\begin{figure}
+\end{tikzpicture}&
 
 \begin{tikzpicture}[scale=0.65]
     \begin{axis}[
@@ -119,11 +112,10 @@
 
 \legend{MODS}
     \end{axis}
-\end{tikzpicture}
+\end{tikzpicture}\\
 
-\caption{Formula \f}
-\end{figure}
-}
+\end{tabular}
+} 
 
 }
 {
