@@ -19,6 +19,7 @@ type formula = private
 | Next of int * interval * formula
 | Until of int * interval * formula * formula
 | Bool of bool
+| Now of int * formula
 
 val p: string -> formula
 val conj: formula -> formula -> formula

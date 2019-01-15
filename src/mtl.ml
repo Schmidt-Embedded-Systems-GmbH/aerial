@@ -22,6 +22,7 @@ type formula =
 | Next of int * interval * formula
 | Until of int * interval * formula * formula
 | Bool of bool
+| Now of int * formula
 
 let rec formula_to_string l = function
   | P (_, x) -> Printf.sprintf "%s" x
@@ -30,6 +31,7 @@ let rec formula_to_string l = function
   | Disj (f, g) -> Printf.sprintf (paren l 1 "%a ∨ %a") (fun x -> formula_to_string 1) f (fun x -> formula_to_string 2) g
   | Neg f -> Printf.sprintf "¬%a" (fun x -> formula_to_string 3) f
   | Prev (_, i, f) -> Printf.sprintf (paren l 3 "●%a %a") (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
+  | Now (_, f) -> Printf.sprintf (paren l 3 "%a") (fun x -> formula_to_string 4) f
   | Next (_, i, f) -> Printf.sprintf (paren l 3 "○%a %a") (fun x -> interval_to_string) i (fun x -> formula_to_string 4) f
   | Since (_, i, f, g) -> Printf.sprintf (paren l 0 "%a S%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
   | Until (_, i, f, g) -> Printf.sprintf (paren l 0 "%a U%a %a") (fun x -> formula_to_string 4) f (fun x -> interval_to_string) i (fun x -> formula_to_string 4) g
@@ -46,6 +48,7 @@ let rec maxidx_of = function
   | Prev (j, _, _) | Next (j, _, _) -> j
   | Since (j, _, _, _) | Until (j, _, _, _) -> j
   | Bool _ -> -1
+  | Now (j, _) -> j
 
 let rec lift n = function
   | P (i, x) -> P (i + n, x)
@@ -57,6 +60,7 @@ let rec lift n = function
   | Since (j, i, f, g) -> Since (j + n, i, lift n f, lift n g)
   | Until (j, i, f, g) -> Until (j + n, i, lift n f, lift n g)
   | Bool b -> Bool b
+  | Now (j, f) -> Now (j + n, lift n f)
 
 let p x = P (0, x)
 let bool b = Bool b
@@ -78,7 +82,8 @@ let rec neg f =
   | _ -> Neg f
 let imp f g = disj (neg f) g
 let iff f g = conj (imp f g) (imp g f)
-let prev i f = Prev (maxidx_of f + 1, i, f)
+let prev i f = Prev (maxidx_of f + 2, i, f)
+let now f = Now (maxidx_of f + 1, f)
 let next i f = Next (maxidx_of f + 1, i, f)
 
 let since_lifted i f g = Since (maxidx_of g + right_I i + 1, i, f, g)
@@ -107,7 +112,7 @@ let rec bounded_future = function
   | Since (_, _, f, g) | Conj (f, g) | Disj (f, g) -> bounded_future f && bounded_future g
   | Until (_, i, f, g) ->
       case_I (fun _ -> true) (fun _ -> false) i && bounded_future f && bounded_future g
-  | Neg f | Prev (_, _, f) | Next (_, _, f) -> bounded_future f
+  | Neg f | Prev (_, _, f) | Next (_, _, f) | Now (_, f) -> bounded_future f
 
 (* let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
@@ -124,7 +129,7 @@ let print_formula = print_formula 0 *)
 let print_formula = print_formula
 
 let idx_of = function
-  | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j
+  | P (j, _) | Prev (j, _, _) | Next (j, _, _) | Since (j, _, _, _) | Until (j, _, _, _) -> j | Now (j, _) -> j
   | _ -> failwith "not an indexed subformula"
 
 let rec sub = function
@@ -132,7 +137,7 @@ let rec sub = function
   | Conj (f, g) -> sub g @ sub f
   | Disj (f, g) -> sub g @ sub f
   | Next (j,i,f) -> Next (j,i,f) :: sub f
-  | Prev (j,i,f) -> Prev (j,i,f) :: sub f
+  | Prev (j,i,f) -> Prev (j,i,f) :: Now (j - 1, f) :: sub f
   | Since (j, i, f, g) -> Since (j,i,f,g) :: sub g @ sub f
   | Until (j, i, f, g) -> Until (j,i,f,g) :: sub g @ sub f
   | P _ as f -> [f]
@@ -166,7 +171,8 @@ let progress (f_vec, _) (delta, ev) a =
     b.(i) <- match f_vec.(i) with
     | P (_, x) -> fcbool (SS.mem x ev)
     | Prev (_, i, f) ->
-        if mem_I delta i then prev f else fcbool false
+          if mem_I delta i then prev (now f) else fcbool false
+    | Now (_, f) -> curr f
     | Next (_, i, f) ->
         Later (fun delta' -> if mem_I delta' i then next f else cbool false)
     | Since (_, i, f, g) -> fcdisj
