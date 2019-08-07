@@ -362,12 +362,18 @@ let init f =
     | _ -> failwith "find: not a temporal subformula" in
   let find = find 0 in
   let rec reindex = function
-    | MatchF (j, ii, i, r) as g -> MatchF (find g, ii, i, r)
-    | MatchP (j, ii, i, r) as g -> MatchP (find g, ii, i, r)
+    | MatchF (j, ii, i, r) as g -> MatchF (find g, ii, i, reindex_re r)
+    | MatchP (j, ii, i, r) as g -> MatchP (find g, ii, i, reindex_re r)
     | Conj (f, g) -> Conj (reindex f, reindex g)
     | Disj (f, g) -> Disj (reindex f, reindex g)
     | Neg f -> Neg (reindex f)
-    | g -> g in
+    | g -> g
+  and reindex_re = function
+    | Wild -> Wild
+    | Test f -> Test (reindex f)
+    | Alt (r, s) -> Alt (reindex_re r, reindex_re s)
+    | Seq (r, s) -> Seq (reindex_re r, reindex_re s)
+    | Star r -> Star (reindex_re r) in
   let v = cvar true in
   let mem = function
     | MatchF (j, ii, i, r) ->
@@ -379,6 +385,7 @@ let init f =
           let k = find (MatchP (j, ii, i, s)) in
           Later (fun delta -> v (k - min delta (right_I i)))) r
     | _ -> Later (fun _ -> cbool true) in
+  let f_vec = Array.map reindex f_vec in
   (* let _ = Array.iteri (fun i x -> Printf.printf "%d %a: %a\n%!" i print_formula x print_cell (eval_future_cell 0 (mem x))) f_vec in *)
   (reindex f, f_vec, Array.map mem f_vec)
 
