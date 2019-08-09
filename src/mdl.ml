@@ -348,7 +348,7 @@ let init f =
     | MatchF (j, ii, i, r) as g ->
       let l = j - offset * ii in
       let u = j + offset * ii in
-      if l > 0 && compare f_vec.(l) (MatchF (l, ii, i, r)) = 0 then l
+      if l >= 0 && compare f_vec.(l) (MatchF (l, ii, i, r)) = 0 then l
       else if l < u && u < n && compare f_vec.(u) (MatchF (u, ii, i, r)) = 0 then u
       else if l < 0 && u > n then failwith "find: out of bounds (F)"
       else find (offset + 1) g
