@@ -122,8 +122,8 @@ let rec seq f g =
   match f, g with
   | Test (Bool true), g | g, Test (Bool true) -> g
   | Test (Bool false), _ | _, Test (Bool false) -> Test (Bool false)
-  | (Test _ as t), Alt (r, s) -> alt (seq t r) (seq t s) (* FIXME wanted? / more general *)
-  | Alt (r, s), (Test _ as t) -> alt (seq r t) (seq s t) (* FIXME wanted? / more general *)
+  | (Test _ as t), Alt (r, s) -> alt (seq t r) (seq t (lift_re (- (maxidx_of_re r + 1)) s)) (* FIXME wanted? / more general *)
+  | Alt (r, s), (Test _ as t) -> alt (seq r t) (seq (lift_re (- (maxidx_of_re r + 1)) s) t) (* FIXME wanted? / more general *)
   | _ -> Seq (f, lift_re (maxidx_of_re f + 1) g)
 let seq_lifted f g =
   match f, g with
