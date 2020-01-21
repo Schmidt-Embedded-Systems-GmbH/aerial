@@ -32,13 +32,13 @@ let alphanums = ['a'-'z' 'A'-'Z' '$' '0'-'9' '_' '\'' '"' ]*
 rule token = parse
   | newline                                       { Lexing.new_line lexbuf; token lexbuf }
   | blank                                         { token lexbuf }
-  | "false" | "⊥"                                 { FALSE }
-  | "true" | "⊤" 		                              { TRUE }
+  | "false" | "⊥" | "FALSE"                       { FALSE }
+  | "true" | "⊤" | "TRUE"	                        { TRUE }
   | '!' | "¬" | "NOT"                             { NEG }
   | '&' | "∧" | "AND"                             { CONJ }
   | '|' | "∨" | "OR"                              { DISJ }
-  | "=>" | "->" | "→"                             { IMP }
-  | "<=>"  | "<->" | "↔"                          { IFF }
+  | "=>" | "->" | "→" | "IMPLIES"                 { IMP }
+  | "<=>"  | "<->" | "↔" | "EQUIV"                { IFF }
   | "SINCE" | "S" | "U⁻"                          { SINCE }
   | "UNTIL" |	"U"                                 { UNTIL }
   | "WEAK_UNTIL" | "W"                            { WUNTIL }
@@ -48,7 +48,7 @@ rule token = parse
   | "PREV" | "PREVIOUS" | "Y" | "X⁻" | "●" 		    { PREV }
   | "GLOBALLY" | "ALWAYS" | "G" | "□" 	          { ALWAYS }
   | "FINALLY" | "EVENTUALLY" | "F" | "◊"          { EVENTUALLY }
-  | "GLOBALLY_PAST" | "HISTORICALLY" | "G⁻" | "■" { HISTORICALLY }
+  | "GLOBALLY_PAST" | "HISTORICALLY" | "G⁻" | "■" | "PAST_ALWAYS" { HISTORICALLY }
   | "FINALLY_PAST" | "ONCE" | "F⁻" | "⧫"          { ONCE }
   | "["                                           { LCLOSED }
   | "("                                           { LOPEN }

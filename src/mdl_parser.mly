@@ -59,6 +59,7 @@ f:
 | f=f IFF g=f                           { iff f g }
 | NEG f=f                               { neg f }
 | a=ATOM                                { p a }
+| a=ATOM LOPEN ROPEN                    { p a }
 | LANGLE r=reF RANGLE i=INTERVAL f=f    { possiblyF r i f }  %prec MODALITY
 | LANGLE r=reF RANGLE f=f               { possiblyF r full f } %prec MODALITY
 | LCLOSED r=reF RCLOSED i=INTERVAL f=f  { necessarilyF r i f } %prec MODALITY

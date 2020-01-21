@@ -20,7 +20,7 @@ let interval_gen max_lb max_delta =
 module type Language = sig
   type formula
   val generate: string list -> int -> formula QCheck.Gen.t
-  val formula_to_string: int list -> formula  -> string
+  val formula_to_string: bool -> int list -> formula  -> string
   val to_string: formula -> string
 end
 
@@ -58,7 +58,10 @@ module MTL : Language = struct
       | _ as x -> failwith "not supported " ^ formula_to_string x)
       let formula_to_montre_string r = formula_to_montre_string r 0
       let to_string = Mtl.formula_to_string
-      let formula_to_string rs x = List.fold_left (fun s r -> (s ^ " # " ^ (formula_to_montre_string r x))) (to_string x) rs
+      let formula_to_string m rs x = 
+        if m then
+          List.fold_left (fun s r -> (s ^ " # " ^ (formula_to_montre_string r x))) (to_string x) rs
+        else to_string x
 end
 let mtl = (module MTL : Language)
 
@@ -107,8 +110,11 @@ module MDL : Language = struct
       | Star (r) -> Printf.sprintf "(%a)*" (fun x -> regex_to_montre_string rt 3) r
       | x -> failwith ("not supported " ^ Mdl.formula_to_string (Mdl.possiblyF x full (Mdl.bool true))))
     let formula_to_montre_string r = formula_to_montre_string r 0
-    let to_string = Mdl.formula_to_string
-    let formula_to_string rs x = List.fold_left (fun s r -> (s ^ " # " ^ (formula_to_montre_string r x))) (to_string x) rs
+    let to_string = Mdl.generated_formula_to_string
+    let formula_to_string m rs x = 
+      if m then
+        List.fold_left (fun s r -> (s ^ " # " ^ (formula_to_montre_string r x))) (to_string x) rs
+      else to_string x
 end
 let mdl = (module MDL : Language)
 

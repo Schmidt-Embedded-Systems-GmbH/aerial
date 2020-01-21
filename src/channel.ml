@@ -25,11 +25,18 @@ type channel =
 exception End_of_mock of output_channel
 
 let parse_line s =
+  let s = String.trim s in 
+  if String.length s > 1 && (String.get s 0) = '@' then
   match String.split_on_char ' ' (String.sub s 1 (String.length s - 1)) with
   | [] -> None
   | raw_t :: preds ->
-    try Some (SS.of_list (List.filter (fun x -> x <> "()") preds), int_of_string raw_t)
+    try Some (SS.of_list 
+    (List.map (fun p -> String.trim (String.map (fun c -> if (c = '(' || c = ')') then ' ' else c) 
+                                                 p )) 
+              (List.filter (fun x -> x <> "()") preds)), 
+      int_of_string raw_t)
     with Failure _ -> None
+  else None
 
 
 let rec parse_lines line ch out =

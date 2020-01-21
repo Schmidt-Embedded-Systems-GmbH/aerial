@@ -48,6 +48,22 @@ and regex_to_string l = function
 let formula_to_string = formula_to_string 0
 
 
+let rec generated_formula_to_string l = function
+  | P (_, x) -> Printf.sprintf "%s()" x
+  | Bool b -> Printf.sprintf (if b then "TRUE" else "FALSE")
+  | Conj (f, g) -> Printf.sprintf "(%a AND %a)" (fun x -> generated_formula_to_string 2) f (fun x -> generated_formula_to_string 2) g
+  | Disj (f, g) -> Printf.sprintf "(%a OR %a)" (fun x -> generated_formula_to_string 1) f (fun x -> generated_formula_to_string 1) g
+  | Neg f -> Printf.sprintf "(NOT %a)" (fun x -> generated_formula_to_string 3) f
+  | MatchF (_, _, i, r) -> Printf.sprintf "(▷ %a %a)" (fun x -> interval_to_string) i (fun x -> generated_regex_to_string 1) r
+  | MatchP (_, _, i, r) -> Printf.sprintf "(◁ %a %a)" (fun x -> interval_to_string) i (fun x -> generated_regex_to_string 1) r
+and generated_regex_to_string l = function
+  | Wild -> Printf.sprintf "."
+  | Test f -> Printf.sprintf "(%a?)" (fun x -> generated_formula_to_string 3) f
+  | Alt (r, s) -> Printf.sprintf "(%a + %a)" (fun x -> generated_regex_to_string 1) r (fun x -> generated_regex_to_string 1) s
+  | Seq (r, s) -> Printf.sprintf "(%a %a)" (fun x -> generated_regex_to_string 2) r (fun x -> generated_regex_to_string 2) s
+  | Star (r) -> Printf.sprintf "(%a*)" (fun x -> generated_regex_to_string 3) r
+let generated_formula_to_string = generated_formula_to_string 0
+
 (* let rec print_formula l out = function
   | P (_, x) -> Printf.fprintf out "%s" x
   | Bool b -> Printf.fprintf out (if b then "⊤" else "⊥")

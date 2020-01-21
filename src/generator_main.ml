@@ -14,6 +14,8 @@ let rate_ref = ref None
 
 let num_ref = ref None
 
+let montre_ref = ref false
+
 let atoms_ref = ref ["p"; "q"; "r"]
 
 
@@ -28,8 +30,10 @@ let usage () = Format.eprintf
 "Generates a random formula of a given language.
 Example usage: generator -mdl
 Arguments:
-\t -mdl - use Metric Dynamic Logic
-\t -mtl - use Metric Temporal Logic (default)"
+\t -mdl - use Metric Dynamic Logic (default)
+\t -mtl - use Metric Temporal Logic 
+\t -montre - generate also the equivalent montre formula 
+\t -rate r1,r2,...,rn - generate n montre formulas with ith formula's interval scaled by ri"
 
 let process_args =
   let rec go = function
@@ -38,6 +42,9 @@ let process_args =
         go args
     | ("-mtl" :: args) ->
         language_ref := mtl;
+        go args
+    | ("-montre" :: args) ->
+        montre_ref := true;
         go args
     | ("-size" :: size :: args) ->
         size_ref := Some (int_of_string size);
@@ -49,6 +56,7 @@ let process_args =
         atoms_ref := String.split_on_char ',' atoms;
         go args
     | ("-rate" :: rate :: args) ->
+        montre_ref := true;
         rate_ref := Some ([int_of_string rate]);
         rates args
     | [] -> ()
@@ -76,8 +84,7 @@ let process_args =
         | Some x -> int_of_string rate::x
         in rate_ref := Some(newrate);
         rates args
-    | [] -> ()
-    | _ -> usage () in
+    | [] -> () in
   go
 
 let rec print_list = function
@@ -97,5 +104,5 @@ let _ =
     let rates = match !rate_ref with
       | None -> [1]
       | Some x -> x in
-    print_list (List.map (L.formula_to_string (List.rev rates)) (Gen.generate ~n:num (L.generate !atoms_ref size)))
+    print_list (List.map (L.formula_to_string !montre_ref (List.rev rates)) (Gen.generate ~n:num (L.generate !atoms_ref size)))
 

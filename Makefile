@@ -25,7 +25,9 @@ OCAMLBUILDGEN=$(OCAMLBUILD) -pkgs qcheck
 GENNAME=src/generator_main
 GENMONPOLY=experiments/logs/gen_log
 
-IMAGE=krledmno1/aerial
+USERNAME ?= $(shell bash -c 'read -r -p "Username: " uuu; echo $$uuu')
+IMAGENAME ?= $(shell bash -c 'read -r -p "Image name: " iii; echo $$iii')
+
 
 ifndef PREFIX
   PREFIX=/usr/local
@@ -95,15 +97,12 @@ web:
 run: standalone
 	./aerial.native $(CMD)
 
-docker-run: 
-	docker run --name aerial -it krledmno1/aerial
+docker: clean
+	docker build -t $(USERNAME)/$(IMAGENAME) .
 
-docker:
-	docker build -t $(IMAGE) .
+docker-run:
+	docker run --name monpoly -it $(USERNAME)/$(IMAGENAME)
 
-docker-push: docker
-	docker login
-	docker push $(IMAGE)
 
 coverage: test-clean test-generate
 	$(OCAMLBUILDCOVERAGE) $(TESTPATH).native
