@@ -36,7 +36,8 @@ open Mdl
 %nonassoc NEG
 %nonassoc STAR
 %nonassoc LOPEN
-%nonassoc BASE QUESTION
+%nonassoc BASE
+%nonassoc QUESTION
 %nonassoc INTERVAL
 %nonassoc LANGLE LCLOSED ROPEN
 %nonassoc ATOM
